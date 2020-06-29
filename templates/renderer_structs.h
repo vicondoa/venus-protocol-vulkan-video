@@ -96,7 +96,7 @@ static inline void vn_replace_${ty.name}_handle(${ty.name} *val)
 #ifndef VN_PROTOCOL_RENDERER_STRUCTS_H
 #define VN_PROTOCOL_RENDERER_STRUCTS_H
 
-#include "vn_protocol_renderer_types.h"
+#include "vn_protocol_renderer_handles.h"
 
 /*
  * These structs/unions are not included

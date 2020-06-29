@@ -8,7 +8,7 @@
 #ifndef VN_PROTOCOL_DRIVER_STRUCTS_H
 #define VN_PROTOCOL_DRIVER_STRUCTS_H
 
-#include "vn_protocol_driver_types.h"
+#include "vn_protocol_driver_handles.h"
 
 /*
  * These structs/unions are not included

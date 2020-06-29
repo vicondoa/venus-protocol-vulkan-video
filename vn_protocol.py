@@ -602,8 +602,6 @@ class GenTypes(object):
             VkType.DEFINE: [],
             VkType.BASETYPE: [],
             VkType.ENUM: [],
-            VkType.HANDLE: [],
-            VkType.ND_HANDLE: [],
         }
 
         # uint64_t first for array sizes
@@ -619,7 +617,7 @@ class GenTypes(object):
                 need = ty.name in self.gen.PRIMITIVE_TYPES
             elif ty.category == ty.ENUM:
                 need = bool(ty.enums)
-            elif ty.category in [ty.BASETYPE, ty.HANDLE, ty.ND_HANDLE]:
+            elif ty.category in [ty.BASETYPE]:
                 need = True
 
             if need and ty not in types[ty.category]:
@@ -633,7 +631,34 @@ class GenTypes(object):
                 GEN=self.gen,
                 SCALAR_TYPES=scalar_types,
                 TYPEDEF_TYPES=types[VkType.BASETYPE],
-                ENUM_TYPES=types[VkType.ENUM],
+                ENUM_TYPES=types[VkType.ENUM])
+
+class GenHandles(object):
+    def __init__(self, gen, template):
+        self.gen = gen
+        self.api = gen.api
+        self.template = template
+
+    def generate(self):
+        types = {
+            VkType.HANDLE: [],
+            VkType.ND_HANDLE: [],
+        }
+
+        for ty in self.api.type_table.values():
+            if ty.platforms:
+                continue
+
+            need = False
+            if ty.category in [ty.HANDLE, ty.ND_HANDLE]:
+                need = True
+
+            if need and ty not in types[ty.category]:
+                assert(self.gen.is_serializable(ty))
+                types[ty.category].append(ty)
+
+        return self.template.render(
+                GEN=self.gen,
                 HANDLE_TYPES=types[VkType.HANDLE],
                 ND_HANDLE_TYPES=types[VkType.ND_HANDLE])
 
@@ -739,6 +764,7 @@ def main():
             (GenCS,         'driver_cs.h'),
             (GenDefines,    'driver_defines.h'),
             (GenTypes,      'driver_types.h'),
+            (GenHandles,    'driver_handles.h'),
             (GenStructs,    'driver_structs.h'),
             (GenCommands,   'driver_commands.h'),
             (GenCommands,   'driver_calls.h'),
@@ -748,6 +774,7 @@ def main():
             (GenCS,         'renderer_cs.h'),
             (GenDefines,    'renderer_defines.h'),
             (GenTypes,      'renderer_types.h'),
+            (GenHandles,    'renderer_handles.h'),
             (GenStructs,    'renderer_structs.h'),
             (GenCommands,   'renderer_commands.h'),
             (GenCommands,   'renderer_dispatches.h'),
