@@ -10,6 +10,13 @@ from mako.template import Template
 
 from vkxml import VkApi, VkType, VkVariable
 
+# this is bumped whenever a backward-incompatible change is made
+VN_WIRE_FORMAT_VERSION = 0
+
+# list of supported extensions
+VK_XML_EXTENSION_LIST = [
+]
+
 VN_PROTOCOL_DIR = Path(__file__).parent.resolve()
 VK_XML = VN_PROTOCOL_DIR.joinpath('xml/vk.xml')
 VN_XML = VN_PROTOCOL_DIR.joinpath('xml/vn.xml')
@@ -591,6 +598,26 @@ class GenDefines(object):
                 BITMASK_TYPES=bitmask_types,
                 COMMAND_TYPES=command_types)
 
+class GenCaps(object):
+    def __init__(self, gen, template):
+        self.gen = gen
+        self.api = gen.api
+        self.template = template
+
+    def generate(self):
+        ext_table = []
+        for ext in self.api.extensions:
+            if ext.number >= len(ext_table):
+                ext_table.extend([None] * (ext.number - len(ext_table) + 1))
+            if ext.name in VK_XML_EXTENSION_LIST:
+                ext_table[ext.number] = ext.name
+
+        return self.template.render(
+                WIRE_FORMAT_VERSION=VN_WIRE_FORMAT_VERSION,
+                VN_XML_VERSION=self.api.vn_xml_version,
+                VK_XML_VERSION=self.api.vk_xml_version,
+                VK_XML_EXTENSION_TABLE=ext_table)
+
 class GenTypes(object):
     def __init__(self, gen, template):
         self.gen = gen
@@ -763,6 +790,7 @@ def main():
         outputs = [
             (GenCS,         'driver_cs.h'),
             (GenDefines,    'driver_defines.h'),
+            (GenCaps,       'driver_caps.h'),
             (GenTypes,      'driver_types.h'),
             (GenHandles,    'driver_handles.h'),
             (GenStructs,    'driver_structs.h'),
@@ -773,6 +801,7 @@ def main():
         outputs = [
             (GenCS,         'renderer_cs.h'),
             (GenDefines,    'renderer_defines.h'),
+            (GenCaps,       'renderer_caps.h'),
             (GenTypes,      'renderer_types.h'),
             (GenHandles,    'renderer_handles.h'),
             (GenStructs,    'renderer_structs.h'),

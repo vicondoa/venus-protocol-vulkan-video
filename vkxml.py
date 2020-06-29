@@ -478,7 +478,9 @@ class VkType(object):
         ty = cls._get_type(name, type_table)
         ty.init(name, category)
 
-        if category == cls.BASETYPE:
+        if category == cls.DEFINE:
+            ty.attrs['define'] = cls._get_inner_text(type_elem)
+        elif category == cls.BASETYPE:
             to = type_elem.find('type').text
             ty.typedef = cls._get_type(to, type_table)
         elif category == cls.BITMASK:
@@ -585,6 +587,8 @@ class VkApi(object):
         self.tags = []
         self.type_table = {}
         self.extensions = []
+        self.vk_xml_version = None
+        self.vn_xml_version = None
 
     def parse_xml(self, xml):
         tree = ET.parse(xml)
@@ -606,6 +610,14 @@ class VkApi(object):
                 self._parse_extensions(child)
 
     def validate(self):
+        self.vn_xml_version = self._get_xml_version(
+                self.type_table['VN_HEADER_VERSION'],
+                self.type_table['VN_HEADER_VERSION_COMPLETE'])
+
+        self.vk_xml_version = self._get_xml_version(
+                self.type_table['VK_HEADER_VERSION'],
+                self.type_table['VK_HEADER_VERSION_COMPLETE'])
+
         for ty in self.type_table.values():
             ty.validate()
 
@@ -697,6 +709,17 @@ class VkApi(object):
         for extension_elem in extensions_elem.iterfind('extension'):
             ext = VkExtension.parse_extension(extension_elem, self.type_table)
             self.extensions.append(ext)
+
+    def _get_xml_version(self, ver_ty, complete_ver_ty):
+        ver = ver_ty.attrs['define']
+        ver = ver[(ver.rindex(' ') + 1):]
+        assert(ver.isdigit())
+
+        complete_ver = complete_ver_ty.attrs['define']
+        complete_ver = complete_ver[(complete_ver.rindex('(') + 1):-1]
+        complete_ver = complete_ver.replace(ver_ty.name, ver)
+
+        return 'VK_MAKE_VERSION(%s)' % complete_ver
 
 def test():
     C_DECLS = [

@@ -6,6 +6,9 @@
     </tags>
 
     <types>
+        <type category="define">#define <name>VN_HEADER_VERSION</name> 0</type>
+        <type category="define" requires="VN_HEADER_VERSION">#define <name>VN_HEADER_VERSION_COMPLETE</name> <type>VK_MAKE_VERSION</type>(0, 0, VN_HEADER_VERSION)</type>
+
         <type category="basetype">typedef <type>uint32_t</type> <name>VnResourceId</name>;</type>
 
         <type requires="VnCommandFlagBits"                category="bitmask">typedef <type>VkFlags</type> <name>VnCommandFlags</name>;</type>

@@ -29,6 +29,7 @@ vn_template_files = files(
   'templates/common.h',
   'templates/driver.h',
   'templates/driver_calls.h',
+  'templates/driver_caps.h',
   'templates/driver_commands.h',
   'templates/driver_cs.h',
   'templates/driver_defines.h',
@@ -36,6 +37,7 @@ vn_template_files = files(
   'templates/driver_structs.h',
   'templates/driver_types.h',
   'templates/renderer.h',
+  'templates/renderer_caps.h',
   'templates/renderer_commands.h',
   'templates/renderer_cs.h',
   'templates/renderer_defines.h',
@@ -57,6 +59,7 @@ vn_protocol_driver = custom_target(
   output: [
     'vn_protocol_driver.h',
     'vn_protocol_driver_calls.h',
+    'vn_protocol_driver_caps.h',
     'vn_protocol_driver_commands.h',
     'vn_protocol_driver_cs.h',
     'vn_protocol_driver_defines.h',
@@ -76,6 +79,7 @@ vn_protocol_renderer = custom_target(
   input: ['vn_protocol.py'],
   output: [
     'vn_protocol_renderer.h',
+    'vn_protocol_renderer_caps.h',
     'vn_protocol_renderer_commands.h',
     'vn_protocol_renderer_cs.h',
     'vn_protocol_renderer_defines.h',
