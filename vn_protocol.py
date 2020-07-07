@@ -235,8 +235,7 @@ class Gen(object):
         loop_type, loop_count = self._variable_loop_info(ty, var, prefix)
 
         # check if we should unroll the loop
-        if (loop_type and
-            (var.ty.indirection_depth() + var.ty.is_array()) == 1):
+        if loop_type:
             loop_type = None
             if not var.is_buffer():
                 func_name += '_array'
@@ -258,6 +257,9 @@ class Gen(object):
             loop_cond = '%s i = 0; i < %s; i++' % (loop_type, loop_count)
 
         deref_count = var.ty.indirection_depth() + var.ty.is_array() - 1
+        if var.is_string() and var.ty.indirection_depth() == 2:
+            deref_count -= 1
+
         func_args = var_name
         if loop_type:
             func_args += '[i]'
@@ -295,8 +297,7 @@ class Gen(object):
             loop_cond = '%s i = 0; i < %s; i++' % (loop_type, loop_count)
 
         alloc_stmt = None
-        simple_string = var.is_string() and not loop_type
-        if alloc_storage and var.ty.is_pointer() and not simple_string:
+        if alloc_storage and var.ty.is_pointer() and not var.is_string():
             if var.is_buffer():
                 alloc_size = loop_count
             else:
@@ -307,6 +308,9 @@ class Gen(object):
             alloc_stmt = '%s = vn_cs_alloc_temp(cs, %s)' % (var_name, alloc_size)
 
         deref_count = var.ty.indirection_depth() + var.ty.is_array() - 1
+        if var.is_string() and var.ty.indirection_depth() == 2:
+            deref_count -= 1
+
         func_args = var_name
         if loop_type:
             func_args += '[i]'
@@ -324,7 +328,7 @@ class Gen(object):
             if alloc_storage:
                 func_name += '_temp'
                 deref_count -= 1
-                cast = '(char **)'
+                cast = '(char %s)' % ('*' * (var.ty.indirection_depth() + 1))
         elif var.ty.is_const_pointer() or var.ty.is_const_array():
             cast = '(%s *)' % var.ty.base.name
 

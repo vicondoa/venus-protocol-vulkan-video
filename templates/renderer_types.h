@@ -73,4 +73,19 @@ vn_decode_string_temp(struct vn_cs *cs, char **val)
     *val = str;
 }
 
+static inline void
+vn_decode_string_array_temp(struct vn_cs *cs, char ***val, uint32_t max_count)
+{
+    const uint32_t count = vn_decode_array_size(cs, max_count);
+    char **strs = vn_cs_alloc_temp(cs, sizeof(*strs) * max_count);
+    if (strs) {
+        for (uint32_t i = 0; i < count; i++)
+            vn_decode_string_temp(cs, &strs[i]);
+        for (uint32_t i = count; i < max_count; i++)
+            strs[i] = NULL;
+    }
+
+    *val = strs;
+}
+
 #endif /* VN_PROTOCOL_RENDERER_TYPES_H */
