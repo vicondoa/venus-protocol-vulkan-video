@@ -185,7 +185,7 @@ class VkType(object):
 
         self.attrs = {}
 
-        # for basetype
+        # for basetype/bitmask
         self.typedef = None
 
         # for enum/bitmask (optional)
@@ -484,6 +484,8 @@ class VkType(object):
             to = type_elem.find('type').text
             ty.typedef = cls._get_type(to, type_table)
         elif category == cls.BITMASK:
+            to = type_elem.find('type').text
+            ty.typedef = cls._get_type(to, type_table)
             bitmask_ty = cls._parse_bitmask(type_elem, type_table)
             ty.bitmask = bitmask_ty
         elif category == cls.STRUCT:

@@ -60,6 +60,8 @@ class Gen(object):
         for var in ty.variables:
             if var.ty.is_pointer() or var.ty.is_array():
                 var.ty.base.attrs['need_array'] = True
+                if var.ty.base.typedef:
+                    var.ty.base.typedef.base.attrs['need_array'] = True
 
             if 'var_in' in var.attrs:
                 if self.is_driver:
@@ -78,6 +80,8 @@ class Gen(object):
         if ty.ret:
             if ty.ret.is_pointer() or ty.ret.is_array():
                 ty.ret.base.attrs['need_array'] = True
+                if var.ty.base.typedef:
+                    var.ty.base.typedef.base.attrs['need_array'] = True
 
             if self.is_driver:
                 self._set_type_attr(var.ty, 'need_decode', True)
