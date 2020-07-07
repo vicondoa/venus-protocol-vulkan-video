@@ -148,6 +148,7 @@ ${replace_pnext_chain_handle(ty)}
 /* union ${ty.name} */
 
 %     if 'need_encode' in ty.attrs:
+${common.encode_union_tag(ty)}
 ${common.encode_union(ty, GEN.UNION_DEFAULT_TAGS[ty.name])}
 %     endif
 %     if 'need_decode' in ty.attrs:

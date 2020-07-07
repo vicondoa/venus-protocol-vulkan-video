@@ -53,6 +53,7 @@ ${common.encode_pnext_chain(ty, '_inout')}
 /* union ${ty.name} */
 
 %     if 'need_encode' in ty.attrs:
+${common.encode_union_tag(ty)}
 ${common.encode_union(ty, GEN.UNION_DEFAULT_TAGS[ty.name])}
 %     endif
 %     if 'need_decode' in ty.attrs:

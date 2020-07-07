@@ -398,16 +398,6 @@ static inline void vn_decode_${ty.name}(struct vn_cs *cs, ${ty.name} *val)
 }
 </%def>
 
-<%def name="encode_union(ty, default_tag)">\
-static inline void vn_encode_${ty.name}(struct vn_cs *cs, const ${ty.name} *val)
-{
-    /* encoding val->${ty.variables[default_tag].name} suffices */
-    const uint32_t tag = ${default_tag};
-    vn_encode_uint32_t(cs, &tag);
-    ${GEN.encode_struct_member(ty, ty.variables[default_tag], 'val->')}
-}
-</%def>
-
 <%def name="encode_union_tag(ty)">\
 static inline void vn_encode_${ty.name}_tag(struct vn_cs *cs, const ${ty.name} *val, uint32_t tag)
 {
@@ -422,6 +412,14 @@ static inline void vn_encode_${ty.name}_tag(struct vn_cs *cs, const ${ty.name} *
         assert(false);
         break;
     }
+}
+</%def>
+
+<%def name="encode_union(ty, default_tag)">\
+static inline void vn_encode_${ty.name}(struct vn_cs *cs, const ${ty.name} *val)
+{
+    /* encoding val->${ty.variables[default_tag].name} suffices */
+    vn_encode_${ty.name}_tag(cs, val, ${default_tag});
 }
 </%def>
 
