@@ -3,6 +3,8 @@
  * SPDX-License-Identifier: MIT
  */
 
+<%namespace file="/common.h" import="encode_generic_array, decode_generic_array, replace_generic_array_handle"/>\
+\
 <%def name="handle_is_in_place(ty)">\
 sizeof(${ty.name}) >= sizeof(vn_cs_object_id)\
 </%def>\
@@ -73,6 +75,13 @@ ${decode_handle(ty)}
 ${decode_handle_lookup(ty)}
 ${decode_handle_temp(ty)}
 ${replace_handle(ty)}
+%   if 'need_array' in ty.attrs:
+${encode_generic_array(ty)}
+${decode_generic_array(ty)}
+${decode_generic_array(ty, '_lookup')}
+${decode_generic_array(ty, '_temp')}
+${replace_generic_array_handle(ty)}
+%   endif
 % endfor
 \
 % for ty in ND_HANDLE_TYPES:
@@ -82,6 +91,12 @@ ${encode_handle(ty)}
 ${decode_handle(ty)}
 ${decode_handle_lookup(ty)}
 ${replace_handle(ty)}
+%   if 'need_array' in ty.attrs:
+${encode_generic_array(ty)}
+${decode_generic_array(ty)}
+${decode_generic_array(ty, '_lookup')}
+${replace_generic_array_handle(ty)}
+%   endif
 % endfor
 \
 #endif /* VN_PROTOCOL_RENDERER_HANDLES_H */

@@ -236,7 +236,6 @@ class Gen(object):
 
         # check if we should unroll the loop
         if (loop_type and
-            var.ty.base.category in [ty.DEFINE, ty.BASETYPE] and
             (var.ty.indirection_depth() + var.ty.is_array()) == 1):
             loop_type = None
             if not var.is_buffer():

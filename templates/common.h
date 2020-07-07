@@ -458,3 +458,35 @@ static inline void vn_decode_${ty.name}${variant}(struct vn_cs *cs, ${ty.name} *
     }
 }
 </%def>
+
+<%def name="encode_generic_array(ty, variant='')">\
+static inline void
+vn_encode_${ty.name}_array${variant}(struct vn_cs *cs, const ${ty.name} *val, uint32_t count)
+{
+% if '_inout' in variant:
+    /* XXX */
+% endif
+    vn_encode_array_size(cs, count);
+    for (uint32_t i = 0; i < count; i++)
+        vn_encode_${ty.name}${variant}(cs, &val[i]);
+}
+</%def>
+
+<%def name="decode_generic_array(ty, variant='')">\
+static inline void
+vn_decode_${ty.name}_array${variant}(struct vn_cs *cs, ${ty.name} *val, uint32_t max_count)
+{
+    const uint32_t count = vn_decode_array_size(cs, max_count);
+    for (uint32_t i = 0; i < count; i++)
+        vn_decode_${ty.name}${variant}(cs, &val[i]);
+}
+</%def>
+
+<%def name="replace_generic_array_handle(ty)">\
+static inline void
+vn_replace_${ty.name}_array_handle(${ty.name} *val, uint32_t count)
+{
+    for (uint32_t i = 0; i < count; i++)
+        vn_replace_${ty.name}_handle(&val[i]);
+}
+</%def>

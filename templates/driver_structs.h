@@ -27,12 +27,15 @@
 
 %     if 'need_encode' in ty.attrs:
 ${common.encode_struct(ty)}
+${common.encode_generic_array(ty)}
 %     endif
 %     if 'need_decode' in ty.attrs:
 ${common.decode_struct(ty)}
+${common.decode_generic_array(ty)}
 %     endif
 %     if 'need_inout' in ty.attrs:
 ${common.encode_struct(ty, '_inout')}
+${common.encode_generic_array(ty, '_inout')}
 %     endif
 %   elif ty.category == ty.STRUCT and ty.s_type:
 /* struct ${ty.name} */
@@ -40,14 +43,17 @@ ${common.encode_struct(ty, '_inout')}
 %     if 'need_encode' in ty.attrs:
 ${common.encode_struct(ty, '_self')}
 ${common.encode_pnext_chain(ty)}
+${common.encode_generic_array(ty)}
 %     endif
 %     if 'need_decode' in ty.attrs:
 ${common.decode_struct(ty, '_self')}
 ${common.decode_pnext_chain(ty)}
+${common.decode_generic_array(ty)}
 %     endif
 %     if 'need_inout' in ty.attrs:
 ${common.encode_struct(ty, '_self_inout')}
 ${common.encode_pnext_chain(ty, '_inout')}
+${common.encode_generic_array(ty, '_inout')}
 %     endif
 %   else:
 /* union ${ty.name} */
@@ -55,9 +61,11 @@ ${common.encode_pnext_chain(ty, '_inout')}
 %     if 'need_encode' in ty.attrs:
 ${common.encode_union_tag(ty)}
 ${common.encode_union(ty, GEN.UNION_DEFAULT_TAGS[ty.name])}
+${common.encode_generic_array(ty)}
 %     endif
 %     if 'need_decode' in ty.attrs:
 ${common.decode_union(ty)}
+${common.decode_generic_array(ty)}
 %     endif
 %   endif
 % endfor

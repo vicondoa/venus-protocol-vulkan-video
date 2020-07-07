@@ -115,15 +115,19 @@ static inline void vn_replace_${ty.name}_handle(${ty.name} *val)
 
 %     if 'need_encode' in ty.attrs:
 ${common.encode_struct(ty)}
+${common.encode_generic_array(ty)}
 %     endif
 %     if 'need_decode' in ty.attrs:
 ${common.decode_struct(ty, '_temp')}
+${common.decode_generic_array(ty, '_temp')}
 %     endif
 %     if 'need_inout' in ty.attrs:
 ${common.decode_struct(ty, '_inout_temp')}
+${common.decode_generic_array(ty, '_inout_temp')}
 %     endif
 %     if 'need_decode' in ty.attrs:
 ${replace_struct_handle(ty)}
+${common.replace_generic_array_handle(ty)}
 %     endif
 %   elif ty.category == ty.STRUCT and ty.s_type:
 /* struct ${ty.name} */
@@ -131,18 +135,22 @@ ${replace_struct_handle(ty)}
 %     if 'need_encode' in ty.attrs:
 ${common.encode_struct(ty, '_self')}
 ${common.encode_pnext_chain(ty)}
+${common.encode_generic_array(ty)}
 %     endif
 %     if 'need_decode' in ty.attrs:
 ${common.decode_struct(ty, '_self_temp')}
 ${decode_pnext_chain_temp(ty)}
+${common.decode_generic_array(ty, '_temp')}
 %     endif
 %     if 'need_inout' in ty.attrs:
 ${common.decode_struct(ty, '_self_inout_temp')}
 ${decode_pnext_chain_temp(ty, '_inout')}
+${common.decode_generic_array(ty, '_inout_temp')}
 %     endif
 %     if 'need_decode' in ty.attrs:
 ${replace_struct_handle(ty, '_self')}
 ${replace_pnext_chain_handle(ty)}
+${common.replace_generic_array_handle(ty)}
 %     endif
 %   else:
 /* union ${ty.name} */
@@ -150,9 +158,11 @@ ${replace_pnext_chain_handle(ty)}
 %     if 'need_encode' in ty.attrs:
 ${common.encode_union_tag(ty)}
 ${common.encode_union(ty, GEN.UNION_DEFAULT_TAGS[ty.name])}
+${common.encode_generic_array(ty)}
 %     endif
 %     if 'need_decode' in ty.attrs:
 ${common.decode_union(ty, '_temp')}
+${common.decode_generic_array(ty, '_temp')}
 %     endif
 %   endif
 % endfor

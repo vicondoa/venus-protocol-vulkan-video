@@ -3,6 +3,8 @@
  * SPDX-License-Identifier: MIT
  */
 
+<%namespace file="/common.h" import="encode_generic_array, decode_generic_array"/>\
+\
 <%def name="handle_is_dev(ty)">\
 ${"true" if ty.name == 'VkDevice' else "false"}\
 </%def>\
@@ -38,6 +40,10 @@ vn_decode_${ty.name}(struct vn_cs *cs, ${ty.name} *val)
 
 ${encode_handle(ty)}
 ${decode_handle(ty)}
+%   if 'need_array' in ty.attrs:
+${encode_generic_array(ty)}
+${decode_generic_array(ty)}
+%   endif
 % endfor
 \
 % for ty in ND_HANDLE_TYPES:
@@ -45,6 +51,10 @@ ${decode_handle(ty)}
 
 ${encode_handle(ty)}
 ${decode_handle(ty)}
+%   if 'need_array' in ty.attrs:
+${encode_generic_array(ty)}
+${decode_generic_array(ty)}
+%   endif
 % endfor
 \
 #endif /* VN_PROTOCOL_DRIVER_HANDLES_H */
