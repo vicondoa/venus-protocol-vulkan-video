@@ -64,15 +64,15 @@ vn_cs_end_out(struct vn_cs *cs)
 {
 }
 
-static inline void
-vn_cs_object_set_id(void *vk_handle, vn_cs_object_id id, bool is_dev)
-{
-}
-
 static inline vn_cs_object_id
-vn_cs_object_get_id(const void *vk_handle, bool is_dev)
+vn_cs_handle_load_id(const void *vk_handle, bool is_dev)
 {
     return 0;
+}
+
+static inline void
+vn_cs_handle_store_id(void *vk_handle, vn_cs_object_id id, bool is_dev)
+{
 }
 
 #endif /* VN_CS_H */

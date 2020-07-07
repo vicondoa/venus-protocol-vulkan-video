@@ -22,8 +22,8 @@
  *   vn_cs_out_begin_reply_stream
  *   vn_cs_out_end_reply_stream
  *   vn_cs_end_out
- *   vn_cs_object_set_id
- *   vn_cs_object_get_id
+ *   vn_cs_handle_load_id
+ *   vn_cs_handle_store_id
  */
 #include "vn_cs.h"
 

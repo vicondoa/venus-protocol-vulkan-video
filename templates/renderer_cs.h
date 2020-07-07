@@ -16,14 +16,14 @@
  *   vn_cs_set_error
  *   vn_cs_has_error
  *   vn_cs_lookup_object
+ *   vn_cs_get_object_handle
  *   vn_cs_reset_temp_pool
  *   vn_cs_alloc_temp
  *   vn_cs_in
  *   vn_cs_reserve_out
  *   vn_cs_out
- *   vn_cs_handle_store_id
  *   vn_cs_handle_load_id
- *   vn_cs_get_object_handle
+ *   vn_cs_handle_store_id
  */
 #include "vkr_parser.h"
 
@@ -50,6 +50,14 @@ vn_cs_lookup_object(struct vn_cs *cs, vn_cs_object_id id)
 {
    struct vkr_parser *parser = (struct vkr_parser *)cs;
    return vkr_parser_lookup_object(parser, id);
+}
+
+static inline uint64_t
+vn_cs_get_object_handle(const void *vk_handle)
+{
+   const struct vkr_parser_object *obj =
+      *(const struct vkr_parser_object **)vk_handle;
+   return obj ? obj->handle : 0;
 }
 
 static inline void
@@ -87,24 +95,16 @@ vn_cs_out(struct vn_cs *cs, size_t size, const void *val, size_t val_size)
    vkr_parser_reply(parser, size, val, val_size);
 }
 
-static inline void
-vn_cs_handle_store_id(void *vk_handle, vn_cs_object_id id, bool in_place)
-{
-   vkr_parser_handle_store_id(vk_handle, id, in_place);
-}
-
 static inline vn_cs_object_id
 vn_cs_handle_load_id(const void *vk_handle, bool in_place)
 {
    return vkr_parser_handle_load_id(vk_handle, in_place);
 }
 
-static inline uint64_t
-vn_cs_get_object_handle(const void *vk_handle)
+static inline void
+vn_cs_handle_store_id(void *vk_handle, vn_cs_object_id id, bool in_place)
 {
-   const struct vkr_parser_object *obj =
-      *(const struct vkr_parser_object **)vk_handle;
-   return obj ? obj->handle : 0;
+   vkr_parser_handle_store_id(vk_handle, id, in_place);
 }
 
 static inline void

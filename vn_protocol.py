@@ -245,9 +245,6 @@ class Gen(object):
         func_name, loop_type, loop_count = self._variable_info(ty, var, prefix)
         if is_inout and var.ty.base.category == ty.STRUCT:
             func_name += '_inout'
-        elif var.ty.base.category in [ty.HANDLE, ty.ND_HANDLE]:
-            if self.is_driver:
-                func_name += '_object'
 
         if_cond = None
         if var.ty.is_pointer():
@@ -283,9 +280,7 @@ class Gen(object):
                 func_name += '_inout'
         else:
             if var.ty.base.category in [ty.HANDLE, ty.ND_HANDLE]:
-                if self.is_driver:
-                    func_name += '_object'
-                else:
+                if not self.is_driver:
                     func_name += '_lookup'
 
         if_cond = None

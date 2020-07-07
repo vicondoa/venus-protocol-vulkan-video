@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-<%def name="handle_in_place(ty)">\
+<%def name="handle_is_in_place(ty)">\
 sizeof(${ty.name}) >= sizeof(vn_cs_object_id)\
 </%def>\
 \
@@ -11,7 +11,7 @@ sizeof(${ty.name}) >= sizeof(vn_cs_object_id)\
 static inline void
 vn_encode_${ty.name}(struct vn_cs *cs, const ${ty.name} *val)
 {
-    const bool in_place = ${handle_in_place(ty)};
+    const bool in_place = ${handle_is_in_place(ty)};
     const uint64_t id = vn_cs_handle_load_id((const void *)val, in_place);
     vn_encode_uint64_t(cs, &id);
 }
@@ -21,24 +21,10 @@ vn_encode_${ty.name}(struct vn_cs *cs, const ${ty.name} *val)
 static inline void
 vn_decode_${ty.name}(struct vn_cs *cs, ${ty.name} *val)
 {
-    const bool in_place = ${handle_in_place(ty)};
+    const bool in_place = ${handle_is_in_place(ty)};
     uint64_t id;
     vn_decode_uint64_t(cs, &id);
     vn_cs_handle_store_id((void *)val, id, in_place);
-}
-</%def>\
-\
-<%def name="decode_handle_temp(ty)">\
-static inline void
-vn_decode_${ty.name}_temp(struct vn_cs *cs, ${ty.name} *val)
-{
-    const bool in_place = ${handle_in_place(ty)};
-    if (!in_place) {
-        *val = vn_cs_alloc_temp(cs, sizeof(vn_cs_object_id));
-        if (!val)
-            return;
-    }
-    vn_decode_${ty.name}(cs, val);
 }
 </%def>\
 \
@@ -49,6 +35,20 @@ vn_decode_${ty.name}_lookup(struct vn_cs *cs, ${ty.name} *val)
     uint64_t id;
     vn_decode_uint64_t(cs, &id);
     *val = (${ty.name})vn_cs_lookup_object(cs, id);
+}
+</%def>\
+\
+<%def name="decode_handle_temp(ty)">\
+static inline void
+vn_decode_${ty.name}_temp(struct vn_cs *cs, ${ty.name} *val)
+{
+    const bool in_place = ${handle_is_in_place(ty)};
+    if (!in_place) {
+        *val = vn_cs_alloc_temp(cs, sizeof(vn_cs_object_id));
+        if (!val)
+            return;
+    }
+    vn_decode_${ty.name}(cs, val);
 }
 </%def>\
 \
