@@ -598,7 +598,7 @@ class GenDefines(object):
                 BITMASK_TYPES=bitmask_types,
                 COMMAND_TYPES=command_types)
 
-class GenCaps(object):
+class GenCapset(object):
     def __init__(self, gen, template):
         self.gen = gen
         self.api = gen.api
@@ -790,7 +790,7 @@ def main():
         outputs = [
             (GenCS,         'driver_cs.h'),
             (GenDefines,    'driver_defines.h'),
-            (GenCaps,       'driver_caps.h'),
+            (GenCapset,     'driver_capset.h'),
             (GenTypes,      'driver_types.h'),
             (GenHandles,    'driver_handles.h'),
             (GenStructs,    'driver_structs.h'),
@@ -801,7 +801,7 @@ def main():
         outputs = [
             (GenCS,         'renderer_cs.h'),
             (GenDefines,    'renderer_defines.h'),
-            (GenCaps,       'renderer_caps.h'),
+            (GenCapset,     'renderer_capset.h'),
             (GenTypes,      'renderer_types.h'),
             (GenHandles,    'renderer_handles.h'),
             (GenStructs,    'renderer_structs.h'),

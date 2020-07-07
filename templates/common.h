@@ -20,21 +20,21 @@ ${define_enum(ty.bitmask)}
 typedef VkFlags ${ty.name};
 </%def>
 
-<%def name="define_caps(wire_format_ver, vn_xml_ver, vk_xml_ver, ext_table)">\
+<%def name="define_capset(wire_format_ver, vn_xml_ver, vk_xml_ver, ext_table)">\
 static inline uint32_t
-vn_caps_wire_format_version(void)
+vn_capset_wire_format_version(void)
 {
     return ${wire_format_ver};
 }
 
 static inline uint32_t
-vn_caps_vn_xml_version(void)
+vn_capset_vn_xml_version(void)
 {
     return ${vn_xml_ver};
 }
 
 static inline uint32_t
-vn_caps_vk_xml_version(void)
+vn_capset_vk_xml_version(void)
 {
     return ${vk_xml_ver};
 }
@@ -53,7 +53,7 @@ for i in range(c_table_size):
   c_table.append((val, names))
 %>
 static inline const uint32_t *
-vn_caps_vk_xml_extension_table(uint32_t *size)
+vn_capset_vk_xml_extension_table(uint32_t *size)
 {
     static const uint32_t vk_xml_extension_table[${c_table_size}] = {
 % for val, names in c_table:
