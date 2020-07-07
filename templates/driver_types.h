@@ -15,10 +15,6 @@
 
 ${common.encode_scalar(ty, size)}
 ${common.decode_scalar(ty, size)}
-%   if 'need_array' in ty.attrs:
-${common.encode_scalar_array(ty, size)}
-${common.decode_scalar_array(ty, size)}
-%   endif
 % endfor
 \
 % for ty in TYPEDEF_TYPES:
@@ -26,10 +22,6 @@ ${common.decode_scalar_array(ty, size)}
 
 ${common.encode_typedef(ty)}
 ${common.decode_typedef(ty)}
-%   if 'need_array' in ty.attrs:
-${common.encode_typedef_array(ty)}
-${common.decode_typedef_array(ty)}
-%   endif
 % endfor
 \
 % for ty in ENUM_TYPES:
@@ -40,6 +32,24 @@ ${common.decode_enum(ty)}
 % endfor
 \
 ${common.encode_decode_special()}
+\
+/* scalar arrays */
+
+% for ty, size in SCALAR_TYPES:
+%   if 'need_array' in ty.attrs:
+${common.encode_scalar_array(ty, size)}
+${common.decode_scalar_array(ty, size)}
+%   endif
+% endfor
+\
+/* typedef arrays */
+
+% for ty in TYPEDEF_TYPES:
+%   if 'need_array' in ty.attrs:
+${common.encode_typedef_array(ty)}
+${common.decode_typedef_array(ty)}
+%   endif
+% endfor
 \
 /* TODO remove this and all callers */
 static inline void

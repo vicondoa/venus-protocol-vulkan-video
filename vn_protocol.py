@@ -631,10 +631,6 @@ class GenTypes(object):
             VkType.ENUM: [],
         }
 
-        # uint64_t first for array sizes
-        ty = self.api.type_table['uint64_t']
-        types[ty.category].append(ty)
-
         for ty in self.api.type_table.values():
             if ty.platforms:
                 continue

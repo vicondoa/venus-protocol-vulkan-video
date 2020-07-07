@@ -99,46 +99,6 @@ vn_decode_${ty.name}(struct vn_cs *cs, ${ty.name} *val)
 }
 </%def>
 
-<%def name="encode_scalar_array(ty, ty_size)">\
-static inline void
-vn_encode_${ty.name}_array(struct vn_cs *cs, const ${ty.name} *val, uint64_t count)
-{
-    assert(sizeof(*val) == ${ty_size});
-    const size_t size = sizeof(*val) * count;
-    assert(size >= count);
-
-    vn_encode_uint64_t(cs, &count);
-% if ty_size >= 4:
-    vn_encode(cs, size, val, size);
-% else:
-    vn_encode(cs, (size + 3) & ~3, val, size);
-% endif
-}
-</%def>
-
-<%def name="decode_scalar_array(ty, ty_size)">\
-static inline void
-vn_decode_${ty.name}_array(struct vn_cs *cs, ${ty.name} *val, uint64_t max_count)
-{
-    uint64_t count;
-    vn_decode_uint64_t(cs, &count);
-    if (count > max_count) {
-        vn_cs_set_error(cs);
-        count = max_count;
-    }
-
-    assert(sizeof(*val) == ${ty_size});
-    const size_t size = sizeof(*val) * count;
-    assert(size >= count);
-
-% if ty_size >= 4:
-    vn_decode(cs, size, val, size);
-% else:
-    vn_decode(cs, (size + 3) & ~3, val, size);
-% endif
-}
-</%def>
-
 <%def name="encode_typedef(ty)">\
 static inline void
 vn_encode_${ty.name}(struct vn_cs *cs, const ${ty.name} *val)
@@ -152,22 +112,6 @@ static inline void
 vn_decode_${ty.name}(struct vn_cs *cs, ${ty.name} *val)
 {
     vn_decode_${ty.typedef.name}(cs, val);
-}
-</%def>
-
-<%def name="encode_typedef_array(ty)">\
-static inline void
-vn_encode_${ty.name}_array(struct vn_cs *cs, const ${ty.name} *val, uint64_t count)
-{
-    vn_encode_${ty.typedef.name}_array(cs, val, count);
-}
-</%def>
-
-<%def name="decode_typedef_array(ty)">\
-static inline void
-vn_decode_${ty.name}_array(struct vn_cs *cs, ${ty.name} *val, uint64_t max_count)
-{
-    vn_decode_${ty.typedef.name}_array(cs, val, max_count);
 }
 </%def>
 
@@ -207,6 +151,23 @@ vn_decode_size_t(struct vn_cs *cs, size_t *val)
     *val = tmp;
 }
 
+/* pNext chain */
+
+static inline void
+vn_encode_end_of_chain(struct vn_cs *cs)
+{
+    vn_encode_VkStructureType(cs, &(VkStructureType){ VK_STRUCTURE_TYPE_MAX_ENUM });
+}
+
+static inline void
+vn_decode_end_of_chain(struct vn_cs *cs)
+{
+    VkStructureType tmp;
+    vn_decode_VkStructureType(cs, &tmp);
+    if (tmp != VK_STRUCTURE_TYPE_MAX_ENUM)
+        vn_cs_set_error(cs);
+}
+
 /* pointer */
 
 static inline bool
@@ -225,21 +186,24 @@ vn_decode_pointer(struct vn_cs *cs)
     return tmp > 0;
 }
 
-/* pNext chain */
+/* array size */
 
 static inline void
-vn_encode_end_of_chain(struct vn_cs *cs)
+vn_encode_array_size(struct vn_cs *cs, uint64_t size)
 {
-    vn_encode_VkStructureType(cs, &(VkStructureType){ VK_STRUCTURE_TYPE_MAX_ENUM });
+    vn_encode_uint64_t(cs, &size);
 }
 
-static inline void
-vn_decode_end_of_chain(struct vn_cs *cs)
+static inline uint64_t
+vn_decode_array_size(struct vn_cs *cs, uint64_t max_size)
 {
-    VkStructureType tmp;
-    vn_decode_VkStructureType(cs, &tmp);
-    if (tmp != VK_STRUCTURE_TYPE_MAX_ENUM)
+    uint64_t size;
+    vn_decode_uint64_t(cs, &size);
+    if (size > max_size) {
         vn_cs_set_error(cs);
+        size = 0;
+    }
+    return size;
 }
 
 /* blob */
@@ -247,13 +211,15 @@ vn_decode_end_of_chain(struct vn_cs *cs)
 static inline void
 vn_encode_blob(struct vn_cs *cs, const void *val, size_t size)
 {
-    vn_encode_uint8_t_array(cs, (const uint8_t *)val, size);
+    vn_encode_array_size(cs, size);
+    vn_encode(cs, (size + 3) & ~3, val, size);
 }
 
 static inline void
 vn_decode_blob(struct vn_cs *cs, void *val, size_t max_size)
 {
-    vn_decode_uint8_t_array(cs, (uint8_t *)val, max_size);
+    const size_t size = vn_decode_array_size(cs, max_size);
+    vn_decode(cs, (size + 3) & ~3, val, size);
 }
 
 /* string */
@@ -262,27 +228,73 @@ static inline void
 vn_encode_string(struct vn_cs *cs, const char *val)
 {
     const size_t len = strlen(val);
-
-    assert(sizeof(*val) == sizeof(uint8_t));
-    vn_encode_uint8_t_array(cs, (const uint8_t *)val, len + 1);
+    vn_encode_blob(cs, val, len + 1);
 }
 
 static inline void
-vn_encode_char_array(struct vn_cs *cs, const char *val, uint64_t count)
+vn_encode_char_array(struct vn_cs *cs, const char *val, uint32_t count)
 {
     const size_t len = strlen(val);
     assert(len < count);
-
-    assert(sizeof(*val) == sizeof(uint8_t));
-    vn_encode_uint8_t_array(cs, (const uint8_t *)val, len + 1);
+    vn_encode_blob(cs, val, len + 1);
 }
 
 static inline void
-vn_decode_char_array(struct vn_cs *cs, char *val, uint64_t max_count)
+vn_decode_char_array(struct vn_cs *cs, char *val, uint32_t max_count)
 {
-    assert(sizeof(*val) == sizeof(uint8_t));
-    vn_decode_uint8_t_array(cs, (uint8_t *)val, max_count);
+    vn_decode_blob(cs, val, max_count);
     val[max_count - 1] = '\0';
+}
+</%def>
+
+<%def name="encode_scalar_array(ty, ty_size)">\
+static inline void
+vn_encode_${ty.name}_array(struct vn_cs *cs, const ${ty.name} *val, uint32_t count)
+{
+    assert(sizeof(*val) == ${ty_size});
+    const size_t size = sizeof(*val) * count;
+    assert(size >= count);
+
+    vn_encode_array_size(cs, count);
+% if ty_size >= 4:
+    vn_encode(cs, size, val, size);
+% else:
+    vn_encode(cs, (size + 3) & ~3, val, size);
+% endif
+}
+</%def>
+
+<%def name="decode_scalar_array(ty, ty_size)">\
+static inline void
+vn_decode_${ty.name}_array(struct vn_cs *cs, ${ty.name} *val, uint32_t max_count)
+{
+    const uint32_t count = vn_decode_array_size(cs, max_count);
+
+    assert(sizeof(*val) == ${ty_size});
+    const size_t size = sizeof(*val) * count;
+    assert(size >= count);
+
+% if ty_size >= 4:
+    vn_decode(cs, size, val, size);
+% else:
+    vn_decode(cs, (size + 3) & ~3, val, size);
+% endif
+}
+</%def>
+
+<%def name="encode_typedef_array(ty)">\
+static inline void
+vn_encode_${ty.name}_array(struct vn_cs *cs, const ${ty.name} *val, uint32_t count)
+{
+    vn_encode_${ty.typedef.name}_array(cs, val, count);
+}
+</%def>
+
+<%def name="decode_typedef_array(ty)">\
+static inline void
+vn_decode_${ty.name}_array(struct vn_cs *cs, ${ty.name} *val, uint32_t max_count)
+{
+    vn_decode_${ty.typedef.name}_array(cs, val, max_count);
 }
 </%def>
 
