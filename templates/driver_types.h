@@ -51,6 +51,15 @@ ${common.decode_typedef_array(ty)}
 %   endif
 % endfor
 \
+/* enum arrays */
+
+% for ty in ENUM_TYPES:
+%   if 'need_array' in ty.attrs:
+${common.encode_enum_array(ty)}
+${common.decode_enum_array(ty)}
+%   endif
+% endfor
+\
 /* TODO remove this and all callers */
 static inline void
 vn_decode_string(struct vn_cs *cs, const char *val)

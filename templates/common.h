@@ -298,6 +298,24 @@ vn_decode_${ty.name}_array(struct vn_cs *cs, ${ty.name} *val, uint32_t max_count
 }
 </%def>
 
+<%def name="encode_enum_array(ty)">\
+static inline void
+vn_encode_${ty.name}_array(struct vn_cs *cs, const ${ty.name} *val, uint32_t count)
+{
+    assert(sizeof(*val) == sizeof(int32_t));
+    vn_encode_int32_t_array(cs, (const int32_t *)val, count);
+}
+</%def>
+
+<%def name="decode_enum_array(ty)">\
+static inline void
+vn_decode_${ty.name}_array(struct vn_cs *cs, ${ty.name} *val, uint32_t max_count)
+{
+    assert(sizeof(*val) == sizeof(int32_t));
+    vn_decode_int32_t_array(cs, (int32_t *)val, max_count);
+}
+</%def>
+
 <%def name="encode_struct(ty, variant='')">\
 <% skip_vars = 2 if '_self' in variant and ty.s_type else 0 %>\
 static inline void vn_encode_${ty.name}${variant}(struct vn_cs *cs, const ${ty.name} *val)
