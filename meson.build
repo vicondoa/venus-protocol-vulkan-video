@@ -25,74 +25,86 @@ vn_xml_files = files(
   'xml/vn.xml',
 )
 
-vn_template_files = files(
+vn_template_common_files = files(
   'templates/common.h',
-  'templates/driver.h',
-  'templates/driver_calls.h',
-  'templates/driver_capset.h',
-  'templates/driver_commands.h',
-  'templates/driver_cs.h',
-  'templates/driver_defines.h',
-  'templates/driver_handles.h',
-  'templates/driver_structs.h',
-  'templates/driver_types.h',
-  'templates/renderer.h',
-  'templates/renderer_capset.h',
-  'templates/renderer_commands.h',
-  'templates/renderer_cs.h',
-  'templates/renderer_defines.h',
-  'templates/renderer_dispatches.h',
-  'templates/renderer_handles.h',
-  'templates/renderer_structs.h',
-  'templates/renderer_types.h',
+  'templates/types.h',
+  'templates/types_array.h',
+  'templates/types_chain.h',
+  'templates/types_custom.h',
+  'templates/types_handle.h',
+  'templates/types_scalar.h',
+  'templates/types_struct.h',
+  'templates/types_union.h',
 )
 
-vn_protocol_files = [
-  vn_script_files,
-  vn_xml_files,
-  vn_template_files,
+driver_basenames = [
+  'driver.h',
+  'driver_calls.h',
+  'driver_capset.h',
+  'driver_commands.h',
+  'driver_cs.h',
+  'driver_defines.h',
+  'driver_handles.h',
+  'driver_structs.h',
+  'driver_types.h',
 ]
+
+renderer_basenames = [
+  'renderer.h',
+  'renderer_capset.h',
+  'renderer_commands.h',
+  'renderer_cs.h',
+  'renderer_defines.h',
+  'renderer_dispatches.h',
+  'renderer_handles.h',
+  'renderer_structs.h',
+  'renderer_types.h',
+]
+
+vn_template_driver_files = []
+vn_protocol_driver_outputs = []
+foreach basename : driver_basenames
+  vn_template_driver_files += files('templates/' + basename)
+  vn_protocol_driver_outputs += 'vn_protocol_' + basename
+endforeach
+
+vn_template_renderer_files = []
+vn_protocol_renderer_outputs = []
+foreach basename : renderer_basenames
+  vn_template_renderer_files += files('templates/' + basename)
+  vn_protocol_renderer_outputs += 'vn_protocol_' + basename
+endforeach
 
 vn_protocol_driver = custom_target(
   'vn_protocol_driver',
   input: ['vn_protocol.py'],
-  output: [
-    'vn_protocol_driver.h',
-    'vn_protocol_driver_calls.h',
-    'vn_protocol_driver_capset.h',
-    'vn_protocol_driver_commands.h',
-    'vn_protocol_driver_cs.h',
-    'vn_protocol_driver_defines.h',
-    'vn_protocol_driver_handles.h',
-    'vn_protocol_driver_structs.h',
-    'vn_protocol_driver_types.h',
-  ],
+  output: vn_protocol_driver_outputs,
   command: [
     py, '@INPUT0@', '--outdir', meson.current_build_dir(),
   ],
-  depend_files: [vn_protocol_files],
+  depend_files: [
+    vn_script_files,
+    vn_xml_files,
+    vn_template_common_files,
+    vn_template_driver_files,
+  ],
   build_by_default: true,
 )
 
 vn_protocol_renderer = custom_target(
   'vn_protocol_renderer',
   input: ['vn_protocol.py'],
-  output: [
-    'vn_protocol_renderer.h',
-    'vn_protocol_renderer_capset.h',
-    'vn_protocol_renderer_commands.h',
-    'vn_protocol_renderer_cs.h',
-    'vn_protocol_renderer_defines.h',
-    'vn_protocol_renderer_dispatches.h',
-    'vn_protocol_renderer_handles.h',
-    'vn_protocol_renderer_structs.h',
-    'vn_protocol_renderer_types.h',
-  ],
+  output: vn_protocol_renderer_outputs,
   command: [
     py, '@INPUT0@', '--outdir', meson.current_build_dir(),
     '--renderer',
   ],
-  depend_files: [vn_protocol_files],
+  depend_files: [
+    vn_script_files,
+    vn_xml_files,
+    vn_template_common_files,
+    vn_template_renderer_files,
+  ],
   build_by_default: true,
 )
 

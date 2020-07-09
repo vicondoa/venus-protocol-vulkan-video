@@ -3,7 +3,9 @@
  * SPDX-License-Identifier: MIT
  */
 
-<%namespace name="common" file="/common.h"/>\
+<%namespace name="types" file="/types.h"/>\
+<%namespace name="array" file="/types_array.h"/>\
+<%namespace name="custom" file="/types_custom.h"/>\
 \
 #ifndef VN_PROTOCOL_DRIVER_TYPES_H
 #define VN_PROTOCOL_DRIVER_TYPES_H
@@ -13,32 +15,32 @@
 % for ty, size in SCALAR_TYPES:
 /* ${ty.name} */
 
-${common.encode_scalar(ty, size)}
-${common.decode_scalar(ty, size)}
+${types.vn_encode_type(ty)}
+${types.vn_decode_type(ty)}
 % endfor
 \
 % for ty in TYPEDEF_TYPES:
 /* typedef ${ty.typedef.name} ${ty.name} */
 
-${common.encode_typedef(ty)}
-${common.decode_typedef(ty)}
+${types.vn_encode_type(ty)}
+${types.vn_decode_type(ty)}
 % endfor
 \
 % for ty in ENUM_TYPES:
 /* enum ${ty.name} */
 
-${common.encode_enum(ty)}
-${common.decode_enum(ty)}
+${types.vn_encode_type(ty)}
+${types.vn_decode_type(ty)}
 % endfor
 \
-${common.encode_decode_special()}
+${custom.vn_custom_types()}
 \
 /* scalar arrays */
 
 % for ty, size in SCALAR_TYPES:
 %   if 'need_array' in ty.attrs:
-${common.encode_scalar_array(ty, size)}
-${common.decode_scalar_array(ty, size)}
+${array.encode_scalar_array(ty, size)}
+${array.decode_scalar_array(ty, size)}
 %   endif
 % endfor
 \
@@ -46,8 +48,8 @@ ${common.decode_scalar_array(ty, size)}
 
 % for ty in TYPEDEF_TYPES:
 %   if 'need_array' in ty.attrs:
-${common.encode_typedef_array(ty)}
-${common.decode_typedef_array(ty)}
+${array.encode_typedef_array(ty)}
+${array.decode_typedef_array(ty)}
 %   endif
 % endfor
 \
@@ -55,8 +57,8 @@ ${common.decode_typedef_array(ty)}
 
 % for ty in ENUM_TYPES:
 %   if 'need_array' in ty.attrs:
-${common.encode_enum_array(ty)}
-${common.decode_enum_array(ty)}
+${array.encode_enum_array(ty)}
+${array.decode_enum_array(ty)}
 %   endif
 % endfor
 \

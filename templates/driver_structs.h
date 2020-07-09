@@ -3,7 +3,10 @@
  * SPDX-License-Identifier: MIT
  */
 
-<%namespace name="common" file="/common.h"/>\
+<%namespace name="types" file="/types.h"/>\
+<%namespace name="array" file="/types_array.h"/>\
+<%namespace name="chain" file="/types_chain.h"/>\
+<%namespace name="union" file="/types_union.h"/>\
 \
 #ifndef VN_PROTOCOL_DRIVER_STRUCTS_H
 #define VN_PROTOCOL_DRIVER_STRUCTS_H
@@ -26,46 +29,46 @@
 /* struct ${ty.name} */
 
 %     if 'need_encode' in ty.attrs:
-${common.encode_struct(ty)}
-${common.encode_generic_array(ty)}
+${types.vn_encode_type(ty)}
+${array.encode_generic_array(ty)}
 %     endif
 %     if 'need_decode' in ty.attrs:
-${common.decode_struct(ty)}
-${common.decode_generic_array(ty)}
+${types.vn_decode_type(ty)}
+${array.decode_generic_array(ty)}
 %     endif
 %     if 'need_inout' in ty.attrs:
-${common.encode_struct(ty, '_inout')}
-${common.encode_generic_array(ty, '_inout')}
+${types.vn_encode_type_inout(ty)}
+${array.encode_generic_array(ty, '_inout')}
 %     endif
 %   elif ty.category == ty.STRUCT and ty.s_type:
 /* struct ${ty.name} */
 
 %     if 'need_encode' in ty.attrs:
-${common.encode_struct(ty, '_self')}
-${common.encode_pnext_chain(ty)}
-${common.encode_generic_array(ty)}
+${chain.vn_encode_chain_self(ty)}
+${types.vn_encode_type(ty)}
+${array.encode_generic_array(ty)}
 %     endif
 %     if 'need_decode' in ty.attrs:
-${common.decode_struct(ty, '_self')}
-${common.decode_pnext_chain(ty)}
-${common.decode_generic_array(ty)}
+${chain.vn_decode_chain_self(ty)}
+${types.vn_decode_type(ty)}
+${array.decode_generic_array(ty)}
 %     endif
 %     if 'need_inout' in ty.attrs:
-${common.encode_struct(ty, '_self_inout')}
-${common.encode_pnext_chain(ty, '_inout')}
-${common.encode_generic_array(ty, '_inout')}
+${chain.vn_encode_chain_self(ty, '_inout')}
+${types.vn_encode_type_inout(ty)}
+${array.encode_generic_array(ty, '_inout')}
 %     endif
 %   else:
 /* union ${ty.name} */
 
 %     if 'need_encode' in ty.attrs:
-${common.encode_union_tag(ty)}
-${common.encode_union(ty, GEN.UNION_DEFAULT_TAGS[ty.name])}
-${common.encode_generic_array(ty)}
+${union.vn_encode_union_tag(ty)}
+${types.vn_encode_type(ty)}
+${array.encode_generic_array(ty)}
 %     endif
 %     if 'need_decode' in ty.attrs:
-${common.decode_union(ty)}
-${common.decode_generic_array(ty)}
+${types.vn_decode_type(ty)}
+${array.decode_generic_array(ty)}
 %     endif
 %   endif
 % endfor
@@ -77,10 +80,10 @@ ${common.decode_generic_array(ty)}
 /* union ${ty.name} */
 
 %   if 'need_encode' in ty.attrs:
-${common.encode_union_tag(ty)}
+${union.vn_encode_union_tag(ty)}
 %   endif
 %   if 'need_decode' in ty.attrs:
-${common.decode_union(ty)}
+${types.vn_decode_type(ty)}
 %   endif
 % endfor
 \
