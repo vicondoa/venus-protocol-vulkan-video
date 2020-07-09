@@ -20,6 +20,16 @@ ${define_enum(ty.bitmask)}
 typedef VkFlags ${ty.name};
 </%def>
 
+<%def name="define_command(ty)">\
+struct vn_command_${ty.name} {
+    ${ty.c_func_params(';\n    ')};
+% if ty.ret:
+
+    ${ty.ret.name} ret;
+% endif
+};
+</%def>
+
 <%def name="define_capset(wire_format_ver, vn_xml_ver, vk_xml_ver, ext_table)">\
 static inline uint32_t
 vn_capset_wire_format_version(void)

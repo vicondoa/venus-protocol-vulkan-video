@@ -3,17 +3,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-<%namespace file="/common.h" import="define_typedef, define_enum, define_bitmask"/>\
-\
-<%def name="define_command(ty)">\
-struct vn_command_${ty.name} {
-    ${ty.c_func_params(';\n    ')};
-% if ty.ret:
-
-    ${ty.ret.name} ret;
-% endif
-};
-</%def>\
+<%namespace file="/common.h" import="define_typedef, define_enum, define_bitmask, define_command"/>\
 \
 #ifndef VN_PROTOCOL_RENDERER_DEFINES_H
 #define VN_PROTOCOL_RENDERER_DEFINES_H

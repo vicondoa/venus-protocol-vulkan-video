@@ -30,6 +30,7 @@ vn_template_common_files = files(
   'templates/types.h',
   'templates/types_array.h',
   'templates/types_chain.h',
+  'templates/types_command.h',
   'templates/types_custom.h',
   'templates/types_handle.h',
   'templates/types_scalar.h',
