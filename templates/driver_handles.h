@@ -16,21 +16,8 @@
 
 ${types.vn_encode_type(ty)}
 ${types.vn_decode_type(ty)}
-%   if 'need_array' in ty.attrs:
 ${array.vn_encode_type_array(ty)}
 ${array.vn_decode_type_array(ty)}
-%   endif
-% endfor
-\
-% for ty in ND_HANDLE_TYPES:
-/* ${types.vn_type_descriptive_name(ty)} */
-
-${types.vn_encode_type(ty)}
-${types.vn_decode_type(ty)}
-%   if 'need_array' in ty.attrs:
-${array.vn_encode_type_array(ty)}
-${array.vn_decode_type_array(ty)}
-%   endif
 % endfor
 \
 #endif /* VN_PROTOCOL_DRIVER_HANDLES_H */

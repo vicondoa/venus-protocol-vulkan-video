@@ -624,27 +624,18 @@ class GenHandles(object):
         self.template = template
 
     def generate(self):
-        types = {
-            VkType.HANDLE: [],
-            VkType.ND_HANDLE: [],
-        }
-
+        types = []
         for ty in self.api.type_table.values():
             if ty.platforms:
                 continue
 
-            need = False
-            if ty.category in [ty.HANDLE, ty.ND_HANDLE]:
-                need = True
-
-            if need and ty not in types[ty.category]:
+            if ty.category in [ty.HANDLE, ty.ND_HANDLE] and ty not in types:
                 assert(self.gen.is_serializable(ty))
-                types[ty.category].append(ty)
+                types.append(ty)
 
         return self.template.render(
                 GEN=self.gen,
-                HANDLE_TYPES=types[VkType.HANDLE],
-                ND_HANDLE_TYPES=types[VkType.ND_HANDLE])
+                HANDLE_TYPES=types)
 
 class GenStructs(object):
     def __init__(self, gen, template):

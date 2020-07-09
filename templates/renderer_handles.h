@@ -16,32 +16,22 @@
 /* ${types.vn_type_descriptive_name(ty)} */
 
 ${types.vn_encode_type(ty)}
-${types.vn_decode_type(ty)}
-${handle.vn_decode_handle_lookup(ty)}
+%   if ty.category == ty.HANDLE:
 ${types.vn_decode_type_temp(ty)}
-${types.vn_replace_type_handle(ty)}
-%   if 'need_array' in ty.attrs:
-${array.vn_encode_type_array(ty)}
-${array.vn_decode_type_array(ty)}
-${array.vn_decode_handle_array_lookup(ty)}
-${array.vn_decode_type_array_temp(ty)}
-${array.vn_replace_type_array_handle(ty)}
-%   endif
-% endfor
-\
-% for ty in ND_HANDLE_TYPES:
-/* ${types.vn_type_descriptive_name(ty)} */
-
-${types.vn_encode_type(ty)}
+%   else:
 ${types.vn_decode_type(ty)}
+%   endif
 ${handle.vn_decode_handle_lookup(ty)}
 ${types.vn_replace_type_handle(ty)}
-%   if 'need_array' in ty.attrs:
+\
 ${array.vn_encode_type_array(ty)}
+%   if ty.category == ty.HANDLE:
+${array.vn_decode_type_array_temp(ty)}
+%   else:
 ${array.vn_decode_type_array(ty)}
+%   endif
 ${array.vn_decode_handle_array_lookup(ty)}
 ${array.vn_replace_type_array_handle(ty)}
-%   endif
 % endfor
 \
 #endif /* VN_PROTOCOL_RENDERER_HANDLES_H */
