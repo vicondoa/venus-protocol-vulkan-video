@@ -12,21 +12,7 @@
 
 #include "vn_protocol_renderer_defines.h"
 
-% for ty, size in SCALAR_TYPES:
-/* ${types.vn_type_descriptive_name(ty)} */
-
-${types.vn_encode_type(ty)}
-${types.vn_decode_type(ty)}
-% endfor
-\
-% for ty in TYPEDEF_TYPES:
-/* ${types.vn_type_descriptive_name(ty)} */
-
-${types.vn_encode_type(ty)}
-${types.vn_decode_type(ty)}
-% endfor
-\
-% for ty in ENUM_TYPES:
+% for ty in EARLY_SCALAR_TYPES:
 /* ${types.vn_type_descriptive_name(ty)} */
 
 ${types.vn_encode_type(ty)}
@@ -35,27 +21,13 @@ ${types.vn_decode_type(ty)}
 \
 ${custom.vn_custom_types()}
 \
-/* scalar arrays */
+% for ty in SCALAR_TYPES:
+/* ${types.vn_type_descriptive_name(ty)} */
 
-% for ty, size in SCALAR_TYPES:
-%   if 'need_array' in ty.attrs:
-${array.vn_encode_type_array(ty)}
-${array.vn_decode_type_array(ty)}
+%   if ty not in EARLY_SCALAR_TYPES:
+${types.vn_encode_type(ty)}
+${types.vn_decode_type(ty)}
 %   endif
-% endfor
-\
-/* typedef arrays */
-
-% for ty in TYPEDEF_TYPES:
-%   if 'need_array' in ty.attrs:
-${array.vn_encode_type_array(ty)}
-${array.vn_decode_type_array(ty)}
-%   endif
-% endfor
-\
-/* enum arrays */
-
-% for ty in ENUM_TYPES:
 %   if 'need_array' in ty.attrs:
 ${array.vn_encode_type_array(ty)}
 ${array.vn_decode_type_array(ty)}

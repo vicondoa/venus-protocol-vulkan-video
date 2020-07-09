@@ -591,23 +591,31 @@ class GenTypes(object):
             need = False
             if ty.category == ty.DEFINE:
                 need = ty.name in self.gen.PRIMITIVE_TYPES
+            elif ty.category == ty.BASETYPE:
+                need = True
             elif ty.category == ty.ENUM:
                 need = bool(ty.enums)
-            elif ty.category in [ty.BASETYPE]:
-                need = True
 
             if need and ty not in types[ty.category]:
                 assert(self.gen.is_serializable(ty))
                 types[ty.category].append(ty)
 
-        scalar_types = [(ty, self.gen.PRIMITIVE_TYPES[ty.name])
-                for ty in types[VkType.DEFINE]]
+        scalar_types = (types[VkType.DEFINE] + types[VkType.BASETYPE] +
+                        types[VkType.ENUM])
+
+        # some scalar types are used by custom types
+        early_scalar_names = [
+            'uint64_t',
+            'int32_t',
+            'VkStructureType'
+        ]
+        early_scalar_types = [self.api.type_table[name] for name in
+                early_scalar_names]
 
         return self.template.render(
                 GEN=self.gen,
-                SCALAR_TYPES=scalar_types,
-                TYPEDEF_TYPES=types[VkType.BASETYPE],
-                ENUM_TYPES=types[VkType.ENUM])
+                EARLY_SCALAR_TYPES=early_scalar_types,
+                SCALAR_TYPES=scalar_types)
 
 class GenHandles(object):
     def __init__(self, gen, template):
