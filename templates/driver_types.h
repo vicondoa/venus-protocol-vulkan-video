@@ -39,8 +39,8 @@ ${custom.vn_custom_types()}
 
 % for ty, size in SCALAR_TYPES:
 %   if 'need_array' in ty.attrs:
-${array.encode_scalar_array(ty, size)}
-${array.decode_scalar_array(ty, size)}
+${array.vn_encode_type_array(ty)}
+${array.vn_decode_type_array(ty)}
 %   endif
 % endfor
 \
@@ -48,8 +48,8 @@ ${array.decode_scalar_array(ty, size)}
 
 % for ty in TYPEDEF_TYPES:
 %   if 'need_array' in ty.attrs:
-${array.encode_typedef_array(ty)}
-${array.decode_typedef_array(ty)}
+${array.vn_encode_type_array(ty)}
+${array.vn_decode_type_array(ty)}
 %   endif
 % endfor
 \
@@ -57,8 +57,8 @@ ${array.decode_typedef_array(ty)}
 
 % for ty in ENUM_TYPES:
 %   if 'need_array' in ty.attrs:
-${array.encode_enum_array(ty)}
-${array.decode_enum_array(ty)}
+${array.vn_encode_type_array(ty)}
+${array.vn_decode_type_array(ty)}
 %   endif
 % endfor
 \

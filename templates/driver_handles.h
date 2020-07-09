@@ -17,8 +17,8 @@
 ${types.vn_encode_type(ty)}
 ${types.vn_decode_type(ty)}
 %   if 'need_array' in ty.attrs:
-${array.encode_generic_array(ty)}
-${array.decode_generic_array(ty)}
+${array.vn_encode_type_array(ty)}
+${array.vn_decode_type_array(ty)}
 %   endif
 % endfor
 \
@@ -28,8 +28,8 @@ ${array.decode_generic_array(ty)}
 ${types.vn_encode_type(ty)}
 ${types.vn_decode_type(ty)}
 %   if 'need_array' in ty.attrs:
-${array.encode_generic_array(ty)}
-${array.decode_generic_array(ty)}
+${array.vn_encode_type_array(ty)}
+${array.vn_decode_type_array(ty)}
 %   endif
 % endfor
 \

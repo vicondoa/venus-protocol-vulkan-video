@@ -21,11 +21,11 @@ ${handle.vn_decode_handle_lookup(ty)}
 ${types.vn_decode_type_temp(ty)}
 ${types.vn_replace_type_handle(ty)}
 %   if 'need_array' in ty.attrs:
-${array.encode_generic_array(ty)}
-${array.decode_generic_array(ty)}
-${array.decode_generic_array(ty, '_lookup')}
-${array.decode_generic_array(ty, '_temp')}
-${array.replace_generic_array_handle(ty)}
+${array.vn_encode_type_array(ty)}
+${array.vn_decode_type_array(ty)}
+${array.vn_decode_handle_array_lookup(ty)}
+${array.vn_decode_type_array_temp(ty)}
+${array.vn_replace_type_array_handle(ty)}
 %   endif
 % endfor
 \
@@ -37,10 +37,10 @@ ${types.vn_decode_type(ty)}
 ${handle.vn_decode_handle_lookup(ty)}
 ${types.vn_replace_type_handle(ty)}
 %   if 'need_array' in ty.attrs:
-${array.encode_generic_array(ty)}
-${array.decode_generic_array(ty)}
-${array.decode_generic_array(ty, '_lookup')}
-${array.replace_generic_array_handle(ty)}
+${array.vn_encode_type_array(ty)}
+${array.vn_decode_type_array(ty)}
+${array.vn_decode_handle_array_lookup(ty)}
+${array.vn_replace_type_array_handle(ty)}
 %   endif
 % endfor
 \

@@ -30,19 +30,19 @@
 
 %     if 'need_encode' in ty.attrs:
 ${types.vn_encode_type(ty)}
-${array.encode_generic_array(ty)}
+${array.vn_encode_type_array(ty)}
 %     endif
 %     if 'need_decode' in ty.attrs:
 ${types.vn_decode_type_temp(ty)}
-${array.decode_generic_array(ty, '_temp')}
+${array.vn_decode_type_array_temp(ty)}
 %     endif
 %     if 'need_inout' in ty.attrs:
 ${types.vn_decode_type_inout_temp(ty)}
-${array.decode_generic_array(ty, '_inout_temp')}
+${array.vn_decode_type_array_inout_temp(ty)}
 %     endif
 %     if 'need_decode' in ty.attrs:
 ${types.vn_replace_type_handle(ty)}
-${array.replace_generic_array_handle(ty)}
+${array.vn_replace_type_array_handle(ty)}
 %     endif
 %   elif ty.category == ty.STRUCT and ty.s_type:
 /* struct ${ty.name} */
@@ -50,22 +50,22 @@ ${array.replace_generic_array_handle(ty)}
 %     if 'need_encode' in ty.attrs:
 ${chain.vn_encode_chain_self(ty)}
 ${types.vn_encode_type(ty)}
-${array.encode_generic_array(ty)}
+${array.vn_encode_type_array(ty)}
 %     endif
 %     if 'need_decode' in ty.attrs:
 ${chain.vn_decode_chain_self(ty, '_temp')}
 ${types.vn_decode_type_temp(ty)}
-${array.decode_generic_array(ty, '_temp')}
+${array.vn_decode_type_array_temp(ty)}
 %     endif
 %     if 'need_inout' in ty.attrs:
 ${chain.vn_decode_chain_self(ty, '_inout_temp')}
 ${types.vn_decode_type_inout_temp(ty)}
-${array.decode_generic_array(ty, '_inout_temp')}
+${array.vn_decode_type_array_inout_temp(ty)}
 %     endif
 %     if 'need_decode' in ty.attrs:
 ${chain.vn_replace_chain_handle_self(ty)}
 ${types.vn_replace_type_handle(ty)}
-${array.replace_generic_array_handle(ty)}
+${array.vn_replace_type_array_handle(ty)}
 %     endif
 %   else:
 /* union ${ty.name} */
@@ -73,11 +73,11 @@ ${array.replace_generic_array_handle(ty)}
 %     if 'need_encode' in ty.attrs:
 ${union.vn_encode_union_tag(ty)}
 ${types.vn_encode_type(ty)}
-${array.encode_generic_array(ty)}
+${array.vn_encode_type_array(ty)}
 %     endif
 %     if 'need_decode' in ty.attrs:
 ${types.vn_decode_type_temp(ty)}
-${array.decode_generic_array(ty, '_temp')}
+${array.vn_decode_type_array_temp(ty)}
 %     endif
 %   endif
 % endfor

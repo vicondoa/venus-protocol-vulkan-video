@@ -30,15 +30,15 @@
 
 %     if 'need_encode' in ty.attrs:
 ${types.vn_encode_type(ty)}
-${array.encode_generic_array(ty)}
+${array.vn_encode_type_array(ty)}
 %     endif
 %     if 'need_decode' in ty.attrs:
 ${types.vn_decode_type(ty)}
-${array.decode_generic_array(ty)}
+${array.vn_decode_type_array(ty)}
 %     endif
 %     if 'need_inout' in ty.attrs:
 ${types.vn_encode_type_inout(ty)}
-${array.encode_generic_array(ty, '_inout')}
+${array.vn_encode_type_array_inout(ty)}
 %     endif
 %   elif ty.category == ty.STRUCT and ty.s_type:
 /* struct ${ty.name} */
@@ -46,17 +46,17 @@ ${array.encode_generic_array(ty, '_inout')}
 %     if 'need_encode' in ty.attrs:
 ${chain.vn_encode_chain_self(ty)}
 ${types.vn_encode_type(ty)}
-${array.encode_generic_array(ty)}
+${array.vn_encode_type_array(ty)}
 %     endif
 %     if 'need_decode' in ty.attrs:
 ${chain.vn_decode_chain_self(ty)}
 ${types.vn_decode_type(ty)}
-${array.decode_generic_array(ty)}
+${array.vn_decode_type_array(ty)}
 %     endif
 %     if 'need_inout' in ty.attrs:
 ${chain.vn_encode_chain_self(ty, '_inout')}
 ${types.vn_encode_type_inout(ty)}
-${array.encode_generic_array(ty, '_inout')}
+${array.vn_encode_type_array_inout(ty)}
 %     endif
 %   else:
 /* union ${ty.name} */
@@ -64,11 +64,11 @@ ${array.encode_generic_array(ty, '_inout')}
 %     if 'need_encode' in ty.attrs:
 ${union.vn_encode_union_tag(ty)}
 ${types.vn_encode_type(ty)}
-${array.encode_generic_array(ty)}
+${array.vn_encode_type_array(ty)}
 %     endif
 %     if 'need_decode' in ty.attrs:
 ${types.vn_decode_type(ty)}
-${array.decode_generic_array(ty)}
+${array.vn_decode_type_array(ty)}
 %     endif
 %   endif
 % endfor
