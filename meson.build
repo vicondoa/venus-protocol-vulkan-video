@@ -6,14 +6,14 @@ project(
   'c',
   version: '0.1',
   license: 'MIT',
-  meson_version: '>=0.46.0',
+  meson_version: '>=0.51.0',
   default_options: ['buildtype=debugoptimized',
                     'warning_level=2',
                     'werror=true',
                     'c_std=c11'],
 )
 
-py = import('python').find_installation('python3')
+py = import('python').find_installation('python3', modules: ['mako'])
 
 vn_script_files = files(
   'vkxml.py',
