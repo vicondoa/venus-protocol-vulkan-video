@@ -45,7 +45,7 @@
 </%def>
 
 <%def name="vn_encode_loop_array_body(ty, variant='')">\
-% if '_inout' in variant:
+% if '_partial' in variant:
     /* XXX */
 % endif
     vn_encode_array_size(cs, count);
@@ -95,26 +95,26 @@ ${vn_decode_loop_array_body(ty, '_temp')}\
 }
 </%def>
 
-<%def name="vn_encode_type_array_inout(ty)">\
+<%def name="vn_encode_type_array_partial(ty)">\
 static inline void
-vn_encode_${ty.name}_array_inout(struct vn_cs *cs, const ${ty.name} *val, uint32_t count)
+vn_encode_${ty.name}_array_partial(struct vn_cs *cs, const ${ty.name} *val, uint32_t count)
 {
 % if ty.category in [ty.DEFINE, ty.BASETYPE, ty.ENUM]:
 ${vn_encode_scalar_array_body(ty)}\
 % else:
-${vn_encode_loop_array_body(ty, '_inout')}\
+${vn_encode_loop_array_body(ty, '_partial')}\
 % endif
 }
 </%def>
 
-<%def name="vn_decode_type_array_inout_temp(ty)">\
+<%def name="vn_decode_type_array_partial_temp(ty)">\
 static inline void
-vn_decode_${ty.name}_array_inout_temp(struct vn_cs *cs, ${ty.name} *val, uint32_t max_count)
+vn_decode_${ty.name}_array_partial_temp(struct vn_cs *cs, ${ty.name} *val, uint32_t max_count)
 {
 % if ty.category in [ty.DEFINE, ty.BASETYPE, ty.ENUM]:
 ${vn_decode_scalar_array_body(ty)}\
 % else:
-${vn_decode_loop_array_body(ty, '_inout_temp')}\
+${vn_decode_loop_array_body(ty, '_partial_temp')}\
 % endif
 }
 </%def>

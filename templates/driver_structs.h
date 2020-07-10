@@ -45,12 +45,12 @@ ${types.vn_decode_type(ty)}
 ${array.vn_decode_type_array(ty)}
 %   endif
 \
-%   if 'need_inout' in ty.attrs and ty.category == ty.STRUCT:
+%   if 'need_partial' in ty.attrs and ty.category == ty.STRUCT:
 %     if ty.s_type:
-${chain.vn_encode_chain_self(ty, '_inout')}
+${chain.vn_encode_chain_self(ty, '_partial')}
 %     endif
-${types.vn_encode_type_inout(ty)}
-${array.vn_encode_type_array_inout(ty)}
+${types.vn_encode_type_partial(ty)}
+${array.vn_encode_type_array_partial(ty)}
 %   endif
 % endfor
 /*

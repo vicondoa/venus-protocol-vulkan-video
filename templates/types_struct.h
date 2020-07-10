@@ -17,11 +17,7 @@
     /* skip val->{${','.join([var.name for var in ty.variables[:skip_vars]])}} */
 % endif
 % for var in ty.variables[skip_vars:]:
-%   if '_inout' in variant:
-    ${GEN.encode_struct_inout(ty, var, 'val->')}
-%   else:
-    ${GEN.encode_struct_member(ty, var, 'val->')}
-%   endif
+    ${GEN.encode_struct_member(ty, var, 'val->', '_partial' in variant)}
 % endfor
 </%def>
 
@@ -31,11 +27,7 @@
     /* skip val->{${','.join([var.name for var in ty.variables[:skip_vars]])}} */
 % endif
 % for var in ty.variables[skip_vars:]:
-%   if '_inout' in variant:
-    ${GEN.decode_struct_inout(ty, var, 'val->', '_temp' in variant)}
-%   else:
-    ${GEN.decode_struct_member(ty, var, 'val->', '_temp' in variant)}
-%   endif
+    ${GEN.decode_struct_member(ty, var, 'val->', '_partial' in variant, '_temp' in variant)}
 % endfor
 </%def>
 

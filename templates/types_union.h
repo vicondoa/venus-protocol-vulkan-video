@@ -11,7 +11,7 @@ vn_encode_${ty.name}_tag(struct vn_cs *cs, const ${ty.name} *val, uint32_t tag)
     switch (tag) {
 % for (i, var) in enumerate(ty.variables):
     case ${i}:
-        ${GEN.encode_struct_member(ty, var, 'val->')}
+        ${GEN.encode_struct_member(ty, var, 'val->', False)}
         break;
 % endfor
     default:
@@ -37,7 +37,7 @@ vn_encode_${ty.name}_tag(struct vn_cs *cs, const ${ty.name} *val, uint32_t tag)
     switch (tag) {
 % for (i, var) in enumerate(ty.variables):
     case ${i}:
-        ${GEN.decode_struct_member(ty, var, 'val->', '_temp' in variant)}
+        ${GEN.decode_struct_member(ty, var, 'val->', False, '_temp' in variant)}
         break;
 % endfor
     default:

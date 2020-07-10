@@ -25,7 +25,7 @@ vn_decode_${ty.name}_lookup(struct vn_cs *cs, ${ty.name} *val)
 </%def>
 
 <%def name="vn_size_handle_body(ty)">\
-    return sizeof(uint64_t); /* handle */
+    return sizeof(uint64_t);
 </%def>
 
 <%def name="vn_encode_handle_body(ty)">\

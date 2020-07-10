@@ -71,10 +71,10 @@ class Gen(object):
 
             if 'var_out' in var.attrs:
                 if self.is_driver:
-                    self._set_type_attr(var.ty, 'need_inout', True)
+                    self._set_type_attr(var.ty, 'need_partial', True)
                     self._set_type_attr(var.ty, 'need_decode', True)
                 else:
-                    self._set_type_attr(var.ty, 'need_inout', True)
+                    self._set_type_attr(var.ty, 'need_partial', True)
                     self._set_type_attr(var.ty, 'need_encode', True)
 
         if ty.ret:
@@ -239,48 +239,72 @@ class Gen(object):
 
         return (func_name, loop_count)
 
-    def _encode_variable_info(self, ty, var, prefix, is_inout):
-        var_name = prefix + var.name
-        func_name, array_size = self._variable_info(ty, var, prefix)
-        if is_inout and var.ty.base.category == ty.STRUCT:
-            func_name += '_inout'
-
-        if_cond = None
-        if var.ty.is_pointer():
-            if_cond = 'vn_encode_pointer(cs, %s)' % var_name
-
-        deref_count = var.ty.indirection_depth() + var.ty.is_array() - 1
-        if var.is_string() and var.ty.indirection_depth() == 2:
-            deref_count -= 1
-
-        func_args = var_name
-        if array_size:
-            func_args += ', ' + array_size
-
+    def _variable_args(self, const_cast, deref_count, var_name, array_size):
         deref = ''
         if deref_count > 0:
             deref = '*' * deref_count
         elif deref_count < 0:
             deref = '&' * -deref_count
 
-        func_stmt = 'vn_encode_%s(cs, %s%s)' % (func_name, deref, func_args)
+        args = '%s%s%s' % (const_cast, deref, var_name)
+        if array_size:
+            args += ', ' + array_size
 
-        return (if_cond, func_stmt)
+        return args
 
-    def _decode_variable_info(self, ty, var, prefix, is_inout, alloc_storage):
+    def _encode_variable_info(self, ty, var, prefix, is_partial):
         var_name = prefix + var.name
+
+        if_cond = None
+        if var.ty.is_pointer():
+            if_cond = 'vn_encode_pointer(cs, %s)' % var_name
+
+        if not self.is_serializable(var):
+            assert(var.maybe_null())
+            return (if_cond, 'assert', 'false')
+
         func_name, array_size = self._variable_info(ty, var, prefix)
-        if is_inout:
-            if var.ty.base.category == ty.STRUCT:
-                func_name += '_inout'
-        else:
-            if var.ty.base.category in [ty.HANDLE, ty.ND_HANDLE]:
-                if not self.is_driver:
-                    func_name += '_lookup'
+
+        if is_partial and var.ty.base.category == ty.STRUCT:
+            func_name += '_partial'
+        func_name = 'vn_encode_' + func_name
+
+        deref_count = var.ty.indirection_depth() + var.ty.is_array() - 1
+        if var.is_string() and var.ty.indirection_depth() == 2:
+            deref_count -= 1
+
+        func_args = 'cs, ' + self._variable_args(
+                '', deref_count, var_name, array_size)
+
+        return (if_cond, func_name, func_args)
+
+    def _decode_variable_info(self, ty, var, prefix, is_partial, alloc_storage):
+        var_name = prefix + var.name
 
         if_cond = None
         if var.ty.is_pointer():
             if_cond = 'vn_decode_pointer(cs)'
+
+        if not self.is_serializable(var):
+            assert(var.maybe_null())
+            return (if_cond, None, 'assert', 'false')
+
+        func_name, array_size = self._variable_info(ty, var, prefix)
+
+        if is_partial and var.ty.base.category == ty.STRUCT:
+            func_name += '_partial'
+        elif not is_partial and not self.is_driver and \
+                var.ty.base.category in [ty.HANDLE, ty.ND_HANDLE]:
+            func_name += '_lookup'
+
+        if alloc_storage and var.ty.base.category in [ty.STRUCT, ty.UNION]:
+            func_name += '_temp'
+        elif var.ty.base.category == ty.HANDLE and is_partial:
+            func_name += '_temp'
+        elif var.is_string() and alloc_storage:
+            func_name += '_temp'
+
+        func_name = 'vn_decode_' + func_name
 
         alloc_stmt = None
         if alloc_storage and var.ty.is_pointer() and not var.is_string():
@@ -297,108 +321,81 @@ class Gen(object):
         if var.is_string() and var.ty.indirection_depth() == 2:
             deref_count -= 1
 
-        func_args = var_name
-        if array_size:
-            func_args += ', ' + array_size
-
-        if alloc_storage and var.ty.base.category in [ty.STRUCT, ty.UNION]:
-            func_name += '_temp'
-        elif var.ty.base.category == ty.HANDLE and is_inout:
-            func_name += '_temp'
-
-        cast = ''
+        const_cast = ''
         if var.is_string():
             if alloc_storage:
-                func_name += '_temp'
                 deref_count -= 1
-                cast = '(char %s)' % ('*' * (var.ty.indirection_depth() + 1))
+                const_cast = '(char %s)' % ('*' * (var.ty.indirection_depth() + 1))
         elif var.ty.is_const_pointer() or var.ty.is_const_array():
-            cast = '(%s *)' % var.ty.base.name
+            const_cast = '(%s *)' % var.ty.base.name
 
-        deref = ''
-        if deref_count > 0:
-            deref = '*' * deref_count
-        elif deref_count < 0:
-            deref = '&' * -deref_count
+        func_args = 'cs, ' + self._variable_args(
+                const_cast, deref_count, var_name, array_size)
 
-        func_stmt = 'vn_decode_%s(cs, %s%s%s)' % (func_name, cast, deref, func_args)
-
-        return (if_cond, alloc_stmt, func_stmt)
+        return (if_cond, alloc_stmt, func_name, func_args)
 
     def _replace_variable_handle_info(self, ty, var, prefix):
         var_name = prefix + var.name
-        func_name, array_size = self._variable_info(ty, var, prefix)
 
         if_cond = None
         if var.ty.is_pointer():
             if_cond = var_name
 
-        cast = ''
-        if var.is_string():
-            if alloc_storage:
-                func_name += '_temp'
-                deref_count -= 1
-                cast = '(char **)'
-        elif var.ty.is_const_pointer() or var.ty.is_const_array():
-            cast = '(%s *)' % var.ty.base.name
+        func_name, array_size = self._variable_info(ty, var, prefix)
+
+        func_name = 'vn_replace_%s_handle' % func_name
 
         deref_count = var.ty.indirection_depth() + var.ty.is_array() - 1
-        func_args = var_name
-        if array_size:
-            func_args += ', ' + array_size
 
-        deref = ''
-        if deref_count > 0:
-            deref = '*' * deref_count
-        elif deref_count < 0:
-            deref = '&' * -deref_count
+        const_cast = ''
+        if var.ty.is_const_pointer() or var.ty.is_const_array():
+            const_cast = '(%s *)' % var.ty.base.name
 
-        func_stmt = 'vn_replace_%s_handle(%s%s%s)' % (func_name, cast, deref, func_args)
+        func_args = self._variable_args(
+                const_cast, deref_count, var_name, array_size)
 
-        return (if_cond, func_stmt)
+        return (if_cond, func_name, func_args)
 
-    def _encode_variable(self, ty, var, prefix, is_inout):
+    def _encode_variable(self, ty, var, prefix, is_partial):
         var_name = prefix + var.name
-        if not self.is_serializable(var):
-            if var.maybe_null():
-                code = 'if (vn_encode_pointer(cs, %s))\n    ' % var_name
-                code += '    assert(false);'
+
+        partial_categories = [ty.HANDLE, ty.ND_HANDLE, ty.STRUCT]
+        if is_partial and var.ty.base.category not in partial_categories:
+            if var.ty.is_pointer():
+                return 'vn_encode_pointer(cs, %s); /* out */' % var_name
             else:
-                assert(False)
-            return code
+                return '/* skip %s */' % var_name
+
+        if_cond, func_name, func_args = \
+            self._encode_variable_info(ty, var, prefix, is_partial)
 
         code = ''
-        if_cond, func_stmt = self._encode_variable_info(ty, var, prefix, is_inout)
-
         if if_cond:
-            code += 'if (%s)\n    ' % if_cond
-            code += '    %s;' % func_stmt
-        else:
-            code += '%s;' % func_stmt
+            code += 'if (%s) ' % if_cond
+        code += '%s(%s);' % (func_name, func_args)
 
         return code
 
-    def _decode_variable(self, ty, var, prefix, is_inout, alloc_storage):
+    def _decode_variable(self, ty, var, prefix, is_partial, alloc_storage):
         var_name = prefix + var.name
-        if not self.is_serializable(var):
-            if var.maybe_null():
-                code = 'if (vn_decode_pointer(cs))\n    '
-                code += '    assert(false);\n    '
-                code += '%s = NULL;' % var_name
+
+        partial_categories = [ty.HANDLE, ty.ND_HANDLE, ty.STRUCT]
+        if is_partial and var.ty.base.category not in partial_categories:
+            if var.ty.is_pointer() and alloc_storage and not var.is_string():
+                pass
             else:
-                assert(False)
-            return code
+                return '/* skip %s%s */' % (prefix, var.name)
+
+        if_cond, alloc_stmt, func_name, func_args = \
+                self._decode_variable_info(ty, var, prefix, is_partial, alloc_storage)
 
         code = ''
         indent = ''
-        if_cond, alloc_stmt, func_stmt = \
-                self._decode_variable_info(ty, var, prefix, is_inout, alloc_storage)
-
         if if_cond:
             code += 'if (%s) {\n    ' % if_cond
             indent += '    '
 
-        if is_inout and var.ty.base.category not in [ty.STRUCT, ty.UNION, ty.HANDLE, ty.ND_HANDLE]:
+        if is_partial and var.ty.base.category not in partial_categories:
             assert(alloc_stmt)
             code += '%s%s;\n    ' % (indent, alloc_stmt)
             code += '%sif (!%s) return;' % (indent, var_name)
@@ -406,7 +403,7 @@ class Gen(object):
             if alloc_stmt:
                 code += '%s%s;\n    ' % (indent, alloc_stmt)
                 code += '%sif (!%s) return;\n    ' % (indent, var_name)
-            code += '%s%s;' % (indent, func_stmt)
+            code += '%s%s(%s);' % (indent, func_name, func_args)
 
         if if_cond:
             code += '\n    '
@@ -416,93 +413,64 @@ class Gen(object):
 
         return code
 
-    def _replace_variable_handle(self, ty, var, prefix, is_inout):
+    def _replace_variable_handle(self, ty, var, prefix, is_partial):
         var_name = prefix + var.name
 
-        if is_inout or \
-           var.ty.base.category not in [ty.HANDLE, ty.ND_HANDLE, ty.STRUCT] or \
+        partial_categories = [ty.HANDLE, ty.ND_HANDLE, ty.STRUCT]
+        if is_partial or var.ty.base.category not in partial_categories or \
            not self.is_serializable(var):
             return '/* skip %s */' % var_name
 
         code = ''
-        if_cond, func_stmt = self._replace_variable_handle_info(ty, var, prefix)
+        if_cond, func_name, func_args = \
+                self._replace_variable_handle_info(ty, var, prefix)
 
         if if_cond:
             code += 'if (%s)\n    ' % if_cond
-            code += '    %s;' % func_stmt
+            code += '    %s(%s);' % (func_name, func_args)
         else:
-            code += '%s;' % func_stmt
+            code += '%s(%s);' % (func_name, func_args)
 
         return code
 
-    def encode_struct_member(self, ty, var, prefix):
-        return self._encode_variable(ty, var, prefix, False)
+    def encode_struct_member(self, ty, var, prefix, is_partial):
+        return self._encode_variable(ty, var, prefix, is_partial)
 
-    def decode_struct_member(self, ty, var, prefix, alloc_storage):
-        return self._decode_variable(ty, var, prefix, False, alloc_storage)
+    def decode_struct_member(self, ty, var, prefix, is_partial, alloc_storage):
+        return self._decode_variable(ty, var, prefix, is_partial, alloc_storage)
 
     def replace_struct_member_handle(self, ty, var, prefix):
         return self._replace_variable_handle(ty, var, prefix, False)
 
-    def encode_struct_inout(self, ty, var, prefix):
-        if var.ty.base.category in [ty.HANDLE, ty.ND_HANDLE]:
-            return self._encode_variable(ty, var, prefix, True)
-        elif var.ty.base.category in [ty.STRUCT]:
-            return self._encode_variable(ty, var, prefix, True)
-        else:
-            return '/* skip %s%s */' % (prefix, var.name)
-
-    def decode_struct_inout(self, ty, var, prefix, alloc_storage):
-        if var.ty.base.category in [ty.HANDLE, ty.ND_HANDLE]:
-            return self._decode_variable(ty, var, prefix, True, alloc_storage)
-        elif var.ty.base.category in [ty.STRUCT]:
-            return self._decode_variable(ty, var, prefix, True, alloc_storage)
-        else:
-            return '/* skip %s%s */' % (prefix, var.name)
-
     def encode_command_arg(self, ty, var, prefix):
-        if 'var_in' in var.attrs:
-            return self._encode_variable(ty, var, prefix, False)
-        elif var.ty.base.category in [ty.HANDLE, ty.ND_HANDLE]:
-            return self._encode_variable(ty, var, prefix, True)
-        elif var.ty.base.category in [ty.STRUCT, ty.UNION]:
-            return self._encode_variable(ty, var, prefix, True)
-
-        var_name = prefix + var.name
-        if var.ty.is_pointer():
-            return 'vn_encode_pointer(cs, %s); /* out */' % var_name
-        else:
-            return '(void)%s; /* out */' % var_name
+        is_partial = 'var_in' not in var.attrs
+        return self._encode_variable(ty, var, prefix, is_partial)
 
     def decode_command_arg(self, ty, var, prefix):
-        if 'var_in' in var.attrs:
-            return self._decode_variable(ty, var, prefix, False, True)
-        else:
-            return self._decode_variable(ty, var, prefix, True, True)
+        is_partial = 'var_in' not in var.attrs
+        return self._decode_variable(ty, var, prefix, is_partial, True)
 
     def replace_command_arg_handle(self, ty, var, prefix):
-        if 'var_in' in var.attrs:
-            return self._replace_variable_handle(ty, var, prefix, False)
-        else:
-            return self._replace_variable_handle(ty, var, prefix, True)
+        is_partial = 'var_in' not in var.attrs
+        return self._replace_variable_handle(ty, var, prefix, is_partial)
 
     def encode_command_reply(self, ty, var, prefix):
         if 'var_out' not in var.attrs:
-            return '(void)%s%s; /* in */' % (prefix, var.name)
+            return '/* skip %s%s */' % (prefix, var.name)
         return self._encode_variable(ty, var, prefix, False)
 
     def decode_command_reply(self, ty, var, prefix):
         if 'var_out' not in var.attrs:
-            return '(void)%s%s; /* in */' % (prefix, var.name)
+            return '/* skip %s%s */' % (prefix, var.name)
         return self._decode_variable(ty, var, prefix, False, False)
 
     def encode_command_ret(self, ty, ret_name, prefix):
-        var = VkVariable(ret_name, ty.ret, {'var_out': True})
-        return self.encode_command_reply(ty, var, prefix)
+        var = VkVariable(ret_name, ty.ret, {})
+        return self._encode_variable(ty, var, prefix, False)
 
     def decode_command_ret(self, ty, ret_name, prefix):
-        var = VkVariable(ret_name, ty.ret, {'var_out': True})
-        return self.decode_command_reply(ty, var, prefix)
+        var = VkVariable(ret_name, ty.ret, {})
+        return self._decode_variable(ty, var, prefix, False, False)
 
 class GenCS(object):
     def __init__(self, gen, template):

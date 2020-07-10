@@ -109,29 +109,29 @@ ${chain.vn_decode_chain_temp_body(ty)}\
 }
 </%def>
 
-<%def name="vn_size_type_inout(ty)">\
+<%def name="vn_size_type_partial(ty)">\
 static inline size_t
-vn_size_${ty.name}_inout(const ${ty.name} *val)
+vn_size_${ty.name}_partial(const ${ty.name} *val)
 {
 % if ty.category in [ty.DEFINE, ty.BASETYPE, ty.ENUM]:
 ${scalar.vn_size_scalar_body(ty)}\
 % elif ty.category in [ty.HANDLE, ty.ND_HANDLE]:
 ${handle.vn_size_handle_body(ty)}\
 % elif ty.category == ty.UNION:
-${union.vn_size_union_body(ty, '_inout')}\
+${union.vn_size_union_body(ty, '_partial')}\
 % elif ty.category == ty.STRUCT and not ty.s_type:
-${struct.vn_size_struct_body(ty, '_inout')}\
+${struct.vn_size_struct_body(ty, '_partial')}\
 % elif ty.category == ty.STRUCT and ty.s_type:
-${chain.vn_size_chain_body(ty, '_inout')}\
+${chain.vn_size_chain_body(ty, '_partial')}\
 % else:
 <% assert(False) %>
 % endif
 }
 </%def>
 
-<%def name="vn_encode_type_inout(ty)">\
+<%def name="vn_encode_type_partial(ty)">\
 static inline void
-vn_encode_${ty.name}_inout(struct vn_cs *cs, const ${ty.name} *val)
+vn_encode_${ty.name}_partial(struct vn_cs *cs, const ${ty.name} *val)
 {
 % if ty.category in [ty.DEFINE, ty.BASETYPE, ty.ENUM]:
 ${scalar.vn_encode_scalar_body(ty)}\
@@ -140,18 +140,18 @@ ${handle.vn_encode_handle_body(ty)}\
 % elif ty.category == ty.UNION:
     assert(false); /* no user? */
 % elif ty.category == ty.STRUCT and not ty.s_type:
-${struct.vn_encode_struct_body(ty, '_inout')}\
+${struct.vn_encode_struct_body(ty, '_partial')}\
 % elif ty.category == ty.STRUCT and ty.s_type:
-${chain.vn_encode_chain_body(ty, '_inout')}\
+${chain.vn_encode_chain_body(ty, '_partial')}\
 % else:
 <% assert(False) %>
 % endif
 }
 </%def>
 
-<%def name="vn_decode_type_inout_temp(ty)">\
+<%def name="vn_decode_type_partial_temp(ty)">\
 static inline void
-vn_decode_${ty.name}_inout_temp(struct vn_cs *cs, ${ty.name} *val)
+vn_decode_${ty.name}_partial_temp(struct vn_cs *cs, ${ty.name} *val)
 {
 % if ty.category in [ty.DEFINE, ty.BASETYPE, ty.ENUM]:
 ${scalar.vn_decode_scalar_body(ty)}\
@@ -160,9 +160,9 @@ ${handle.vn_decode_handle_body(ty, '_temp')}\
 % elif ty.category == ty.UNION:
     assert(false); /* no user? */
 % elif ty.category == ty.STRUCT and not ty.s_type:
-${struct.vn_decode_struct_body(ty, '_inout_temp')}\
+${struct.vn_decode_struct_body(ty, '_partial_temp')}\
 % elif ty.category == ty.STRUCT and ty.s_type:
-${chain.vn_decode_chain_temp_body(ty, '_inout')}\
+${chain.vn_decode_chain_temp_body(ty, '_partial')}\
 % else:
 <% assert(False) %>
 % endif
