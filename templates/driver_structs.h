@@ -25,51 +25,32 @@
  */
 
 % for ty in STRUCT_TYPES:
-%   if ty.category == ty.STRUCT and not ty.s_type:
 /* ${types.vn_type_descriptive_name(ty)} */
 
-%     if 'need_encode' in ty.attrs:
-${types.vn_encode_type(ty)}
-${array.vn_encode_type_array(ty)}
-%     endif
-%     if 'need_decode' in ty.attrs:
-${types.vn_decode_type(ty)}
-${array.vn_decode_type_array(ty)}
-%     endif
-%     if 'need_inout' in ty.attrs:
-${types.vn_encode_type_inout(ty)}
-${array.vn_encode_type_array_inout(ty)}
-%     endif
-%   elif ty.category == ty.STRUCT and ty.s_type:
-/* ${types.vn_type_descriptive_name(ty)} */
-
-%     if 'need_encode' in ty.attrs:
-${chain.vn_encode_chain_self(ty)}
-${types.vn_encode_type(ty)}
-${array.vn_encode_type_array(ty)}
-%     endif
-%     if 'need_decode' in ty.attrs:
-${chain.vn_decode_chain_self(ty)}
-${types.vn_decode_type(ty)}
-${array.vn_decode_type_array(ty)}
-%     endif
-%     if 'need_inout' in ty.attrs:
-${chain.vn_encode_chain_self(ty, '_inout')}
-${types.vn_encode_type_inout(ty)}
-${array.vn_encode_type_array_inout(ty)}
-%     endif
-%   else:
-/* ${types.vn_type_descriptive_name(ty)} */
-
-%     if 'need_encode' in ty.attrs:
+%   if 'need_encode' in ty.attrs:
+%     if ty.category == ty.UNION:
 ${union.vn_encode_union_tag(ty)}
+%     elif ty.s_type:
+${chain.vn_encode_chain_self(ty)}
+%     endif
 ${types.vn_encode_type(ty)}
 ${array.vn_encode_type_array(ty)}
+%   endif
+\
+%   if 'need_decode' in ty.attrs:
+%     if ty.s_type:
+${chain.vn_decode_chain_self(ty)}
 %     endif
-%     if 'need_decode' in ty.attrs:
 ${types.vn_decode_type(ty)}
 ${array.vn_decode_type_array(ty)}
+%   endif
+\
+%   if 'need_inout' in ty.attrs and ty.category == ty.STRUCT:
+%     if ty.s_type:
+${chain.vn_encode_chain_self(ty, '_inout')}
 %     endif
+${types.vn_encode_type_inout(ty)}
+${array.vn_encode_type_array_inout(ty)}
 %   endif
 % endfor
 /*
