@@ -9,6 +9,26 @@
 <%namespace name="struct" file="/types_struct.h"/>
 <%namespace name="union" file="/types_union.h"/>
 
+<%def name="vn_type_descriptive_name(ty)">\
+% if ty.category == ty.DEFINE:
+${ty.name}\
+% elif ty.category == ty.BASETYPE:
+typedef ${ty.typedef.name} ${ty.name}\
+% elif ty.category == ty.ENUM:
+enum ${ty.name}\
+% elif ty.category == ty.HANDLE:
+VK_DEFINE_HANDLE(${ty.name})\
+% elif ty.category == ty.ND_HANDLE:
+VK_DEFINE_NON_DISPATCHABLE_HANDLE(${ty.name})\
+% elif ty.category == ty.UNION:
+union ${ty.name}\
+% elif ty.category == ty.STRUCT:
+struct ${ty.name}${" chain" if ty.s_type else ""}\
+% else:
+<% assert(False) %>
+% endif
+</%def>
+
 <%def name="vn_size_type(ty)">\
 static inline size_t
 vn_size_${ty.name}(const ${ty.name} *val)

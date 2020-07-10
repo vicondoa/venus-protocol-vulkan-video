@@ -13,7 +13,7 @@
 #include "vn_protocol_renderer_types.h"
 
 % for ty in HANDLE_TYPES:
-/* VK_DEFINE_HANDLE(${ty.name}) */
+/* ${types.vn_type_descriptive_name(ty)} */
 
 ${types.vn_encode_type(ty)}
 ${types.vn_decode_type(ty)}
@@ -30,7 +30,7 @@ ${array.vn_replace_type_array_handle(ty)}
 % endfor
 \
 % for ty in ND_HANDLE_TYPES:
-/* VK_DEFINE_NON_DISPATCHABLE_HANDLE(${ty.name}) */
+/* ${types.vn_type_descriptive_name(ty)} */
 
 ${types.vn_encode_type(ty)}
 ${types.vn_decode_type(ty)}

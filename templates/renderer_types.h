@@ -13,21 +13,21 @@
 #include "vn_protocol_renderer_defines.h"
 
 % for ty, size in SCALAR_TYPES:
-/* ${ty.name} */
+/* ${types.vn_type_descriptive_name(ty)} */
 
 ${types.vn_encode_type(ty)}
 ${types.vn_decode_type(ty)}
 % endfor
 \
 % for ty in TYPEDEF_TYPES:
-/* typedef ${ty.typedef.name} ${ty.name} */
+/* ${types.vn_type_descriptive_name(ty)} */
 
 ${types.vn_encode_type(ty)}
 ${types.vn_decode_type(ty)}
 % endfor
 \
 % for ty in ENUM_TYPES:
-/* enum ${ty.name} */
+/* ${types.vn_type_descriptive_name(ty)} */
 
 ${types.vn_encode_type(ty)}
 ${types.vn_decode_type(ty)}

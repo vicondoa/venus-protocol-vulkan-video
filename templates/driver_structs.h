@@ -26,7 +26,7 @@
 
 % for ty in STRUCT_TYPES:
 %   if ty.category == ty.STRUCT and not ty.s_type:
-/* struct ${ty.name} */
+/* ${types.vn_type_descriptive_name(ty)} */
 
 %     if 'need_encode' in ty.attrs:
 ${types.vn_encode_type(ty)}
@@ -41,7 +41,7 @@ ${types.vn_encode_type_inout(ty)}
 ${array.vn_encode_type_array_inout(ty)}
 %     endif
 %   elif ty.category == ty.STRUCT and ty.s_type:
-/* struct ${ty.name} */
+/* ${types.vn_type_descriptive_name(ty)} */
 
 %     if 'need_encode' in ty.attrs:
 ${chain.vn_encode_chain_self(ty)}
@@ -59,7 +59,7 @@ ${types.vn_encode_type_inout(ty)}
 ${array.vn_encode_type_array_inout(ty)}
 %     endif
 %   else:
-/* union ${ty.name} */
+/* ${types.vn_type_descriptive_name(ty)} */
 
 %     if 'need_encode' in ty.attrs:
 ${union.vn_encode_union_tag(ty)}
@@ -77,7 +77,7 @@ ${array.vn_decode_type_array(ty)}
  */
 
 % for ty in MANUAL_UNION_TYPES:
-/* union ${ty.name} */
+/* ${types.vn_type_descriptive_name(ty)} */
 
 %   if 'need_encode' in ty.attrs:
 ${union.vn_encode_union_tag(ty)}
