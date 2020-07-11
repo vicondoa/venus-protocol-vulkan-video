@@ -4,8 +4,8 @@
  */
 
 <%namespace name="types" file="/types.h"/>\
-<%namespace name="array" file="/types_array.h"/>\
 <%namespace name="custom" file="/types_custom.h"/>\
+<%namespace name="scalar" file="/types_scalar.h"/>\
 \
 #ifndef VN_PROTOCOL_DRIVER_TYPES_H
 #define VN_PROTOCOL_DRIVER_TYPES_H
@@ -29,8 +29,8 @@ ${types.vn_encode_type(ty)}
 ${types.vn_decode_type(ty)}
 %   endif
 %   if 'need_array' in ty.attrs:
-${array.vn_encode_type_array(ty)}
-${array.vn_decode_type_array(ty)}
+${scalar.vn_encode_scalar_array(ty)}
+${scalar.vn_decode_scalar_array(ty)}
 %   endif
 % endfor
 \

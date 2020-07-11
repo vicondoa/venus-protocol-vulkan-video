@@ -234,6 +234,9 @@ class VkType(object):
             assert(self.variables[0].name == 'sType')
             assert(self.variables[1].name == 'pNext')
 
+    def is_scalar(self):
+        return self.category in [self.DEFINE, self.BASETYPE, self.ENUM]
+
     def is_handle(self):
         return self.category in [self.HANDLE, self.ND_HANDLE]
 

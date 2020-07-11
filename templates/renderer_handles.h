@@ -4,7 +4,6 @@
  */
 
 <%namespace name="types" file="/types.h"/>\
-<%namespace name="array" file="/types_array.h"/>\
 <%namespace name="handle" file="/types_handle.h"/>\
 \
 #ifndef VN_PROTOCOL_RENDERER_HANDLES_H
@@ -23,15 +22,6 @@ ${types.vn_decode_type(ty)}
 %   endif
 ${handle.vn_decode_handle_lookup(ty)}
 ${types.vn_replace_type_handle(ty)}
-\
-${array.vn_encode_type_array(ty)}
-%   if ty.category == ty.HANDLE:
-${array.vn_decode_type_array_temp(ty)}
-%   else:
-${array.vn_decode_type_array(ty)}
-%   endif
-${array.vn_decode_handle_array_lookup(ty)}
-${array.vn_replace_type_array_handle(ty)}
 % endfor
 \
 #endif /* VN_PROTOCOL_RENDERER_HANDLES_H */

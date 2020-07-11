@@ -28,7 +28,6 @@ vn_xml_files = files(
 vn_template_common_files = files(
   'templates/common.h',
   'templates/types.h',
-  'templates/types_array.h',
   'templates/types_chain.h',
   'templates/types_command.h',
   'templates/types_custom.h',

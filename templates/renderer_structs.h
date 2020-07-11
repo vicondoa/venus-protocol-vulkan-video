@@ -4,7 +4,6 @@
  */
 
 <%namespace name="types" file="/types.h"/>\
-<%namespace name="array" file="/types_array.h"/>\
 <%namespace name="chain" file="/types_chain.h"/>\
 <%namespace name="union" file="/types_union.h"/>\
 \
@@ -34,7 +33,6 @@ ${union.vn_encode_union_tag(ty)}
 ${chain.vn_encode_chain_self(ty)}
 %     endif
 ${types.vn_encode_type(ty)}
-${array.vn_encode_type_array(ty)}
 %   endif
 \
 %   if 'need_decode' in ty.attrs:
@@ -42,7 +40,6 @@ ${array.vn_encode_type_array(ty)}
 ${chain.vn_decode_chain_self(ty, '_temp')}
 %     endif
 ${types.vn_decode_type_temp(ty)}
-${array.vn_decode_type_array_temp(ty)}
 %   endif
 \
 %   if 'need_partial' in ty.attrs and ty.category == ty.STRUCT:
@@ -50,7 +47,6 @@ ${array.vn_decode_type_array_temp(ty)}
 ${chain.vn_decode_chain_self(ty, '_partial_temp')}
 %     endif
 ${types.vn_decode_type_partial_temp(ty)}
-${array.vn_decode_type_array_partial_temp(ty)}
 %   endif
 \
 %   if 'need_decode' in ty.attrs and ty.category == ty.STRUCT:
@@ -58,7 +54,6 @@ ${array.vn_decode_type_array_partial_temp(ty)}
 ${chain.vn_replace_chain_handle_self(ty)}
 %     endif
 ${types.vn_replace_type_handle(ty)}
-${array.vn_replace_type_array_handle(ty)}
 %   endif
 % endfor
 /*

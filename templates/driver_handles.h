@@ -4,7 +4,6 @@
  */
 
 <%namespace name="types" file="/types.h"/>\
-<%namespace name="array" file="/types_array.h"/>\
 \
 #ifndef VN_PROTOCOL_DRIVER_HANDLES_H
 #define VN_PROTOCOL_DRIVER_HANDLES_H
@@ -16,8 +15,6 @@
 
 ${types.vn_encode_type(ty)}
 ${types.vn_decode_type(ty)}
-${array.vn_encode_type_array(ty)}
-${array.vn_decode_type_array(ty)}
 % endfor
 \
 #endif /* VN_PROTOCOL_DRIVER_HANDLES_H */
