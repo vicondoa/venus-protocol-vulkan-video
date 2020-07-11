@@ -255,13 +255,9 @@ class Gen(object):
     def _encode_variable_info(self, ty, var, prefix, is_out):
         var_name = prefix + var.name
 
-        if_cond = None
-        if var.ty.is_pointer():
-            if_cond = 'vn_encode_pointer(cs, %s)' % var_name
-
         if not self.is_serializable(var):
             assert(var.maybe_null())
-            return (if_cond, 'assert', 'false')
+            return ('assert', 'false')
 
         func_name, array_size = self._variable_info(ty, var, prefix)
 
@@ -277,18 +273,14 @@ class Gen(object):
         func_args = 'cs, ' + self._variable_args(
                 '', deref_count, var_name, array_size)
 
-        return (if_cond, func_name, func_args)
+        return (func_name, func_args)
 
     def _decode_variable_info(self, ty, var, prefix, is_out, alloc_storage):
         var_name = prefix + var.name
 
-        if_cond = None
-        if var.ty.is_pointer():
-            if_cond = 'vn_decode_pointer(cs)'
-
         if not self.is_serializable(var):
             assert(var.maybe_null())
-            return (if_cond, None, 'assert', 'false')
+            return (None, 'assert', 'false')
 
         func_name, array_size = self._variable_info(ty, var, prefix)
 
@@ -336,14 +328,10 @@ class Gen(object):
         func_args = 'cs, ' + self._variable_args(
                 const_cast, deref_count, var_name, array_size)
 
-        return (if_cond, alloc_stmt, func_name, func_args)
+        return (alloc_stmt, func_name, func_args)
 
     def _replace_variable_handle_info(self, ty, var, prefix):
         var_name = prefix + var.name
-
-        if_cond = None
-        if var.ty.is_pointer():
-            if_cond = var_name
 
         func_name, array_size = self._variable_info(ty, var, prefix)
 
@@ -358,7 +346,7 @@ class Gen(object):
         func_args = self._variable_args(
                 const_cast, deref_count, var_name, array_size)
 
-        return (if_cond, func_name, func_args)
+        return (func_name, func_args)
 
     def _encode_variable(self, ty, var, prefix, is_out):
         var_name = prefix + var.name
@@ -370,12 +358,12 @@ class Gen(object):
             else:
                 return '/* skip %s */' % var_name
 
-        if_cond, func_name, func_args = \
+        func_name, func_args = \
             self._encode_variable_info(ty, var, prefix, is_out)
 
         code = ''
-        if if_cond:
-            code += 'if (%s) ' % if_cond
+        if var.ty.is_pointer():
+            code += 'if (vn_encode_pointer(cs, %s)) ' % var_name
         code += '%s(%s);' % (func_name, func_args)
 
         return code
@@ -391,13 +379,13 @@ class Gen(object):
             else:
                 return '/* skip %s%s */' % (prefix, var.name)
 
-        if_cond, alloc_stmt, func_name, func_args = \
+        alloc_stmt, func_name, func_args = \
                 self._decode_variable_info(ty, var, prefix, is_out, alloc_storage)
 
         code = ''
         indent = ''
-        if if_cond:
-            code += 'if (%s) {\n    ' % if_cond
+        if var.ty.is_pointer():
+            code += 'if (vn_decode_pointer(cs)) {\n    '
             indent += '    '
 
         if is_out and var.ty.base.category not in partially_initialized:
@@ -410,7 +398,7 @@ class Gen(object):
                 code += '%sif (!%s) return;\n    ' % (indent, var_name)
             code += '%s%s(%s);' % (indent, func_name, func_args)
 
-        if if_cond:
+        if var.ty.is_pointer():
             code += '\n    '
             code += '} else {\n    '
             code += '    %s = NULL;\n    ' % var_name
@@ -426,13 +414,12 @@ class Gen(object):
            not self.is_serializable(var):
             return '/* skip %s */' % var_name
 
-        code = ''
-        if_cond, func_name, func_args = \
+        func_name, func_args = \
                 self._replace_variable_handle_info(ty, var, prefix)
 
         code = ''
-        if if_cond:
-            code += 'if (%s) ' % if_cond
+        if var.ty.is_pointer():
+            code += 'if (%s) ' % var_name
         code += '%s(%s);' % (func_name, func_args)
 
         return code
