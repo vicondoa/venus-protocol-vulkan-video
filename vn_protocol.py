@@ -252,7 +252,7 @@ class Gen(object):
 
         return args
 
-    def _encode_variable_info(self, ty, var, prefix, is_partial):
+    def _encode_variable_info(self, ty, var, prefix, is_out):
         var_name = prefix + var.name
 
         if_cond = None
@@ -265,11 +265,12 @@ class Gen(object):
 
         func_name, array_size = self._variable_info(ty, var, prefix)
 
-        if is_partial and var.ty.base.category == ty.STRUCT:
+        if is_out and var.ty.base.category == ty.STRUCT:
             func_name += '_partial'
         func_name = 'vn_encode_' + func_name
 
         deref_count = var.ty.indirection_depth() + var.ty.is_array() - 1
+        # make a special case for char**
         if var.is_string() and var.ty.indirection_depth() == 2:
             deref_count -= 1
 
@@ -278,7 +279,7 @@ class Gen(object):
 
         return (if_cond, func_name, func_args)
 
-    def _decode_variable_info(self, ty, var, prefix, is_partial, alloc_storage):
+    def _decode_variable_info(self, ty, var, prefix, is_out, alloc_storage):
         var_name = prefix + var.name
 
         if_cond = None
@@ -291,21 +292,6 @@ class Gen(object):
 
         func_name, array_size = self._variable_info(ty, var, prefix)
 
-        if is_partial and var.ty.base.category == ty.STRUCT:
-            func_name += '_partial'
-        elif not is_partial and not self.is_driver and \
-                var.ty.base.category in [ty.HANDLE, ty.ND_HANDLE]:
-            func_name += '_lookup'
-
-        if alloc_storage and var.ty.base.category in [ty.STRUCT, ty.UNION]:
-            func_name += '_temp'
-        elif var.ty.base.category == ty.HANDLE and is_partial:
-            func_name += '_temp'
-        elif var.is_string() and alloc_storage:
-            func_name += '_temp'
-
-        func_name = 'vn_decode_' + func_name
-
         alloc_stmt = None
         if alloc_storage and var.ty.is_pointer() and not var.is_string():
             if var.is_buffer():
@@ -317,7 +303,25 @@ class Gen(object):
 
             alloc_stmt = '%s = vn_cs_alloc_temp(cs, %s)' % (var_name, alloc_size)
 
+        # automatic handle lookup
+        if not self.is_driver:
+            if var.ty.base.is_handle() and not is_out:
+                func_name += '_lookup'
+
+        if var.ty.base.category == ty.STRUCT and is_out:
+            func_name += '_partial'
+        if alloc_storage:
+            if var.ty.base.category in [ty.STRUCT, ty.UNION]:
+                func_name += '_temp'
+            elif var.ty.base.category == ty.HANDLE and is_out:
+                func_name += '_temp'
+            elif var.is_string():
+                func_name += '_temp'
+
+        func_name = 'vn_decode_' + func_name
+
         deref_count = var.ty.indirection_depth() + var.ty.is_array() - 1
+        # make a special case for char**
         if var.is_string() and var.ty.indirection_depth() == 2:
             deref_count -= 1
 
@@ -356,18 +360,18 @@ class Gen(object):
 
         return (if_cond, func_name, func_args)
 
-    def _encode_variable(self, ty, var, prefix, is_partial):
+    def _encode_variable(self, ty, var, prefix, is_out):
         var_name = prefix + var.name
 
-        partial_categories = [ty.HANDLE, ty.ND_HANDLE, ty.STRUCT]
-        if is_partial and var.ty.base.category not in partial_categories:
+        partially_initialized = [ty.HANDLE, ty.ND_HANDLE, ty.STRUCT]
+        if is_out and var.ty.base.category not in partially_initialized:
             if var.ty.is_pointer():
                 return 'vn_encode_pointer(cs, %s); /* out */' % var_name
             else:
                 return '/* skip %s */' % var_name
 
         if_cond, func_name, func_args = \
-            self._encode_variable_info(ty, var, prefix, is_partial)
+            self._encode_variable_info(ty, var, prefix, is_out)
 
         code = ''
         if if_cond:
@@ -376,18 +380,19 @@ class Gen(object):
 
         return code
 
-    def _decode_variable(self, ty, var, prefix, is_partial, alloc_storage):
+    def _decode_variable(self, ty, var, prefix, is_out, alloc_storage):
         var_name = prefix + var.name
 
-        partial_categories = [ty.HANDLE, ty.ND_HANDLE, ty.STRUCT]
-        if is_partial and var.ty.base.category not in partial_categories:
-            if var.ty.is_pointer() and alloc_storage and not var.is_string():
+        partially_initialized = [ty.HANDLE, ty.ND_HANDLE, ty.STRUCT]
+        if is_out and var.ty.base.category not in partially_initialized:
+            if alloc_storage and var.ty.is_pointer() and not var.is_string():
+                # we still need to allocate the storage
                 pass
             else:
                 return '/* skip %s%s */' % (prefix, var.name)
 
         if_cond, alloc_stmt, func_name, func_args = \
-                self._decode_variable_info(ty, var, prefix, is_partial, alloc_storage)
+                self._decode_variable_info(ty, var, prefix, is_out, alloc_storage)
 
         code = ''
         indent = ''
@@ -395,7 +400,7 @@ class Gen(object):
             code += 'if (%s) {\n    ' % if_cond
             indent += '    '
 
-        if is_partial and var.ty.base.category not in partial_categories:
+        if is_out and var.ty.base.category not in partially_initialized:
             assert(alloc_stmt)
             code += '%s%s;\n    ' % (indent, alloc_stmt)
             code += '%sif (!%s) return;' % (indent, var_name)
@@ -413,11 +418,11 @@ class Gen(object):
 
         return code
 
-    def _replace_variable_handle(self, ty, var, prefix, is_partial):
+    def _replace_variable_handle(self, ty, var, prefix, is_out):
         var_name = prefix + var.name
 
-        partial_categories = [ty.HANDLE, ty.ND_HANDLE, ty.STRUCT]
-        if is_partial or var.ty.base.category not in partial_categories or \
+        might_contain_handle = [ty.HANDLE, ty.ND_HANDLE, ty.STRUCT]
+        if is_out or var.ty.base.category not in might_contain_handle or \
            not self.is_serializable(var):
             return '/* skip %s */' % var_name
 
@@ -425,34 +430,33 @@ class Gen(object):
         if_cond, func_name, func_args = \
                 self._replace_variable_handle_info(ty, var, prefix)
 
+        code = ''
         if if_cond:
-            code += 'if (%s)\n    ' % if_cond
-            code += '    %s(%s);' % (func_name, func_args)
-        else:
-            code += '%s(%s);' % (func_name, func_args)
+            code += 'if (%s) ' % if_cond
+        code += '%s(%s);' % (func_name, func_args)
 
         return code
 
-    def encode_struct_member(self, ty, var, prefix, is_partial):
-        return self._encode_variable(ty, var, prefix, is_partial)
+    def encode_struct_member(self, ty, var, prefix, is_out):
+        return self._encode_variable(ty, var, prefix, is_out)
 
-    def decode_struct_member(self, ty, var, prefix, is_partial, alloc_storage):
-        return self._decode_variable(ty, var, prefix, is_partial, alloc_storage)
+    def decode_struct_member(self, ty, var, prefix, is_out, alloc_storage):
+        return self._decode_variable(ty, var, prefix, is_out, alloc_storage)
 
     def replace_struct_member_handle(self, ty, var, prefix):
         return self._replace_variable_handle(ty, var, prefix, False)
 
     def encode_command_arg(self, ty, var, prefix):
-        is_partial = 'var_in' not in var.attrs
-        return self._encode_variable(ty, var, prefix, is_partial)
+        is_out = 'var_in' not in var.attrs
+        return self._encode_variable(ty, var, prefix, is_out)
 
     def decode_command_arg(self, ty, var, prefix):
-        is_partial = 'var_in' not in var.attrs
-        return self._decode_variable(ty, var, prefix, is_partial, True)
+        is_out = 'var_in' not in var.attrs
+        return self._decode_variable(ty, var, prefix, is_out, True)
 
     def replace_command_arg_handle(self, ty, var, prefix):
-        is_partial = 'var_in' not in var.attrs
-        return self._replace_variable_handle(ty, var, prefix, is_partial)
+        is_out = 'var_in' not in var.attrs
+        return self._replace_variable_handle(ty, var, prefix, is_out)
 
     def encode_command_reply(self, ty, var, prefix):
         if 'var_out' not in var.attrs:
@@ -597,7 +601,7 @@ class GenHandles(object):
             if ty.platforms:
                 continue
 
-            if ty.category in [ty.HANDLE, ty.ND_HANDLE] and ty not in types:
+            if ty.is_handle() and ty not in types:
                 assert(self.gen.is_serializable(ty))
                 types.append(ty)
 

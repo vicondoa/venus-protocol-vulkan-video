@@ -234,6 +234,9 @@ class VkType(object):
             assert(self.variables[0].name == 'sType')
             assert(self.variables[1].name == 'pNext')
 
+    def is_handle(self):
+        return self.category in [self.HANDLE, self.ND_HANDLE]
+
     def is_array(self):
         return bool(self.decor.dim) if self.decor else False
 
