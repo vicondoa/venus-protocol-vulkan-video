@@ -148,27 +148,29 @@ class VkType(object):
 
         self.attrs = {}
 
-        # for basetype/bitmask
+        # for BASETYPE/BITMASK
         self.typedef = None
 
-        # for handle
+        # for HANDLE
         self.dispatchable = None
 
-        # for enum/bitmask (optional)
+        # for ENUM (optional)
         self.enums = None
-        self.bitmask = None
 
-        # for struct/union/funcpointer/command
-        self.variables = []
+        # for BITMASK (optional)
+        self.requires = None
 
-        # for struct (optional)
+        # for STRUCT (optional)
         self.s_type = None
         self.p_next = []
 
-        # for funcpointer/command
+        # for FUNCPOINTER/COMMAND
         self.ret = None
 
-        # for derived
+        # for STRUCT/UNION/FUNCPOINTER/COMMAND
+        self.variables = []
+
+        # for DERIVED
         self.decor = None
 
     def init(self, name, category):
@@ -313,11 +315,11 @@ class VkType(object):
     def _parse_bitmask(cls, type_elem, type_table):
         assert(type_elem.find('type').text == 'VkFlags')
 
-        bitmask_ty = None
+        requires_ty = None
         if 'requires' in type_elem.attrib:
             requires = type_elem.attrib['requires']
-            bitmask_ty = cls._get_type(requires, type_table)
-        return bitmask_ty
+            requires_ty = cls._get_type(requires, type_table)
+        return requires_ty
 
     @classmethod
     def _parse_funcpointer(cls, type_elem, type_table):
@@ -453,8 +455,8 @@ class VkType(object):
         elif category == cls.BITMASK:
             to = type_elem.find('type').text
             ty.typedef = cls._get_type(to, type_table)
-            bitmask_ty = cls._parse_bitmask(type_elem, type_table)
-            ty.bitmask = bitmask_ty
+            requires_ty = cls._parse_bitmask(type_elem, type_table)
+            ty.requires = requires_ty
         elif category == cls.STRUCT:
             members, s_type, struct_extends, returnedonly = cls._parse_struct(
                     type_elem, type_table)

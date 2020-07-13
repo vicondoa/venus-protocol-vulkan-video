@@ -16,7 +16,7 @@ typedef enum ${ty.name} {
 </%def>
 
 <%def name="define_bitmask(ty)">\
-${define_enum(ty.bitmask)}
+${define_enum(ty.requires)}
 typedef VkFlags ${ty.name};
 </%def>
 
