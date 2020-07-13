@@ -14,25 +14,24 @@ class VkCVar(object):
     """
 
     class Decor(object):
-        """This is very limited."""
-        def __init__(self, qual, dim, ref_quals):
+        def __init__(self, qual, dim, bit_size, ref_quals):
             self.qual = qual
             self.dim = dim
+            self.bit_size = bit_size
             self.ref_quals = ref_quals
 
-    def __init__(self, name, type_name, type_decor, bit_size):
+    def __init__(self, name, type_name, type_decor=None):
         if not type_decor:
-            type_decor = self.Decor(None, None, [])
+            type_decor = self.Decor(None, None, None, [])
 
         self.name = name
         self.type_name = type_name
         self.type_decor = type_decor
-        self.bit_size = bit_size
 
     def to_c(self, type_only):
         c_decl = self.type_name
 
-        quals = self.type_decor.ref_quals.copy()
+        quals = self.type_decor.ref_quals[:]
         quals.append(self.type_decor.qual)
         for i, qual in enumerate(quals):
             is_first = i == 0
@@ -54,8 +53,8 @@ class VkCVar(object):
                         c_decl = c_decl + ' '
                     c_decl = c_decl + '[' + self.type_decor.dim + ']'
 
-                if self.bit_size:
-                    c_decl = c_decl + ':' + self.bit_size
+                if self.type_decor.bit_size:
+                    c_decl = c_decl + ':' + self.type_decor.bit_size
             else:
                 c_decl += '*'
 
@@ -94,9 +93,9 @@ class VkCVar(object):
 
         ref_quals = [qual.strip() for qual in quals]
         qual = ref_quals.pop()
-        type_decor = cls.Decor(qual, array_size, ref_quals)
+        type_decor = cls.Decor(qual, array_size, bit_size, ref_quals)
 
-        return cls(name, type_name, type_decor, bit_size)
+        return cls(name, type_name, type_decor)
 
 class VkVariable(object):
     def __init__(self, name, ty, attrs):
@@ -122,7 +121,7 @@ class VkVariable(object):
         return self.name == 'pNext'
 
     def to_c(self):
-        return VkCVar(self.name, self.ty.base.name, self.ty.decor, None).to_c(False)
+        return VkCVar(self.name, self.ty.base.name, self.ty.decor).to_c(False)
 
 class VkType(object):
     INCLUDE        = 0
