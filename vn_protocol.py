@@ -575,7 +575,7 @@ class GenTypes(object):
             elif ty.category == ty.BASETYPE and ty.typedef:
                 need = True
             elif ty.category == ty.ENUM:
-                need = bool(ty.enums)
+                need = bool(ty.enums.values)
 
             if need and ty not in types[ty.category]:
                 assert(self.gen.is_serializable(ty))

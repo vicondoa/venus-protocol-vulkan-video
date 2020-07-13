@@ -157,7 +157,7 @@ class VkType(object):
         # for HANDLE
         self.dispatchable = None
 
-        # for ENUM (optional)
+        # for ENUM
         self.enums = None
 
         # for BITMASK (optional)
@@ -455,6 +455,8 @@ class VkType(object):
         elif category == cls.HANDLE:
             if type_elem.find('type').text == 'VK_DEFINE_HANDLE':
                 ty.dispatchable = True
+        elif category == cls.ENUM:
+            ty.enums = VkEnums()
         elif category == cls.BITMASK:
             to = type_elem.find('type').text
             ty.typedef = cls._get_type(to, type_table)
@@ -513,9 +515,38 @@ class VkType(object):
             ty.ret = VkVariable('ret', ret_ty)
 
 class VkEnums(object):
-    def __init__(self, values, bitmask):
-        self.values = values
+    def __init__(self):
+        self.bitmask = False
+        self.values = {}
+
+    def init(self, bitmask, values):
         self.bitmask = bitmask
+        self.values = values
+
+    @staticmethod
+    def _parse_enum(enum_elem, values, ext_number=None):
+        key = enum_elem.attrib['name']
+
+        if 'alias' in enum_elem.attrib:
+            val = enum_elem.attrib['alias']
+            val = values[val]
+        elif 'value' in enum_elem.attrib:
+            val = enum_elem.attrib['value']
+        elif 'bitpos' in enum_elem.attrib:
+            bit = int(enum_elem.attrib['bitpos'])
+            val = '0x%08x' % (1 << bit)
+        elif 'offset' in enum_elem.attrib:
+            offset = int(enum_elem.attrib['offset'])
+            extnumber = int(enum_elem.attrib.get('extnumber', ext_number))
+            assert(extnumber > 0)
+            val = str(1000000000 + (extnumber - 1) * 1000 + offset)
+        else:
+            assert(False)
+
+        if 'dir' in enum_elem.attrib:
+            val = enum_elem.attrib['dir'] + val
+
+        values[key] = val
 
     @classmethod
     def parse_enums(cls, enums_elem, type_table):
@@ -523,30 +554,17 @@ class VkEnums(object):
         bitmask = enums_elem.attrib['type'] == 'bitmask'
         values = {}
         for enum_elem in enums_elem.iterfind('enum'):
-            key = enum_elem.attrib['name']
-            if 'value' in enum_elem.attrib:
-                val = enum_elem.attrib['value']
-            elif 'bitpos' in enum_elem.attrib:
-                bit = int(enum_elem.attrib['bitpos'])
-                val = '0x%08x' % (1 << bit)
-            elif 'extnumber' in enum_elem.attrib:
-                extnumber = int(enum_elem.attrib['extnumber'])
-                assert(extnumber > 0)
-                offset = int(enum_elem.attrib['offset'])
-                val = str(1000000000 + (extnumber - 1) * 1000 + offset)
-            else:
-                val = values[enum_elem.attrib['alias']]
-            values[key] = val
+            cls._parse_enum(enum_elem, values)
 
         if name in type_table:
             ty = type_table[name]
         else:
             ty = VkType()
             ty.init(name, VkType.ENUM)
+            ty.enums = VkEnums()
             type_table[name] = ty
 
-        if values:
-            ty.enums = cls(values, bitmask)
+        ty.enums.init(bitmask, values)
 
 class VkExtension(object):
     def __init__(self, api, name, number, platform, types, commands):
