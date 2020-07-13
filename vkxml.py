@@ -325,32 +325,6 @@ class VkType(object):
         return requires_ty
 
     @classmethod
-    def _parse_funcpointer(cls, type_elem, type_table):
-        c_decls = cls._get_inner_text(type_elem).splitlines()
-
-        # clean up the first line to abuse VkCVar
-        c_decl = c_decls.pop(0)
-        assert(c_decl.startswith('typedef '))
-        c_decl = c_decl[8:]
-        c_decl = c_decl.replace('(VKAPI_PTR * ', '', 1)
-        index = c_decl.rfind('(')
-        c_decl = c_decl[:index]
-
-        c_var = VkCVar.from_c(c_decl)
-        ret_ty = cls._get_type(c_var, type_table)
-        if ret_ty.name == 'void':
-            ret_ty = None
-        name = c_var.name
-
-        params = []
-        for c_decl in c_decls:
-            c_var = VkCVar.from_c(c_decl)
-            param_ty = cls._get_type(c_var, type_table)
-            params.append(VkVariable(c_var.name, param_ty))
-
-        return (name, params, ret_ty)
-
-    @classmethod
     def _parse_variable(cls, elem, type_table):
         c_decl = cls._get_inner_text(elem)
         c_var = VkCVar.from_c(c_decl)
@@ -418,6 +392,32 @@ class VkType(object):
                 'returnedonly', 'false') != 'false'
 
         return (members, s_type, struct_extends, returnedonly)
+
+    @classmethod
+    def _parse_funcpointer(cls, type_elem, type_table):
+        c_decls = cls._get_inner_text(type_elem).splitlines()
+
+        # clean up the first line to abuse VkCVar
+        c_decl = c_decls.pop(0)
+        assert(c_decl.startswith('typedef '))
+        c_decl = c_decl[8:]
+        c_decl = c_decl.replace('(VKAPI_PTR * ', '', 1)
+        index = c_decl.rfind('(')
+        c_decl = c_decl[:index]
+
+        c_var = VkCVar.from_c(c_decl)
+        ret_ty = cls._get_type(c_var, type_table)
+        if ret_ty.name == 'void':
+            ret_ty = None
+        name = c_var.name
+
+        params = []
+        for c_decl in c_decls:
+            c_var = VkCVar.from_c(c_decl)
+            param_ty = cls._get_type(c_var, type_table)
+            params.append(VkVariable(c_var.name, param_ty))
+
+        return (name, params, ret_ty)
 
     @classmethod
     def parse_type(cls, type_elem, type_table):
