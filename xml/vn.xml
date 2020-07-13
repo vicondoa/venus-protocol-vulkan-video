@@ -321,9 +321,7 @@
         <enum extnumber="144"  offset="0"   name="VN_COMMAND_TYPE_CMD_SET_SAMPLE_LOCATIONS_EXT"/>
         <enum extnumber="144"  offset="1"   name="VN_COMMAND_TYPE_GET_PHYSICAL_DEVICE_MULTISAMPLE_PROPERTIES_EXT"/>
         <enum extnumber="151"  offset="0"   name="VN_COMMAND_TYPE_CREATE_ACCELERATION_STRUCTURE_KHR"/>
-        <enum extnumber="151"  offset="1"   name="VN_COMMAND_TYPE_DESTROY_ACCELERATION_STRUCTURE_KHR"/>
         <enum extnumber="151"  offset="2"   name="VN_COMMAND_TYPE_GET_ACCELERATION_STRUCTURE_MEMORY_REQUIREMENTS_KHR"/>
-        <enum extnumber="151"  offset="3"   name="VN_COMMAND_TYPE_BIND_ACCELERATION_STRUCTURE_MEMORY_KHR"/>
         <enum extnumber="151"  offset="4"   name="VN_COMMAND_TYPE_CMD_BUILD_ACCELERATION_STRUCTURE_KHR"/>
         <enum extnumber="151"  offset="5"   name="VN_COMMAND_TYPE_CMD_BUILD_ACCELERATION_STRUCTURE_INDIRECT_KHR"/>
         <enum extnumber="151"  offset="6"   name="VN_COMMAND_TYPE_BUILD_ACCELERATION_STRUCTURE_KHR"/>
@@ -336,10 +334,8 @@
         <enum extnumber="151"  offset="13"  name="VN_COMMAND_TYPE_CMD_COPY_MEMORY_TO_ACCELERATION_STRUCTURE_KHR"/>
         <enum extnumber="151"  offset="14"  name="VN_COMMAND_TYPE_CMD_TRACE_RAYS_KHR"/>
         <enum extnumber="151"  offset="15"  name="VN_COMMAND_TYPE_CREATE_RAY_TRACING_PIPELINES_KHR"/>
-        <enum extnumber="151"  offset="16"  name="VN_COMMAND_TYPE_GET_RAY_TRACING_SHADER_GROUP_HANDLES_KHR"/>
         <enum extnumber="151"  offset="17"  name="VN_COMMAND_TYPE_GET_ACCELERATION_STRUCTURE_DEVICE_ADDRESS_KHR"/>
         <enum extnumber="151"  offset="18"  name="VN_COMMAND_TYPE_GET_RAY_TRACING_CAPTURE_REPLAY_SHADER_GROUP_HANDLES_KHR"/>
-        <enum extnumber="151"  offset="19"  name="VN_COMMAND_TYPE_CMD_WRITE_ACCELERATION_STRUCTURES_PROPERTIES_KHR"/>
         <enum extnumber="151"  offset="20"  name="VN_COMMAND_TYPE_CMD_TRACE_RAYS_INDIRECT_KHR"/>
         <enum extnumber="151"  offset="21"  name="VN_COMMAND_TYPE_GET_DEVICE_ACCELERATION_STRUCTURE_COMPATIBILITY_KHR"/>
         <enum extnumber="159"  offset="0"   name="VN_COMMAND_TYPE_GET_IMAGE_DRM_FORMAT_MODIFIER_PROPERTIES_EXT"/>

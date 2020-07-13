@@ -546,7 +546,10 @@ class VkEnums(object):
         if 'dir' in enum_elem.attrib:
             val = enum_elem.attrib['dir'] + val
 
-        values[key] = val
+        if key in values:
+            assert(values[key] == val)
+        else:
+            values[key] = val
 
     @classmethod
     def parse_enums(cls, enums_elem, type_table):
