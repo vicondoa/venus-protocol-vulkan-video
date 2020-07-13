@@ -250,6 +250,30 @@ class VkType(object):
 
         return var_list
 
+    def _add_deps(self, deps):
+        ty = self.base
+
+        if ty.typedef:
+            ty.typedef._add_deps(deps)
+        if ty.requires:
+            ty.requires._add_deps(deps)
+
+        # ty.p_next is not dependency
+
+        if ty.ret:
+            ty.ret.ty._add_deps(deps)
+        for var in ty.variables:
+            if var.ty.base != ty:
+                var.ty._add_deps(deps)
+
+        if ty not in deps:
+            deps.append(ty)
+
+    def get_dependencies(self):
+        deps = []
+        self._add_deps(deps)
+        return deps
+
     def c_func_ret(self):
         return self.ret.ty.name if self.ret else 'void'
 

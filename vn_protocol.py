@@ -42,10 +42,14 @@ class Gen(object):
         'VkPipelineExecutableStatisticValueKHR': 2,
     }
 
-    def __init__(self, api, is_driver):
-        self.api = copy.deepcopy(api)
+    def __init__(self, is_driver, api):
         self.is_driver = is_driver
+
+        self.api = copy.deepcopy(api)
         self._fixup_api()
+
+        self.supported_types = {}
+        self._init_supported_types()
 
     def _set_type_attr(self, ty, key, val):
         ty = ty.base
@@ -117,6 +121,45 @@ class Gen(object):
                             v.attrs['var_out'] = var
 
             self._set_type_needs(ty)
+
+    def _get_supported_types(self):
+        types = []
+        types.extend(self.api.venus.types)
+        types.extend(self.api.venus.commands)
+        for feat in self.api.vulkan:
+            types.extend(feat.types)
+            types.extend(feat.commands)
+        for ext in self.api.extensions:
+            types.extend(ext.types)
+            types.extend(ext.commands)
+
+        types_with_deps = set()
+        for ty in types:
+            if ty not in types_with_deps:
+                types_with_deps.update(ty.get_dependencies())
+
+        return types_with_deps
+
+    def _init_supported_types(self):
+        supported_types = self._get_supported_types()
+
+        # fix p_next
+        for ty in supported_types:
+            p_next = []
+            for tmp in ty.p_next:
+                if tmp in supported_types:
+                    p_next.append(tmp)
+            ty.p_next = p_next
+
+        # keep type_table order
+        for ty in self.api.type_table.values():
+            if ty not in supported_types:
+                continue
+
+            if ty.category not in self.supported_types:
+                self.supported_types[ty.category] = []
+            if ty not in self.supported_types[ty.category]:
+                self.supported_types[ty.category].append(ty)
 
     def is_serializable(self, var):
         if isinstance(var, VkType):
@@ -493,14 +536,10 @@ class GenDefines(object):
                 bitmask_types.append(ty)
 
         command_types = []
-        for ty in self.api.type_table.values():
-            if ty.category != ty.COMMAND:
-                continue
+        for ty in self.gen.supported_types[VkType.COMMAND]:
             if ty.platforms:
                 continue
-
-            if ty not in command_types:
-                command_types.append(ty)
+            command_types.append(ty)
 
         return self.template.render(
                 TYPEDEF_TYPES=typedef_types,
@@ -541,19 +580,22 @@ class GenTypes(object):
             VkType.ENUM: [],
         }
 
-        for ty in self.api.type_table.values():
+        for ty in self.gen.supported_types[VkType.DEFAULT]:
             if ty.platforms:
                 continue
-
-            need = False
-            if ty.category == ty.DEFAULT:
-                need = ty.name in self.gen.PRIMITIVE_TYPES
-            elif ty.category == ty.BASETYPE and ty.typedef:
-                need = True
-            elif ty.category == ty.ENUM:
-                need = bool(ty.enums.values)
-
-            if need and ty not in types[ty.category]:
+            if ty.name in self.gen.PRIMITIVE_TYPES:
+                assert(self.gen.is_serializable(ty))
+                types[ty.category].append(ty)
+        for ty in self.gen.supported_types[VkType.BASETYPE]:
+            if ty.platforms:
+                continue
+            if ty.typedef:
+                assert(self.gen.is_serializable(ty))
+                types[ty.category].append(ty)
+        for ty in self.gen.supported_types[VkType.ENUM]:
+            if ty.platforms:
+                continue
+            if ty.enums.values:
                 assert(self.gen.is_serializable(ty))
                 types[ty.category].append(ty)
 
@@ -581,18 +623,15 @@ class GenHandles(object):
         self.template = template
 
     def generate(self):
-        types = []
-        for ty in self.api.type_table.values():
+        handle_types = []
+        for ty in self.gen.supported_types[VkType.HANDLE]:
             if ty.platforms:
                 continue
-
-            if ty.is_handle() and ty not in types:
-                assert(self.gen.is_serializable(ty))
-                types.append(ty)
+            handle_types.append(ty)
 
         return self.template.render(
                 GEN=self.gen,
-                HANDLE_TYPES=types)
+                HANDLE_TYPES=handle_types)
 
 class GenStructs(object):
     def __init__(self, gen, template):
@@ -604,7 +643,9 @@ class GenStructs(object):
         self.structs = []
         self.manual_unions = []
         self.skipped = []
-        for ty in self.api.type_table.values():
+        for ty in self.gen.supported_types[VkType.STRUCT]:
+            self._add_struct(ty)
+        for ty in self.gen.supported_types[VkType.UNION]:
             self._add_struct(ty)
 
     def _add_struct(self, ty):
@@ -658,19 +699,13 @@ class GenCommands(object):
     def get_commands(self):
         types = []
         skipped = []
-        for ty in self.api.type_table.values():
-            if ty.category != ty.COMMAND:
-                continue
-            if ty in types or ty in skipped:
-                continue
-
+        for ty in self.gen.supported_types[VkType.COMMAND]:
             if self.gen.is_serializable(ty):
                 types.append(ty)
             else:
                 skipped.append(ty)
 
         return (types, skipped)
-
 
 def get_args():
     parser = argparse.ArgumentParser()
@@ -689,7 +724,7 @@ def main():
     api.parse_xml(VN_XML)
     api.validate()
 
-    gen = Gen(api, not args.renderer)
+    gen = Gen(not args.renderer, api)
 
     if gen.is_driver:
         outputs = [
