@@ -391,7 +391,7 @@ class VkType(object):
         returnedonly = type_elem.attrib.get(
                 'returnedonly', 'false') != 'false'
 
-        return (members, s_type, struct_extends, returnedonly)
+        return members, s_type, struct_extends, returnedonly
 
     @classmethod
     def _parse_funcpointer(cls, type_elem, type_table):
@@ -417,7 +417,7 @@ class VkType(object):
             param_ty = cls._get_type(c_var, type_table)
             params.append(VkVariable(c_var.name, param_ty))
 
-        return (name, params, ret_ty)
+        return name, params, ret_ty
 
     @classmethod
     def parse_type(cls, type_elem, type_table):
@@ -470,8 +470,11 @@ class VkType(object):
             if returnedonly:
                 ty.attrs['returnedonly'] = True
         elif category == cls.UNION:
-            struct = cls._parse_struct(type_elem, type_table)
-            ty.variables = struct[0]
+            members, _, _, returnedonly = cls._parse_struct(
+                    type_elem, type_table)
+            ty.variables = members
+            if returnedonly:
+                ty.attrs['returnedonly'] = True
         elif category == cls.FUNCPOINTER:
             pfn, params, ret_ty = cls._parse_funcpointer(type_elem,
                     type_table)
