@@ -229,15 +229,12 @@ class VkType(object):
         else:
             assert(self.base == self)
             assert(self.decor is None)
-            if self.category == self.BASETYPE:
+            if self.category == self.BASETYPE and self.typedef:
                 assert(self.typedef == self.typedef.base)
 
         if self.s_type:
             assert(self.variables[0].name == 'sType')
             assert(self.variables[1].name == 'pNext')
-
-    def is_scalar(self):
-        return self.category in [self.DEFINE, self.BASETYPE, self.ENUM]
 
     def is_handle(self):
         return self.category == self.HANDLE
@@ -471,9 +468,6 @@ class VkType(object):
             'union':       cls.UNION,
             'funcpointer': cls.FUNCPOINTER,
         }[category]
-        if category == cls.BASETYPE:
-            if type_elem.find('type') is None:
-                category = cls.DEFINE
 
         if 'name' in type_elem.attrib:
             name = type_elem.attrib['name']
@@ -486,8 +480,9 @@ class VkType(object):
         if category == cls.DEFINE:
             ty.attrs['define'] = cls._get_inner_text(type_elem)
         elif category == cls.BASETYPE:
-            to = type_elem.find('type').text
-            ty.typedef = cls._get_type(to, type_table)
+            typedef_elem = type_elem.find('type')
+            if typedef_elem is not None:
+                ty.typedef = cls._get_type(typedef_elem.text, type_table)
         elif category == cls.HANDLE:
             if type_elem.find('type').text == 'VK_DEFINE_HANDLE':
                 ty.dispatchable = True

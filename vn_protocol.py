@@ -143,6 +143,8 @@ class Gen(object):
 
         ty = var.ty.base
         if ty.category == ty.BASETYPE:
+            if not ty.typedef:
+                return False
             ty = ty.typedef
 
         # ignore platform extensions for now
@@ -231,7 +233,7 @@ class Gen(object):
 
     def _variable_unroll(self, ty, var, func_name, loop_type):
         # unroll loops for scalar arrays to get padding right
-        if loop_type and var.ty.base.is_scalar():
+        if loop_type and var.ty.base.category in [ty.DEFINE, ty.BASETYPE, ty.ENUM]:
             loop_type = None
             if not var.is_buffer():
                 func_name += '_array'
@@ -507,7 +509,7 @@ class GenDefines(object):
             if ext.api != 'venus':
                 continue
             for ty in ext.types:
-                if ty.category == ty.BASETYPE:
+                if ty.category == ty.BASETYPE and ty.typedef:
                     typedef_types.append(ty)
                 elif ty.category == ty.ENUM:
                     enum_types.append(ty)
@@ -570,7 +572,7 @@ class GenTypes(object):
             need = False
             if ty.category == ty.DEFINE:
                 need = ty.name in self.gen.PRIMITIVE_TYPES
-            elif ty.category == ty.BASETYPE:
+            elif ty.category == ty.BASETYPE and ty.typedef:
                 need = True
             elif ty.category == ty.ENUM:
                 need = bool(ty.enums)
