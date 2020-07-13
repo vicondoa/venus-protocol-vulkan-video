@@ -92,13 +92,7 @@ class Gen(object):
         c_type_enums = self.api.type_table['VnCommandType'].enums
 
         for ty in self.api.type_table.values():
-            if ty.category == ty.STRUCT:
-                if ty.name == 'VkPhysicalDeviceProperties':
-                    # work around a vk.xml bug
-                    real_ty = self.api.type_table['VkPhysicalDeviceProperties2']
-                    real_ty.p_next.extend(ty.p_next)
-                    ty.p_next = []
-            elif ty.category == ty.COMMAND:
+            if ty.category == ty.COMMAND:
                 c_type = 'VN_COMMAND_TYPE_' + self.api.uppercase_name(ty)
                 assert(c_type in c_type_enums.values)
                 ty.attrs['c_type'] = c_type
@@ -123,21 +117,6 @@ class Gen(object):
                             v.attrs['var_out'] = var
 
             self._set_type_needs(ty)
-
-    def _command_type(self, cmd):
-        words = []
-        begin = len('vk')
-        end = begin + 1
-        while end < len(cmd.name):
-            if cmd.name[end].isupper():
-                words.append(cmd.name[begin:end].upper())
-                begin = end
-                if cmd.name[begin:] in self.api.tags:
-                    break
-            end += 1
-        words.append(cmd.name[begin:].upper())
-
-        return 'VN_COMMAND_TYPE_' + '_'.join(words)
 
     def is_serializable(self, var):
         if isinstance(var, VkType):
