@@ -504,17 +504,14 @@ class GenDefines(object):
         typedef_types = []
         enum_types = []
         bitmask_types = []
-        for ext in self.api.extensions:
-            # venus only
-            if ext.api != 'venus':
-                continue
-            for ty in ext.types:
-                if ty.category == ty.BASETYPE and ty.typedef:
-                    typedef_types.append(ty)
-                elif ty.category == ty.ENUM:
-                    enum_types.append(ty)
-                elif ty.category == ty.BITMASK:
-                    bitmask_types.append(ty)
+        # venus only
+        for ty in self.api.venus.types:
+            if ty.category == ty.BASETYPE and ty.typedef:
+                typedef_types.append(ty)
+            elif ty.category == ty.ENUM:
+                enum_types.append(ty)
+            elif ty.category == ty.BITMASK:
+                bitmask_types.append(ty)
 
         command_types = []
         for ty in self.api.type_table.values():

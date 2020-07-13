@@ -573,6 +573,13 @@ class VkEnums(object):
         ty.enums.init(bitmask, values)
 
 class VkFeature(object):
+    def __init__(self, api, name, number, types, commands):
+        self.api = api
+        self.name = name
+        self.number = number
+        self.types = types
+        self.commands = commands
+
     @staticmethod
     def parse_require(require_elem, type_table, ext_number=None):
         types = []
@@ -593,29 +600,36 @@ class VkFeature(object):
 
         return types, commands
 
+    @classmethod
+    def parse_feature(cls, feature_elem, type_table):
+        api = feature_elem.attrib['api']
+        name = feature_elem.attrib['name']
+        number = feature_elem.attrib['number']
+
+        types = []
+        commands = []
+        for require_elem in feature_elem.iterfind('require'):
+            require_types, require_commands = \
+                    cls.parse_require(require_elem, type_table)
+            for ty in require_types:
+                if ty not in types:
+                    types.append(ty)
+            for ty in require_commands:
+                if ty not in commands:
+                    commands.append(ty)
+
+        return cls(api, name, number, types, commands)
+
 class VkExtension(object):
-    def __init__(self, api, name, number, platform, types, commands):
-        self.api = api
+    def __init__(self, name, number, platform, types, commands):
         self.name = name
-
-        if number.isdigit():
-            self.number = int(number)
-        else:
-            self.number = 0
-
+        self.number = int(number)
         self.platform = platform
         self.types = types
         self.commands = commands
 
-    def is_venus(self):
-        return self.api == 'venus' and self.number == 0
-
-    def is_core(self):
-        return self.api == 'vulkan' and self.number == 0
-
     @classmethod
     def parse_extension(cls, elem, type_table):
-        api = elem.attrib.get('api', 'vulkan')
         name = elem.attrib['name']
         number = elem.attrib['number']
         platform = elem.attrib.get('platform')
@@ -636,13 +650,15 @@ class VkExtension(object):
                 if ty not in commands:
                     commands.append(ty)
 
-        return cls(api, name, number, platform, types, commands)
+        return cls(name, number, platform, types, commands)
 
 class VkApi(object):
     def __init__(self):
         self.platform_guards = {}
         self.tags = []
         self.type_table = {}
+        self.venus = None
+        self.vulkan = []
         self.extensions = []
         self.vk_xml_version = None
         self.vn_xml_version = None
@@ -684,8 +700,6 @@ class VkApi(object):
         venus_id_next = 2 * 1000 * 1000 * 1000
         # add extension commands first
         for ext in self.extensions:
-            if ext.is_venus() or ext.is_core():
-                continue
             for offset, cmd in enumerate(ext.commands):
                 key = 'VN_COMMAND_TYPE_' + self.uppercase_name(cmd)
                 val = ext_command_id_base + (ext.number - 1) * 1000 + offset
@@ -695,23 +709,16 @@ class VkApi(object):
                     command_ids[key] = [val]
 
         # add venus commands
-        for ext in self.extensions:
-            if not ext.is_venus():
-                continue
-
-            for cmd in ext.commands:
-                key = 'VN_COMMAND_TYPE_' + self.uppercase_name(cmd)
-                val = venus_id_next
-                if key not in command_ids:
-                    command_ids[key] = [val]
-                    venus_id_next += 1
+        for cmd in self.venus.commands:
+            key = 'VN_COMMAND_TYPE_' + self.uppercase_name(cmd)
+            val = venus_id_next
+            if key not in command_ids:
+                command_ids[key] = [val]
+                venus_id_next += 1
 
         # add core commands
-        for ext in self.extensions:
-            if not ext.is_core():
-                continue
-
-            for cmd in ext.commands:
+        for feat in self.vulkan:
+            for cmd in feat.commands:
                 key = 'VN_COMMAND_TYPE_' + self.uppercase_name(cmd)
                 val = core_id_next
                 if key not in command_ids:
@@ -759,8 +766,12 @@ class VkApi(object):
             VkType.parse_command(command_elem, self.type_table)
 
     def _parse_feature(self, feature_elem):
-        self.extensions.append(VkExtension.parse_extension(feature_elem,
-            self.type_table))
+        feat = VkFeature.parse_feature(feature_elem, self.type_table)
+        if feat.api == 'venus':
+            assert(not self.venus)
+            self.venus = feat
+        else:
+            self.vulkan.append(feat)
 
     def _parse_extensions(self, extensions_elem):
         for extension_elem in extensions_elem.iterfind('extension'):
