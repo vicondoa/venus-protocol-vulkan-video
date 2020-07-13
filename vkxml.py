@@ -523,6 +523,9 @@ class VkEnums(object):
         self.bitmask = bitmask
         self.values = values
 
+    def extend_enum(self, enum_elem, ext_number):
+        self._parse_enum(enum_elem, self.values, ext_number)
+
     @staticmethod
     def _parse_enum(enum_elem, values, ext_number=None):
         key = enum_elem.attrib['name']
@@ -569,6 +572,27 @@ class VkEnums(object):
 
         ty.enums.init(bitmask, values)
 
+class VkFeature(object):
+    @staticmethod
+    def parse_require(require_elem, type_table, ext_number=None):
+        types = []
+        commands = []
+        for child in require_elem:
+            if child.tag == 'enum':
+                if 'extends' not in child.attrib:
+                    continue
+                ty = type_table[child.attrib['extends']]
+                ty.enums.extend_enum(child, ext_number)
+            elif child.tag in ['type', 'command']:
+                name = child.attrib['name']
+                ty = type_table[name]
+                if ty.category == ty.COMMAND:
+                    commands.append(ty)
+                else:
+                    types.append(ty)
+
+        return types, commands
+
 class VkExtension(object):
     def __init__(self, api, name, number, platform, types, commands):
         self.api = api
@@ -599,21 +623,18 @@ class VkExtension(object):
         types = []
         commands = []
         for require_elem in elem.iterfind('require'):
-            for child in require_elem:
-                if child.tag == 'command':
-                    command_name = child.attrib['name']
-                    command_ty = type_table[command_name]
-                    if platform:
-                        command_ty.platforms.append(platform)
-                    if command_ty not in commands:
-                        commands.append(command_ty)
-                elif child.tag == 'type':
-                    type_name = child.attrib['name']
-                    type_ty = type_table[type_name]
-                    if platform:
-                        type_ty.platforms.append(platform)
-                    if type_ty not in types:
-                        types.append(type_ty)
+            require_types, require_commands = \
+                    VkFeature.parse_require(require_elem, type_table, number)
+            for ty in require_types:
+                if platform:
+                    ty.platforms.append(platform)
+                if ty not in types:
+                    types.append(ty)
+            for ty in require_commands:
+                if platform:
+                    ty.platforms.append(platform)
+                if ty not in commands:
+                    commands.append(ty)
 
         return cls(api, name, number, platform, types, commands)
 
