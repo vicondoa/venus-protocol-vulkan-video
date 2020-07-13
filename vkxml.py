@@ -148,6 +148,9 @@ class VkType(object):
 
         self.attrs = {}
 
+        # for DEFINE
+        self.define = None
+
         # for BASETYPE/BITMASK
         self.typedef = None
 
@@ -444,7 +447,7 @@ class VkType(object):
         ty.init(name, category)
 
         if category == cls.DEFINE:
-            ty.attrs['define'] = cls._get_inner_text(type_elem)
+            ty.define = cls._get_inner_text(type_elem)
         elif category == cls.BASETYPE:
             typedef_elem = type_elem.find('type')
             if typedef_elem is not None:
@@ -720,11 +723,11 @@ class VkApi(object):
             self.extensions.append(ext)
 
     def _get_xml_version(self, ver_ty, complete_ver_ty):
-        ver = ver_ty.attrs['define']
+        ver = ver_ty.define
         ver = ver[(ver.rindex(' ') + 1):]
         assert(ver.isdigit())
 
-        complete_ver = complete_ver_ty.attrs['define']
+        complete_ver = complete_ver_ty.define
         complete_ver = complete_ver[(complete_ver.rindex('(') + 1):-1]
         complete_ver = complete_ver.replace(ver_ty.name, ver)
 
