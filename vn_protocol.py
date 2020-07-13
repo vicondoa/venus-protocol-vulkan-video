@@ -139,7 +139,7 @@ class Gen(object):
 
     def is_serializable(self, var):
         if isinstance(var, VkType):
-            return self.is_serializable(VkVariable('', var, {}))
+            return self.is_serializable(VkVariable('', var))
 
         ty = var.ty.base
         if ty.category == ty.BASETYPE:
@@ -478,11 +478,11 @@ class Gen(object):
         return self._decode_variable(ty, var, prefix, False, False)
 
     def encode_command_ret(self, ty, ret_name, prefix):
-        var = VkVariable(ret_name, ty.ret, {})
+        var = VkVariable(ret_name, ty.ret)
         return self._encode_variable(ty, var, prefix, False)
 
     def decode_command_ret(self, ty, ret_name, prefix):
-        var = VkVariable(ret_name, ty.ret, {})
+        var = VkVariable(ret_name, ty.ret)
         return self._decode_variable(ty, var, prefix, False, False)
 
 class GenCS(object):

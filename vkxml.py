@@ -98,7 +98,7 @@ class VkCVar(object):
         return cls(name, type_name, type_decor)
 
 class VkVariable(object):
-    def __init__(self, name, ty, attrs):
+    def __init__(self, name, ty, attrs={}):
         self.name = name
         self.ty = ty
         self.attrs = attrs
@@ -341,7 +341,7 @@ class VkType(object):
         for c_decl in c_decls:
             c_var = VkCVar.from_c(c_decl)
             param_ty = cls._get_type(c_var, type_table)
-            params.append(VkVariable(c_var.name, param_ty, {}))
+            params.append(VkVariable(c_var.name, param_ty))
 
         return (name, params, ret_ty)
 
