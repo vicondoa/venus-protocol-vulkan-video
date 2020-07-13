@@ -7,7 +7,7 @@
 static inline void
 vn_encode_${ty.name}_array(struct vn_cs *cs, const ${ty.name} *val, uint32_t count)
 {
-% if ty.category == ty.DEFINE:
+% if ty.category == ty.DEFAULT:
 <% ty_size = GEN.PRIMITIVE_TYPES[ty.name] %>\
     assert(sizeof(*val) == ${ty_size});
     const size_t size = sizeof(*val) * count;
@@ -33,7 +33,7 @@ vn_encode_${ty.name}_array(struct vn_cs *cs, const ${ty.name} *val, uint32_t cou
 static inline void
 vn_decode_${ty.name}_array(struct vn_cs *cs, ${ty.name} *val, uint32_t max_count)
 {
-% if ty.category == ty.DEFINE:
+% if ty.category == ty.DEFAULT:
 <% ty_size = GEN.PRIMITIVE_TYPES[ty.name] %>\
     const uint32_t count = vn_decode_array_size(cs, max_count);
 
@@ -57,7 +57,7 @@ vn_decode_${ty.name}_array(struct vn_cs *cs, ${ty.name} *val, uint32_t max_count
 </%def>
 
 <%def name="vn_size_scalar_body(ty)">\
-% if ty.category == ty.DEFINE:
+% if ty.category == ty.DEFAULT:
 <% ty_size = GEN.PRIMITIVE_TYPES[ty.name] %>\
     assert(sizeof(*val) == ${ty_size});
     return ${ty_size if ty_size >= 4 else 4};
@@ -70,7 +70,7 @@ vn_decode_${ty.name}_array(struct vn_cs *cs, ${ty.name} *val, uint32_t max_count
 </%def>
 
 <%def name="vn_encode_scalar_body(ty)">\
-% if ty.category == ty.DEFINE:
+% if ty.category == ty.DEFAULT:
 <% ty_size = GEN.PRIMITIVE_TYPES[ty.name] %>\
 %   if ty_size >= 4:
     vn_encode(cs, ${ty_size}, val, sizeof(*val));
@@ -85,7 +85,7 @@ vn_decode_${ty.name}_array(struct vn_cs *cs, ${ty.name} *val, uint32_t max_count
 </%def>
 
 <%def name="vn_decode_scalar_body(ty)">\
-% if ty.category == ty.DEFINE:
+% if ty.category == ty.DEFAULT:
 <% ty_size = GEN.PRIMITIVE_TYPES[ty.name] %>\
 %   if ty_size >= 4:
     vn_decode(cs, ${ty_size}, val, sizeof(*val));

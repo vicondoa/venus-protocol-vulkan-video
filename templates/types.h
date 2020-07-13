@@ -10,7 +10,7 @@
 <%namespace name="union" file="/types_union.h"/>
 
 <%def name="vn_type_descriptive_name(ty)">\
-% if ty.category == ty.DEFINE:
+% if ty.category == ty.DEFAULT:
 ${ty.name}\
 % elif ty.category == ty.BASETYPE:
 typedef ${ty.typedef.name} ${ty.name}\
@@ -31,7 +31,7 @@ struct ${ty.name}${" chain" if ty.s_type else ""}\
 static inline size_t
 vn_size_${ty.name}(const ${ty.name} *val)
 {
-% if ty.category in [ty.DEFINE, ty.BASETYPE, ty.ENUM]:
+% if ty.category in [ty.DEFAULT, ty.BASETYPE, ty.ENUM]:
 ${scalar.vn_size_scalar_body(ty)}\
 % elif ty.category == ty.HANDLE:
 ${handle.vn_size_handle_body(ty)}\
@@ -51,7 +51,7 @@ ${chain.vn_size_chain_body(ty)}\
 static inline void
 vn_encode_${ty.name}(struct vn_cs *cs, const ${ty.name} *val)
 {
-% if ty.category in [ty.DEFINE, ty.BASETYPE, ty.ENUM]:
+% if ty.category in [ty.DEFAULT, ty.BASETYPE, ty.ENUM]:
 ${scalar.vn_encode_scalar_body(ty)}\
 % elif ty.category == ty.HANDLE:
 ${handle.vn_encode_handle_body(ty)}\
@@ -71,7 +71,7 @@ ${chain.vn_encode_chain_body(ty)}\
 static inline void
 vn_decode_${ty.name}(struct vn_cs *cs, ${ty.name} *val)
 {
-% if ty.category in [ty.DEFINE, ty.BASETYPE, ty.ENUM]:
+% if ty.category in [ty.DEFAULT, ty.BASETYPE, ty.ENUM]:
 ${scalar.vn_decode_scalar_body(ty)}\
 % elif ty.category == ty.HANDLE:
 ${handle.vn_decode_handle_body(ty)}\
@@ -91,7 +91,7 @@ ${chain.vn_decode_chain_body(ty)}\
 static inline void
 vn_decode_${ty.name}_temp(struct vn_cs *cs, ${ty.name} *val)
 {
-% if ty.category in [ty.DEFINE, ty.BASETYPE, ty.ENUM]:
+% if ty.category in [ty.DEFAULT, ty.BASETYPE, ty.ENUM]:
 ${scalar.vn_decode_scalar_body(ty)}\
 % elif ty.category == ty.HANDLE and not GEN.is_driver:
 ${handle.vn_decode_handle_body(ty, '_temp')}\
@@ -111,7 +111,7 @@ ${chain.vn_decode_chain_temp_body(ty)}\
 static inline size_t
 vn_size_${ty.name}_partial(const ${ty.name} *val)
 {
-% if ty.category in [ty.DEFINE, ty.BASETYPE, ty.ENUM]:
+% if ty.category in [ty.DEFAULT, ty.BASETYPE, ty.ENUM]:
 ${scalar.vn_size_scalar_body(ty)}\
 % elif ty.category == ty.HANDLE:
 ${handle.vn_size_handle_body(ty)}\
@@ -131,7 +131,7 @@ ${chain.vn_size_chain_body(ty, '_partial')}\
 static inline void
 vn_encode_${ty.name}_partial(struct vn_cs *cs, const ${ty.name} *val)
 {
-% if ty.category in [ty.DEFINE, ty.BASETYPE, ty.ENUM]:
+% if ty.category in [ty.DEFAULT, ty.BASETYPE, ty.ENUM]:
 ${scalar.vn_encode_scalar_body(ty)}\
 % elif ty.category == ty.HANDLE:
 ${handle.vn_encode_handle_body(ty)}\
@@ -151,7 +151,7 @@ ${chain.vn_encode_chain_body(ty, '_partial')}\
 static inline void
 vn_decode_${ty.name}_partial_temp(struct vn_cs *cs, ${ty.name} *val)
 {
-% if ty.category in [ty.DEFINE, ty.BASETYPE, ty.ENUM]:
+% if ty.category in [ty.DEFAULT, ty.BASETYPE, ty.ENUM]:
 ${scalar.vn_decode_scalar_body(ty)}\
 % elif ty.category == ty.HANDLE:
 ${handle.vn_decode_handle_body(ty, '_temp')}\

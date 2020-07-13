@@ -158,7 +158,7 @@ class Gen(object):
                            ty.BITMASK,
                            ty.ENUM]:
             return True
-        elif ty.category == ty.DEFINE:
+        elif ty.category == ty.DEFAULT:
             if ty.name in self.PRIMITIVE_TYPES:
                 return True
             elif ty.name in ['char', 'size_t']:
@@ -233,7 +233,7 @@ class Gen(object):
 
     def _variable_unroll(self, ty, var, func_name, loop_type):
         # unroll loops for scalar arrays to get padding right
-        if loop_type and var.ty.base.category in [ty.DEFINE, ty.BASETYPE, ty.ENUM]:
+        if loop_type and var.ty.base.category in [ty.DEFAULT, ty.BASETYPE, ty.ENUM]:
             loop_type = None
             if not var.is_buffer():
                 func_name += '_array'
@@ -560,7 +560,7 @@ class GenTypes(object):
 
     def generate(self):
         types = {
-            VkType.DEFINE: [],
+            VkType.DEFAULT: [],
             VkType.BASETYPE: [],
             VkType.ENUM: [],
         }
@@ -570,7 +570,7 @@ class GenTypes(object):
                 continue
 
             need = False
-            if ty.category == ty.DEFINE:
+            if ty.category == ty.DEFAULT:
                 need = ty.name in self.gen.PRIMITIVE_TYPES
             elif ty.category == ty.BASETYPE and ty.typedef:
                 need = True
@@ -581,7 +581,7 @@ class GenTypes(object):
                 assert(self.gen.is_serializable(ty))
                 types[ty.category].append(ty)
 
-        scalar_types = (types[VkType.DEFINE] + types[VkType.BASETYPE] +
+        scalar_types = (types[VkType.DEFAULT] + types[VkType.BASETYPE] +
                         types[VkType.ENUM])
 
         # some scalar types are used by custom types

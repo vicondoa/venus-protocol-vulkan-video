@@ -163,8 +163,9 @@ class VkEnums(object):
 class VkType(object):
     INCLUDE        = 0
     DEFINE         = 1
-    BASETYPE       = 2
-    HANDLE         = 3
+    DEFAULT        = 2
+    BASETYPE       = 3
+    HANDLE         = 4
     ENUM           = 5
     BITMASK        = 6
     STRUCT         = 7
@@ -456,10 +457,10 @@ class VkType(object):
             cls._parse_alias(type_elem, type_table)
             return
 
-        category = type_elem.attrib.get('category', 'define')
         category = {
             'include':     cls.INCLUDE,
             'define':      cls.DEFINE,
+            None:          cls.DEFAULT,
             'basetype':    cls.BASETYPE,
             'handle':      cls.HANDLE,
             'enum':        cls.ENUM,
@@ -467,7 +468,7 @@ class VkType(object):
             'struct':      cls.STRUCT,
             'union':       cls.UNION,
             'funcpointer': cls.FUNCPOINTER,
-        }[category]
+        }[type_elem.attrib.get('category')]
 
         if 'name' in type_elem.attrib:
             name = type_elem.attrib['name']
