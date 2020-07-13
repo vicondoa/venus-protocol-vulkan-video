@@ -51,6 +51,16 @@ class Gen(object):
         self.supported_types = {}
         self._init_supported_types()
 
+        # validate VnCommandType
+        vn_command_type_ty = self.api.type_table['VnCommandType']
+        for cmd in self.supported_types[VkType.COMMAND]:
+            key = 'VN_COMMAND_TYPE_' + cmd.name
+            assert(key in vn_command_type_ty.enums.values)
+        for key in vn_command_type_ty.enums.values.keys():
+            cmd_name = key.replace('VN_COMMAND_TYPE_', '')
+            cmd = self.api.type_table[cmd_name]
+            assert(cmd in self.supported_types[VkType.COMMAND])
+
     def _set_type_attr(self, ty, key, val):
         ty = ty.base
 
@@ -93,13 +103,9 @@ class Gen(object):
                 self._set_type_attr(var.ty, 'need_encode', True)
 
     def _fixup_api(self):
-        c_type_enums = self.api.type_table['VnCommandType'].enums
-
         for ty in self.api.type_table.values():
             if ty.category == ty.COMMAND:
-                c_type = 'VN_COMMAND_TYPE_' + self.api.uppercase_name(ty)
-                assert(c_type in c_type_enums.values)
-                ty.attrs['c_type'] = c_type
+                ty.attrs['c_type'] = 'VN_COMMAND_TYPE_' + ty.name
 
                 if ty.ret:
                     ty.ret.attrs['var_out'] = True

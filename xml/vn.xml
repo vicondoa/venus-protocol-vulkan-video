@@ -16,397 +16,189 @@
         <type name="VnCommandFlagBits" category="enum"/>
     </types>
 
+    <!-- names can change, but values must never change -->
     <enums name="VnCommandType" type="enum">
-        <comment>VN_VERSION_1_0 commands</comment>
-        <enum value="2000000000" name="VN_COMMAND_TYPE_EXECUTE_COMMAND_STREAM"/>
-        <enum value="2000000001" name="VN_COMMAND_TYPE_BEGIN_REPLY_STREAM"/>
-        <enum value="2000000002" name="VN_COMMAND_TYPE_END_REPLY_STREAM"/>
-
-        <comment>VK_VERSION_1_0 commands</comment>
-        <enum value="0"     name="VN_COMMAND_TYPE_CREATE_INSTANCE"/>
-        <enum value="1"     name="VN_COMMAND_TYPE_DESTROY_INSTANCE"/>
-        <enum value="2"     name="VN_COMMAND_TYPE_ENUMERATE_PHYSICAL_DEVICES"/>
-        <enum value="3"     name="VN_COMMAND_TYPE_GET_PHYSICAL_DEVICE_FEATURES"/>
-        <enum value="4"     name="VN_COMMAND_TYPE_GET_PHYSICAL_DEVICE_FORMAT_PROPERTIES"/>
-        <enum value="5"     name="VN_COMMAND_TYPE_GET_PHYSICAL_DEVICE_IMAGE_FORMAT_PROPERTIES"/>
-        <enum value="6"     name="VN_COMMAND_TYPE_GET_PHYSICAL_DEVICE_PROPERTIES"/>
-        <enum value="7"     name="VN_COMMAND_TYPE_GET_PHYSICAL_DEVICE_QUEUE_FAMILY_PROPERTIES"/>
-        <enum value="8"     name="VN_COMMAND_TYPE_GET_PHYSICAL_DEVICE_MEMORY_PROPERTIES"/>
-        <enum value="9"     name="VN_COMMAND_TYPE_GET_INSTANCE_PROC_ADDR"/>
-        <enum value="10"    name="VN_COMMAND_TYPE_GET_DEVICE_PROC_ADDR"/>
-        <enum value="11"    name="VN_COMMAND_TYPE_CREATE_DEVICE"/>
-        <enum value="12"    name="VN_COMMAND_TYPE_DESTROY_DEVICE"/>
-        <enum value="13"    name="VN_COMMAND_TYPE_ENUMERATE_INSTANCE_EXTENSION_PROPERTIES"/>
-        <enum value="14"    name="VN_COMMAND_TYPE_ENUMERATE_DEVICE_EXTENSION_PROPERTIES"/>
-        <enum value="15"    name="VN_COMMAND_TYPE_ENUMERATE_INSTANCE_LAYER_PROPERTIES"/>
-        <enum value="16"    name="VN_COMMAND_TYPE_ENUMERATE_DEVICE_LAYER_PROPERTIES"/>
-        <enum value="17"    name="VN_COMMAND_TYPE_GET_DEVICE_QUEUE"/>
-        <enum value="18"    name="VN_COMMAND_TYPE_QUEUE_SUBMIT"/>
-        <enum value="19"    name="VN_COMMAND_TYPE_QUEUE_WAIT_IDLE"/>
-        <enum value="20"    name="VN_COMMAND_TYPE_DEVICE_WAIT_IDLE"/>
-        <enum value="21"    name="VN_COMMAND_TYPE_ALLOCATE_MEMORY"/>
-        <enum value="22"    name="VN_COMMAND_TYPE_FREE_MEMORY"/>
-        <enum value="23"    name="VN_COMMAND_TYPE_MAP_MEMORY"/>
-        <enum value="24"    name="VN_COMMAND_TYPE_UNMAP_MEMORY"/>
-        <enum value="25"    name="VN_COMMAND_TYPE_FLUSH_MAPPED_MEMORY_RANGES"/>
-        <enum value="26"    name="VN_COMMAND_TYPE_INVALIDATE_MAPPED_MEMORY_RANGES"/>
-        <enum value="27"    name="VN_COMMAND_TYPE_GET_DEVICE_MEMORY_COMMITMENT"/>
-        <enum value="28"    name="VN_COMMAND_TYPE_BIND_BUFFER_MEMORY"/>
-        <enum value="29"    name="VN_COMMAND_TYPE_BIND_IMAGE_MEMORY"/>
-        <enum value="30"    name="VN_COMMAND_TYPE_GET_BUFFER_MEMORY_REQUIREMENTS"/>
-        <enum value="31"    name="VN_COMMAND_TYPE_GET_IMAGE_MEMORY_REQUIREMENTS"/>
-        <enum value="32"    name="VN_COMMAND_TYPE_GET_IMAGE_SPARSE_MEMORY_REQUIREMENTS"/>
-        <enum value="33"    name="VN_COMMAND_TYPE_GET_PHYSICAL_DEVICE_SPARSE_IMAGE_FORMAT_PROPERTIES"/>
-        <enum value="34"    name="VN_COMMAND_TYPE_QUEUE_BIND_SPARSE"/>
-        <enum value="35"    name="VN_COMMAND_TYPE_CREATE_FENCE"/>
-        <enum value="36"    name="VN_COMMAND_TYPE_DESTROY_FENCE"/>
-        <enum value="37"    name="VN_COMMAND_TYPE_RESET_FENCES"/>
-        <enum value="38"    name="VN_COMMAND_TYPE_GET_FENCE_STATUS"/>
-        <enum value="39"    name="VN_COMMAND_TYPE_WAIT_FOR_FENCES"/>
-        <enum value="40"    name="VN_COMMAND_TYPE_CREATE_SEMAPHORE"/>
-        <enum value="41"    name="VN_COMMAND_TYPE_DESTROY_SEMAPHORE"/>
-        <enum value="42"    name="VN_COMMAND_TYPE_CREATE_EVENT"/>
-        <enum value="43"    name="VN_COMMAND_TYPE_DESTROY_EVENT"/>
-        <enum value="44"    name="VN_COMMAND_TYPE_GET_EVENT_STATUS"/>
-        <enum value="45"    name="VN_COMMAND_TYPE_SET_EVENT"/>
-        <enum value="46"    name="VN_COMMAND_TYPE_RESET_EVENT"/>
-        <enum value="47"    name="VN_COMMAND_TYPE_CREATE_QUERY_POOL"/>
-        <enum value="48"    name="VN_COMMAND_TYPE_DESTROY_QUERY_POOL"/>
-        <enum value="49"    name="VN_COMMAND_TYPE_GET_QUERY_POOL_RESULTS"/>
-        <enum value="50"    name="VN_COMMAND_TYPE_CREATE_BUFFER"/>
-        <enum value="51"    name="VN_COMMAND_TYPE_DESTROY_BUFFER"/>
-        <enum value="52"    name="VN_COMMAND_TYPE_CREATE_BUFFER_VIEW"/>
-        <enum value="53"    name="VN_COMMAND_TYPE_DESTROY_BUFFER_VIEW"/>
-        <enum value="54"    name="VN_COMMAND_TYPE_CREATE_IMAGE"/>
-        <enum value="55"    name="VN_COMMAND_TYPE_DESTROY_IMAGE"/>
-        <enum value="56"    name="VN_COMMAND_TYPE_GET_IMAGE_SUBRESOURCE_LAYOUT"/>
-        <enum value="57"    name="VN_COMMAND_TYPE_CREATE_IMAGE_VIEW"/>
-        <enum value="58"    name="VN_COMMAND_TYPE_DESTROY_IMAGE_VIEW"/>
-        <enum value="59"    name="VN_COMMAND_TYPE_CREATE_SHADER_MODULE"/>
-        <enum value="60"    name="VN_COMMAND_TYPE_DESTROY_SHADER_MODULE"/>
-        <enum value="61"    name="VN_COMMAND_TYPE_CREATE_PIPELINE_CACHE"/>
-        <enum value="62"    name="VN_COMMAND_TYPE_DESTROY_PIPELINE_CACHE"/>
-        <enum value="63"    name="VN_COMMAND_TYPE_GET_PIPELINE_CACHE_DATA"/>
-        <enum value="64"    name="VN_COMMAND_TYPE_MERGE_PIPELINE_CACHES"/>
-        <enum value="65"    name="VN_COMMAND_TYPE_CREATE_GRAPHICS_PIPELINES"/>
-        <enum value="66"    name="VN_COMMAND_TYPE_CREATE_COMPUTE_PIPELINES"/>
-        <enum value="67"    name="VN_COMMAND_TYPE_DESTROY_PIPELINE"/>
-        <enum value="68"    name="VN_COMMAND_TYPE_CREATE_PIPELINE_LAYOUT"/>
-        <enum value="69"    name="VN_COMMAND_TYPE_DESTROY_PIPELINE_LAYOUT"/>
-        <enum value="70"    name="VN_COMMAND_TYPE_CREATE_SAMPLER"/>
-        <enum value="71"    name="VN_COMMAND_TYPE_DESTROY_SAMPLER"/>
-        <enum value="72"    name="VN_COMMAND_TYPE_CREATE_DESCRIPTOR_SET_LAYOUT"/>
-        <enum value="73"    name="VN_COMMAND_TYPE_DESTROY_DESCRIPTOR_SET_LAYOUT"/>
-        <enum value="74"    name="VN_COMMAND_TYPE_CREATE_DESCRIPTOR_POOL"/>
-        <enum value="75"    name="VN_COMMAND_TYPE_DESTROY_DESCRIPTOR_POOL"/>
-        <enum value="76"    name="VN_COMMAND_TYPE_RESET_DESCRIPTOR_POOL"/>
-        <enum value="77"    name="VN_COMMAND_TYPE_ALLOCATE_DESCRIPTOR_SETS"/>
-        <enum value="78"    name="VN_COMMAND_TYPE_FREE_DESCRIPTOR_SETS"/>
-        <enum value="79"    name="VN_COMMAND_TYPE_UPDATE_DESCRIPTOR_SETS"/>
-        <enum value="80"    name="VN_COMMAND_TYPE_CREATE_FRAMEBUFFER"/>
-        <enum value="81"    name="VN_COMMAND_TYPE_DESTROY_FRAMEBUFFER"/>
-        <enum value="82"    name="VN_COMMAND_TYPE_CREATE_RENDER_PASS"/>
-        <enum value="83"    name="VN_COMMAND_TYPE_DESTROY_RENDER_PASS"/>
-        <enum value="84"    name="VN_COMMAND_TYPE_GET_RENDER_AREA_GRANULARITY"/>
-        <enum value="85"    name="VN_COMMAND_TYPE_CREATE_COMMAND_POOL"/>
-        <enum value="86"    name="VN_COMMAND_TYPE_DESTROY_COMMAND_POOL"/>
-        <enum value="87"    name="VN_COMMAND_TYPE_RESET_COMMAND_POOL"/>
-        <enum value="88"    name="VN_COMMAND_TYPE_ALLOCATE_COMMAND_BUFFERS"/>
-        <enum value="89"    name="VN_COMMAND_TYPE_FREE_COMMAND_BUFFERS"/>
-        <enum value="90"    name="VN_COMMAND_TYPE_BEGIN_COMMAND_BUFFER"/>
-        <enum value="91"    name="VN_COMMAND_TYPE_END_COMMAND_BUFFER"/>
-        <enum value="92"    name="VN_COMMAND_TYPE_RESET_COMMAND_BUFFER"/>
-        <enum value="93"    name="VN_COMMAND_TYPE_CMD_BIND_PIPELINE"/>
-        <enum value="94"    name="VN_COMMAND_TYPE_CMD_SET_VIEWPORT"/>
-        <enum value="95"    name="VN_COMMAND_TYPE_CMD_SET_SCISSOR"/>
-        <enum value="96"    name="VN_COMMAND_TYPE_CMD_SET_LINE_WIDTH"/>
-        <enum value="97"    name="VN_COMMAND_TYPE_CMD_SET_DEPTH_BIAS"/>
-        <enum value="98"    name="VN_COMMAND_TYPE_CMD_SET_BLEND_CONSTANTS"/>
-        <enum value="99"    name="VN_COMMAND_TYPE_CMD_SET_DEPTH_BOUNDS"/>
-        <enum value="100"   name="VN_COMMAND_TYPE_CMD_SET_STENCIL_COMPARE_MASK"/>
-        <enum value="101"   name="VN_COMMAND_TYPE_CMD_SET_STENCIL_WRITE_MASK"/>
-        <enum value="102"   name="VN_COMMAND_TYPE_CMD_SET_STENCIL_REFERENCE"/>
-        <enum value="103"   name="VN_COMMAND_TYPE_CMD_BIND_DESCRIPTOR_SETS"/>
-        <enum value="104"   name="VN_COMMAND_TYPE_CMD_BIND_INDEX_BUFFER"/>
-        <enum value="105"   name="VN_COMMAND_TYPE_CMD_BIND_VERTEX_BUFFERS"/>
-        <enum value="106"   name="VN_COMMAND_TYPE_CMD_DRAW"/>
-        <enum value="107"   name="VN_COMMAND_TYPE_CMD_DRAW_INDEXED"/>
-        <enum value="108"   name="VN_COMMAND_TYPE_CMD_DRAW_INDIRECT"/>
-        <enum value="109"   name="VN_COMMAND_TYPE_CMD_DRAW_INDEXED_INDIRECT"/>
-        <enum value="110"   name="VN_COMMAND_TYPE_CMD_DISPATCH"/>
-        <enum value="111"   name="VN_COMMAND_TYPE_CMD_DISPATCH_INDIRECT"/>
-        <enum value="112"   name="VN_COMMAND_TYPE_CMD_COPY_BUFFER"/>
-        <enum value="113"   name="VN_COMMAND_TYPE_CMD_COPY_IMAGE"/>
-        <enum value="114"   name="VN_COMMAND_TYPE_CMD_BLIT_IMAGE"/>
-        <enum value="115"   name="VN_COMMAND_TYPE_CMD_COPY_BUFFER_TO_IMAGE"/>
-        <enum value="116"   name="VN_COMMAND_TYPE_CMD_COPY_IMAGE_TO_BUFFER"/>
-        <enum value="117"   name="VN_COMMAND_TYPE_CMD_UPDATE_BUFFER"/>
-        <enum value="118"   name="VN_COMMAND_TYPE_CMD_FILL_BUFFER"/>
-        <enum value="119"   name="VN_COMMAND_TYPE_CMD_CLEAR_COLOR_IMAGE"/>
-        <enum value="120"   name="VN_COMMAND_TYPE_CMD_CLEAR_DEPTH_STENCIL_IMAGE"/>
-        <enum value="121"   name="VN_COMMAND_TYPE_CMD_CLEAR_ATTACHMENTS"/>
-        <enum value="122"   name="VN_COMMAND_TYPE_CMD_RESOLVE_IMAGE"/>
-        <enum value="123"   name="VN_COMMAND_TYPE_CMD_SET_EVENT"/>
-        <enum value="124"   name="VN_COMMAND_TYPE_CMD_RESET_EVENT"/>
-        <enum value="125"   name="VN_COMMAND_TYPE_CMD_WAIT_EVENTS"/>
-        <enum value="126"   name="VN_COMMAND_TYPE_CMD_PIPELINE_BARRIER"/>
-        <enum value="127"   name="VN_COMMAND_TYPE_CMD_BEGIN_QUERY"/>
-        <enum value="128"   name="VN_COMMAND_TYPE_CMD_END_QUERY"/>
-        <enum value="129"   name="VN_COMMAND_TYPE_CMD_RESET_QUERY_POOL"/>
-        <enum value="130"   name="VN_COMMAND_TYPE_CMD_WRITE_TIMESTAMP"/>
-        <enum value="131"   name="VN_COMMAND_TYPE_CMD_COPY_QUERY_POOL_RESULTS"/>
-        <enum value="132"   name="VN_COMMAND_TYPE_CMD_PUSH_CONSTANTS"/>
-        <enum value="133"   name="VN_COMMAND_TYPE_CMD_BEGIN_RENDER_PASS"/>
-        <enum value="134"   name="VN_COMMAND_TYPE_CMD_NEXT_SUBPASS"/>
-        <enum value="135"   name="VN_COMMAND_TYPE_CMD_END_RENDER_PASS"/>
-        <enum value="136"   name="VN_COMMAND_TYPE_CMD_EXECUTE_COMMANDS"/>
-
-        <comment>VK_VERSION_1_1 commands</comment>
-        <enum value="137"   name="VN_COMMAND_TYPE_ENUMERATE_INSTANCE_VERSION"/>
-        <enum value="138"   name="VN_COMMAND_TYPE_GET_DEVICE_QUEUE2"/>
-        <enum extnumber="60"   offset="0"   name="VN_COMMAND_TYPE_GET_PHYSICAL_DEVICE_FEATURES2"/>
-        <enum extnumber="60"   offset="1"   name="VN_COMMAND_TYPE_GET_PHYSICAL_DEVICE_PROPERTIES2"/>
-        <enum extnumber="60"   offset="2"   name="VN_COMMAND_TYPE_GET_PHYSICAL_DEVICE_FORMAT_PROPERTIES2"/>
-        <enum extnumber="60"   offset="3"   name="VN_COMMAND_TYPE_GET_PHYSICAL_DEVICE_IMAGE_FORMAT_PROPERTIES2"/>
-        <enum extnumber="60"   offset="4"   name="VN_COMMAND_TYPE_GET_PHYSICAL_DEVICE_QUEUE_FAMILY_PROPERTIES2"/>
-        <enum extnumber="60"   offset="5"   name="VN_COMMAND_TYPE_GET_PHYSICAL_DEVICE_MEMORY_PROPERTIES2"/>
-        <enum extnumber="60"   offset="6"   name="VN_COMMAND_TYPE_GET_PHYSICAL_DEVICE_SPARSE_IMAGE_FORMAT_PROPERTIES2"/>
-        <enum extnumber="61"   offset="0"   name="VN_COMMAND_TYPE_GET_DEVICE_GROUP_PEER_MEMORY_FEATURES"/>
-        <enum extnumber="61"   offset="1"   name="VN_COMMAND_TYPE_CMD_SET_DEVICE_MASK"/>
-        <enum extnumber="61"   offset="2"   name="VN_COMMAND_TYPE_CMD_DISPATCH_BASE"/>
-        <enum extnumber="70"   offset="0"   name="VN_COMMAND_TYPE_TRIM_COMMAND_POOL"/>
-        <enum extnumber="71"   offset="0"   name="VN_COMMAND_TYPE_ENUMERATE_PHYSICAL_DEVICE_GROUPS"/>
-        <enum extnumber="72"   offset="0"   name="VN_COMMAND_TYPE_GET_PHYSICAL_DEVICE_EXTERNAL_BUFFER_PROPERTIES"/>
-        <enum extnumber="77"   offset="0"   name="VN_COMMAND_TYPE_GET_PHYSICAL_DEVICE_EXTERNAL_SEMAPHORE_PROPERTIES"/>
-        <enum extnumber="86"   offset="0"   name="VN_COMMAND_TYPE_CREATE_DESCRIPTOR_UPDATE_TEMPLATE"/>
-        <enum extnumber="86"   offset="1"   name="VN_COMMAND_TYPE_DESTROY_DESCRIPTOR_UPDATE_TEMPLATE"/>
-        <enum extnumber="86"   offset="2"   name="VN_COMMAND_TYPE_UPDATE_DESCRIPTOR_SET_WITH_TEMPLATE"/>
-        <enum extnumber="113"  offset="0"   name="VN_COMMAND_TYPE_GET_PHYSICAL_DEVICE_EXTERNAL_FENCE_PROPERTIES"/>
-        <enum extnumber="147"  offset="0"   name="VN_COMMAND_TYPE_GET_IMAGE_MEMORY_REQUIREMENTS2"/>
-        <enum extnumber="147"  offset="1"   name="VN_COMMAND_TYPE_GET_BUFFER_MEMORY_REQUIREMENTS2"/>
-        <enum extnumber="147"  offset="2"   name="VN_COMMAND_TYPE_GET_IMAGE_SPARSE_MEMORY_REQUIREMENTS2"/>
-        <enum extnumber="157"  offset="0"   name="VN_COMMAND_TYPE_CREATE_SAMPLER_YCBCR_CONVERSION"/>
-        <enum extnumber="157"  offset="1"   name="VN_COMMAND_TYPE_DESTROY_SAMPLER_YCBCR_CONVERSION"/>
-        <enum extnumber="158"  offset="0"   name="VN_COMMAND_TYPE_BIND_BUFFER_MEMORY2"/>
-        <enum extnumber="158"  offset="1"   name="VN_COMMAND_TYPE_BIND_IMAGE_MEMORY2"/>
-        <enum extnumber="169"  offset="0"   name="VN_COMMAND_TYPE_GET_DESCRIPTOR_SET_LAYOUT_SUPPORT"/>
-
-        <comment>VK_VERSION_1_2 commands</comment>
-        <enum extnumber="34"   offset="0"   name="VN_COMMAND_TYPE_CMD_DRAW_INDIRECT_COUNT"/>
-        <enum extnumber="34"   offset="1"   name="VN_COMMAND_TYPE_CMD_DRAW_INDEXED_INDIRECT_COUNT"/>
-        <enum extnumber="110"  offset="0"   name="VN_COMMAND_TYPE_CREATE_RENDER_PASS2"/>
-        <enum extnumber="110"  offset="1"   name="VN_COMMAND_TYPE_CMD_BEGIN_RENDER_PASS2"/>
-        <enum extnumber="110"  offset="2"   name="VN_COMMAND_TYPE_CMD_NEXT_SUBPASS2"/>
-        <enum extnumber="110"  offset="3"   name="VN_COMMAND_TYPE_CMD_END_RENDER_PASS2"/>
-        <enum extnumber="208"  offset="0"   name="VN_COMMAND_TYPE_GET_SEMAPHORE_COUNTER_VALUE"/>
-        <enum extnumber="208"  offset="1"   name="VN_COMMAND_TYPE_WAIT_SEMAPHORES"/>
-        <enum extnumber="208"  offset="2"   name="VN_COMMAND_TYPE_SIGNAL_SEMAPHORE"/>
-        <enum extnumber="245"  offset="0"   name="VN_COMMAND_TYPE_GET_BUFFER_DEVICE_ADDRESS"/>
-        <enum extnumber="258"  offset="1"   name="VN_COMMAND_TYPE_GET_BUFFER_OPAQUE_CAPTURE_ADDRESS"/>
-        <enum extnumber="258"  offset="2"   name="VN_COMMAND_TYPE_GET_DEVICE_MEMORY_OPAQUE_CAPTURE_ADDRESS"/>
-        <enum extnumber="262"  offset="0"   name="VN_COMMAND_TYPE_RESET_QUERY_POOL"/>
-
-        <comment>extension commands</comment>
-        <enum extnumber="1"    offset="0"   name="VN_COMMAND_TYPE_DESTROY_SURFACE_KHR"/>
-        <enum extnumber="1"    offset="1"   name="VN_COMMAND_TYPE_GET_PHYSICAL_DEVICE_SURFACE_SUPPORT_KHR"/>
-        <enum extnumber="1"    offset="2"   name="VN_COMMAND_TYPE_GET_PHYSICAL_DEVICE_SURFACE_CAPABILITIES_KHR"/>
-        <enum extnumber="1"    offset="3"   name="VN_COMMAND_TYPE_GET_PHYSICAL_DEVICE_SURFACE_FORMATS_KHR"/>
-        <enum extnumber="1"    offset="4"   name="VN_COMMAND_TYPE_GET_PHYSICAL_DEVICE_SURFACE_PRESENT_MODES_KHR"/>
-        <enum extnumber="2"    offset="0"   name="VN_COMMAND_TYPE_CREATE_SWAPCHAIN_KHR"/>
-        <enum extnumber="2"    offset="1"   name="VN_COMMAND_TYPE_DESTROY_SWAPCHAIN_KHR"/>
-        <enum extnumber="2"    offset="2"   name="VN_COMMAND_TYPE_GET_SWAPCHAIN_IMAGES_KHR"/>
-        <enum extnumber="2"    offset="3"   name="VN_COMMAND_TYPE_ACQUIRE_NEXT_IMAGE_KHR"/>
-        <enum extnumber="2"    offset="4"   name="VN_COMMAND_TYPE_QUEUE_PRESENT_KHR"/>
-        <enum extnumber="3"    offset="0"   name="VN_COMMAND_TYPE_GET_PHYSICAL_DEVICE_DISPLAY_PROPERTIES_KHR"/>
-        <enum extnumber="3"    offset="1"   name="VN_COMMAND_TYPE_GET_PHYSICAL_DEVICE_DISPLAY_PLANE_PROPERTIES_KHR"/>
-        <enum extnumber="3"    offset="2"   name="VN_COMMAND_TYPE_GET_DISPLAY_PLANE_SUPPORTED_DISPLAYS_KHR"/>
-        <enum extnumber="3"    offset="3"   name="VN_COMMAND_TYPE_GET_DISPLAY_MODE_PROPERTIES_KHR"/>
-        <enum extnumber="3"    offset="4"   name="VN_COMMAND_TYPE_CREATE_DISPLAY_MODE_KHR"/>
-        <enum extnumber="3"    offset="5"   name="VN_COMMAND_TYPE_GET_DISPLAY_PLANE_CAPABILITIES_KHR"/>
-        <enum extnumber="3"    offset="6"   name="VN_COMMAND_TYPE_CREATE_DISPLAY_PLANE_SURFACE_KHR"/>
-        <enum extnumber="4"    offset="0"   name="VN_COMMAND_TYPE_CREATE_SHARED_SWAPCHAINS_KHR"/>
-        <enum extnumber="5"    offset="0"   name="VN_COMMAND_TYPE_CREATE_XLIB_SURFACE_KHR"/>
-        <enum extnumber="5"    offset="1"   name="VN_COMMAND_TYPE_GET_PHYSICAL_DEVICE_XLIB_PRESENTATION_SUPPORT_KHR"/>
-        <enum extnumber="6"    offset="0"   name="VN_COMMAND_TYPE_CREATE_XCB_SURFACE_KHR"/>
-        <enum extnumber="6"    offset="1"   name="VN_COMMAND_TYPE_GET_PHYSICAL_DEVICE_XCB_PRESENTATION_SUPPORT_KHR"/>
-        <enum extnumber="7"    offset="0"   name="VN_COMMAND_TYPE_CREATE_WAYLAND_SURFACE_KHR"/>
-        <enum extnumber="7"    offset="1"   name="VN_COMMAND_TYPE_GET_PHYSICAL_DEVICE_WAYLAND_PRESENTATION_SUPPORT_KHR"/>
-        <enum extnumber="9"    offset="0"   name="VN_COMMAND_TYPE_CREATE_ANDROID_SURFACE_KHR"/>
-        <enum extnumber="10"   offset="0"   name="VN_COMMAND_TYPE_CREATE_WIN32_SURFACE_KHR"/>
-        <enum extnumber="10"   offset="1"   name="VN_COMMAND_TYPE_GET_PHYSICAL_DEVICE_WIN32_PRESENTATION_SUPPORT_KHR"/>
-        <enum extnumber="11"   offset="0"   name="VN_COMMAND_TYPE_GET_SWAPCHAIN_GRALLOC_USAGE_ANDROID"/>
-        <enum extnumber="11"   offset="1"   name="VN_COMMAND_TYPE_ACQUIRE_IMAGE_ANDROID"/>
-        <enum extnumber="11"   offset="2"   name="VN_COMMAND_TYPE_QUEUE_SIGNAL_RELEASE_IMAGE_ANDROID"/>
-        <enum extnumber="11"   offset="3"   name="VN_COMMAND_TYPE_GET_SWAPCHAIN_GRALLOC_USAGE2_ANDROID"/>
-        <enum extnumber="12"   offset="0"   name="VN_COMMAND_TYPE_CREATE_DEBUG_REPORT_CALLBACK_EXT"/>
-        <enum extnumber="12"   offset="1"   name="VN_COMMAND_TYPE_DESTROY_DEBUG_REPORT_CALLBACK_EXT"/>
-        <enum extnumber="12"   offset="2"   name="VN_COMMAND_TYPE_DEBUG_REPORT_MESSAGE_EXT"/>
-        <enum extnumber="23"   offset="0"   name="VN_COMMAND_TYPE_DEBUG_MARKER_SET_OBJECT_TAG_EXT"/>
-        <enum extnumber="23"   offset="1"   name="VN_COMMAND_TYPE_DEBUG_MARKER_SET_OBJECT_NAME_EXT"/>
-        <enum extnumber="23"   offset="2"   name="VN_COMMAND_TYPE_CMD_DEBUG_MARKER_BEGIN_EXT"/>
-        <enum extnumber="23"   offset="3"   name="VN_COMMAND_TYPE_CMD_DEBUG_MARKER_END_EXT"/>
-        <enum extnumber="23"   offset="4"   name="VN_COMMAND_TYPE_CMD_DEBUG_MARKER_INSERT_EXT"/>
-        <enum extnumber="29"   offset="0"   name="VN_COMMAND_TYPE_CMD_BIND_TRANSFORM_FEEDBACK_BUFFERS_EXT"/>
-        <enum extnumber="29"   offset="1"   name="VN_COMMAND_TYPE_CMD_BEGIN_TRANSFORM_FEEDBACK_EXT"/>
-        <enum extnumber="29"   offset="2"   name="VN_COMMAND_TYPE_CMD_END_TRANSFORM_FEEDBACK_EXT"/>
-        <enum extnumber="29"   offset="3"   name="VN_COMMAND_TYPE_CMD_BEGIN_QUERY_INDEXED_EXT"/>
-        <enum extnumber="29"   offset="4"   name="VN_COMMAND_TYPE_CMD_END_QUERY_INDEXED_EXT"/>
-        <enum extnumber="29"   offset="5"   name="VN_COMMAND_TYPE_CMD_DRAW_INDIRECT_BYTE_COUNT_EXT"/>
-        <enum extnumber="31"   offset="0"   name="VN_COMMAND_TYPE_GET_IMAGE_VIEW_HANDLE_NVX"/>
-        <enum extnumber="31"   offset="1"   name="VN_COMMAND_TYPE_GET_IMAGE_VIEW_ADDRESS_NVX"/>
-        <enum extnumber="43"   offset="0"   name="VN_COMMAND_TYPE_GET_SHADER_INFO_AMD"/>
-        <enum extnumber="50"   offset="0"   name="VN_COMMAND_TYPE_CREATE_STREAM_DESCRIPTOR_SURFACE_GGP"/>
-        <enum extnumber="56"   offset="0"   name="VN_COMMAND_TYPE_GET_PHYSICAL_DEVICE_EXTERNAL_IMAGE_FORMAT_PROPERTIES_NV"/>
-        <enum extnumber="58"   offset="0"   name="VN_COMMAND_TYPE_GET_MEMORY_WIN32_HANDLE_NV"/>
-        <enum extnumber="61"   offset="3"   name="VN_COMMAND_TYPE_GET_DEVICE_GROUP_PRESENT_CAPABILITIES_KHR"/>
-        <enum extnumber="61"   offset="4"   name="VN_COMMAND_TYPE_GET_DEVICE_GROUP_SURFACE_PRESENT_MODES_KHR"/>
-        <enum extnumber="61"   offset="5"   name="VN_COMMAND_TYPE_GET_PHYSICAL_DEVICE_PRESENT_RECTANGLES_KHR"/>
-        <enum extnumber="61"   offset="6"   name="VN_COMMAND_TYPE_ACQUIRE_NEXT_IMAGE2_KHR"/>
-        <enum extnumber="63"   offset="0"   name="VN_COMMAND_TYPE_CREATE_VI_SURFACE_NN"/>
-        <enum extnumber="74"   offset="0"   name="VN_COMMAND_TYPE_GET_MEMORY_WIN32_HANDLE_KHR"/>
-        <enum extnumber="74"   offset="1"   name="VN_COMMAND_TYPE_GET_MEMORY_WIN32_HANDLE_PROPERTIES_KHR"/>
-        <enum extnumber="75"   offset="0"   name="VN_COMMAND_TYPE_GET_MEMORY_FD_KHR"/>
-        <enum extnumber="75"   offset="1"   name="VN_COMMAND_TYPE_GET_MEMORY_FD_PROPERTIES_KHR"/>
-        <enum extnumber="79"   offset="0"   name="VN_COMMAND_TYPE_IMPORT_SEMAPHORE_WIN32_HANDLE_KHR"/>
-        <enum extnumber="79"   offset="1"   name="VN_COMMAND_TYPE_GET_SEMAPHORE_WIN32_HANDLE_KHR"/>
-        <enum extnumber="80"   offset="0"   name="VN_COMMAND_TYPE_IMPORT_SEMAPHORE_FD_KHR"/>
-        <enum extnumber="80"   offset="1"   name="VN_COMMAND_TYPE_GET_SEMAPHORE_FD_KHR"/>
-        <enum extnumber="81"   offset="0"   name="VN_COMMAND_TYPE_CMD_PUSH_DESCRIPTOR_SET_KHR"/>
-        <enum extnumber="82"   offset="0"   name="VN_COMMAND_TYPE_CMD_BEGIN_CONDITIONAL_RENDERING_EXT"/>
-        <enum extnumber="82"   offset="1"   name="VN_COMMAND_TYPE_CMD_END_CONDITIONAL_RENDERING_EXT"/>
-        <enum extnumber="86"   offset="3"   name="VN_COMMAND_TYPE_CMD_PUSH_DESCRIPTOR_SET_WITH_TEMPLATE_KHR"/>
-        <enum extnumber="88"   offset="0"   name="VN_COMMAND_TYPE_CMD_SET_VIEWPORT_W_SCALING_NV"/>
-        <enum extnumber="89"   offset="0"   name="VN_COMMAND_TYPE_RELEASE_DISPLAY_EXT"/>
-        <enum extnumber="90"   offset="0"   name="VN_COMMAND_TYPE_ACQUIRE_XLIB_DISPLAY_EXT"/>
-        <enum extnumber="90"   offset="1"   name="VN_COMMAND_TYPE_GET_RAND_R_OUTPUT_DISPLAY_EXT"/>
-        <enum extnumber="91"   offset="0"   name="VN_COMMAND_TYPE_GET_PHYSICAL_DEVICE_SURFACE_CAPABILITIES2_EXT"/>
-        <enum extnumber="92"   offset="0"   name="VN_COMMAND_TYPE_DISPLAY_POWER_CONTROL_EXT"/>
-        <enum extnumber="92"   offset="1"   name="VN_COMMAND_TYPE_REGISTER_DEVICE_EVENT_EXT"/>
-        <enum extnumber="92"   offset="2"   name="VN_COMMAND_TYPE_REGISTER_DISPLAY_EVENT_EXT"/>
-        <enum extnumber="92"   offset="3"   name="VN_COMMAND_TYPE_GET_SWAPCHAIN_COUNTER_EXT"/>
-        <enum extnumber="93"   offset="0"   name="VN_COMMAND_TYPE_GET_REFRESH_CYCLE_DURATION_GOOGLE"/>
-        <enum extnumber="93"   offset="1"   name="VN_COMMAND_TYPE_GET_PAST_PRESENTATION_TIMING_GOOGLE"/>
-        <enum extnumber="100"  offset="0"   name="VN_COMMAND_TYPE_CMD_SET_DISCARD_RECTANGLE_EXT"/>
-        <enum extnumber="106"  offset="0"   name="VN_COMMAND_TYPE_SET_HDR_METADATA_EXT"/>
-        <enum extnumber="112"  offset="0"   name="VN_COMMAND_TYPE_GET_SWAPCHAIN_STATUS_KHR"/>
-        <enum extnumber="115"  offset="0"   name="VN_COMMAND_TYPE_IMPORT_FENCE_WIN32_HANDLE_KHR"/>
-        <enum extnumber="115"  offset="1"   name="VN_COMMAND_TYPE_GET_FENCE_WIN32_HANDLE_KHR"/>
-        <enum extnumber="116"  offset="0"   name="VN_COMMAND_TYPE_IMPORT_FENCE_FD_KHR"/>
-        <enum extnumber="116"  offset="1"   name="VN_COMMAND_TYPE_GET_FENCE_FD_KHR"/>
-        <enum extnumber="117"  offset="0"   name="VN_COMMAND_TYPE_ENUMERATE_PHYSICAL_DEVICE_QUEUE_FAMILY_PERFORMANCE_QUERY_COUNTERS_KHR"/>
-        <enum extnumber="117"  offset="1"   name="VN_COMMAND_TYPE_GET_PHYSICAL_DEVICE_QUEUE_FAMILY_PERFORMANCE_QUERY_PASSES_KHR"/>
-        <enum extnumber="117"  offset="2"   name="VN_COMMAND_TYPE_ACQUIRE_PROFILING_LOCK_KHR"/>
-        <enum extnumber="117"  offset="3"   name="VN_COMMAND_TYPE_RELEASE_PROFILING_LOCK_KHR"/>
-        <enum extnumber="120"  offset="0"   name="VN_COMMAND_TYPE_GET_PHYSICAL_DEVICE_SURFACE_CAPABILITIES2_KHR"/>
-        <enum extnumber="120"  offset="1"   name="VN_COMMAND_TYPE_GET_PHYSICAL_DEVICE_SURFACE_FORMATS2_KHR"/>
-        <enum extnumber="122"  offset="0"   name="VN_COMMAND_TYPE_GET_PHYSICAL_DEVICE_DISPLAY_PROPERTIES2_KHR"/>
-        <enum extnumber="122"  offset="1"   name="VN_COMMAND_TYPE_GET_PHYSICAL_DEVICE_DISPLAY_PLANE_PROPERTIES2_KHR"/>
-        <enum extnumber="122"  offset="2"   name="VN_COMMAND_TYPE_GET_DISPLAY_MODE_PROPERTIES2_KHR"/>
-        <enum extnumber="122"  offset="3"   name="VN_COMMAND_TYPE_GET_DISPLAY_PLANE_CAPABILITIES2_KHR"/>
-        <enum extnumber="123"  offset="0"   name="VN_COMMAND_TYPE_CREATE_I_O_S_SURFACE_MVK"/>
-        <enum extnumber="124"  offset="0"   name="VN_COMMAND_TYPE_CREATE_MAC_O_S_SURFACE_MVK"/>
-        <enum extnumber="129"  offset="0"   name="VN_COMMAND_TYPE_SET_DEBUG_UTILS_OBJECT_NAME_EXT"/>
-        <enum extnumber="129"  offset="1"   name="VN_COMMAND_TYPE_SET_DEBUG_UTILS_OBJECT_TAG_EXT"/>
-        <enum extnumber="129"  offset="2"   name="VN_COMMAND_TYPE_QUEUE_BEGIN_DEBUG_UTILS_LABEL_EXT"/>
-        <enum extnumber="129"  offset="3"   name="VN_COMMAND_TYPE_QUEUE_END_DEBUG_UTILS_LABEL_EXT"/>
-        <enum extnumber="129"  offset="4"   name="VN_COMMAND_TYPE_QUEUE_INSERT_DEBUG_UTILS_LABEL_EXT"/>
-        <enum extnumber="129"  offset="5"   name="VN_COMMAND_TYPE_CMD_BEGIN_DEBUG_UTILS_LABEL_EXT"/>
-        <enum extnumber="129"  offset="6"   name="VN_COMMAND_TYPE_CMD_END_DEBUG_UTILS_LABEL_EXT"/>
-        <enum extnumber="129"  offset="7"   name="VN_COMMAND_TYPE_CMD_INSERT_DEBUG_UTILS_LABEL_EXT"/>
-        <enum extnumber="129"  offset="8"   name="VN_COMMAND_TYPE_CREATE_DEBUG_UTILS_MESSENGER_EXT"/>
-        <enum extnumber="129"  offset="9"   name="VN_COMMAND_TYPE_DESTROY_DEBUG_UTILS_MESSENGER_EXT"/>
-        <enum extnumber="129"  offset="10"  name="VN_COMMAND_TYPE_SUBMIT_DEBUG_UTILS_MESSAGE_EXT"/>
-        <enum extnumber="130"  offset="0"   name="VN_COMMAND_TYPE_GET_ANDROID_HARDWARE_BUFFER_PROPERTIES_ANDROID"/>
-        <enum extnumber="130"  offset="1"   name="VN_COMMAND_TYPE_GET_MEMORY_ANDROID_HARDWARE_BUFFER_ANDROID"/>
-        <enum extnumber="144"  offset="0"   name="VN_COMMAND_TYPE_CMD_SET_SAMPLE_LOCATIONS_EXT"/>
-        <enum extnumber="144"  offset="1"   name="VN_COMMAND_TYPE_GET_PHYSICAL_DEVICE_MULTISAMPLE_PROPERTIES_EXT"/>
-        <enum extnumber="151"  offset="0"   name="VN_COMMAND_TYPE_CREATE_ACCELERATION_STRUCTURE_KHR"/>
-        <enum extnumber="151"  offset="2"   name="VN_COMMAND_TYPE_GET_ACCELERATION_STRUCTURE_MEMORY_REQUIREMENTS_KHR"/>
-        <enum extnumber="151"  offset="4"   name="VN_COMMAND_TYPE_CMD_BUILD_ACCELERATION_STRUCTURE_KHR"/>
-        <enum extnumber="151"  offset="5"   name="VN_COMMAND_TYPE_CMD_BUILD_ACCELERATION_STRUCTURE_INDIRECT_KHR"/>
-        <enum extnumber="151"  offset="6"   name="VN_COMMAND_TYPE_BUILD_ACCELERATION_STRUCTURE_KHR"/>
-        <enum extnumber="151"  offset="7"   name="VN_COMMAND_TYPE_COPY_ACCELERATION_STRUCTURE_KHR"/>
-        <enum extnumber="151"  offset="8"   name="VN_COMMAND_TYPE_COPY_ACCELERATION_STRUCTURE_TO_MEMORY_KHR"/>
-        <enum extnumber="151"  offset="9"   name="VN_COMMAND_TYPE_COPY_MEMORY_TO_ACCELERATION_STRUCTURE_KHR"/>
-        <enum extnumber="151"  offset="10"  name="VN_COMMAND_TYPE_WRITE_ACCELERATION_STRUCTURES_PROPERTIES_KHR"/>
-        <enum extnumber="151"  offset="11"  name="VN_COMMAND_TYPE_CMD_COPY_ACCELERATION_STRUCTURE_KHR"/>
-        <enum extnumber="151"  offset="12"  name="VN_COMMAND_TYPE_CMD_COPY_ACCELERATION_STRUCTURE_TO_MEMORY_KHR"/>
-        <enum extnumber="151"  offset="13"  name="VN_COMMAND_TYPE_CMD_COPY_MEMORY_TO_ACCELERATION_STRUCTURE_KHR"/>
-        <enum extnumber="151"  offset="14"  name="VN_COMMAND_TYPE_CMD_TRACE_RAYS_KHR"/>
-        <enum extnumber="151"  offset="15"  name="VN_COMMAND_TYPE_CREATE_RAY_TRACING_PIPELINES_KHR"/>
-        <enum extnumber="151"  offset="17"  name="VN_COMMAND_TYPE_GET_ACCELERATION_STRUCTURE_DEVICE_ADDRESS_KHR"/>
-        <enum extnumber="151"  offset="18"  name="VN_COMMAND_TYPE_GET_RAY_TRACING_CAPTURE_REPLAY_SHADER_GROUP_HANDLES_KHR"/>
-        <enum extnumber="151"  offset="20"  name="VN_COMMAND_TYPE_CMD_TRACE_RAYS_INDIRECT_KHR"/>
-        <enum extnumber="151"  offset="21"  name="VN_COMMAND_TYPE_GET_DEVICE_ACCELERATION_STRUCTURE_COMPATIBILITY_KHR"/>
-        <enum extnumber="159"  offset="0"   name="VN_COMMAND_TYPE_GET_IMAGE_DRM_FORMAT_MODIFIER_PROPERTIES_EXT"/>
-        <enum extnumber="161"  offset="0"   name="VN_COMMAND_TYPE_CREATE_VALIDATION_CACHE_EXT"/>
-        <enum extnumber="161"  offset="1"   name="VN_COMMAND_TYPE_DESTROY_VALIDATION_CACHE_EXT"/>
-        <enum extnumber="161"  offset="2"   name="VN_COMMAND_TYPE_MERGE_VALIDATION_CACHES_EXT"/>
-        <enum extnumber="161"  offset="3"   name="VN_COMMAND_TYPE_GET_VALIDATION_CACHE_DATA_EXT"/>
-        <enum extnumber="165"  offset="0"   name="VN_COMMAND_TYPE_CMD_BIND_SHADING_RATE_IMAGE_NV"/>
-        <enum extnumber="165"  offset="1"   name="VN_COMMAND_TYPE_CMD_SET_VIEWPORT_SHADING_RATE_PALETTE_NV"/>
-        <enum extnumber="165"  offset="2"   name="VN_COMMAND_TYPE_CMD_SET_COARSE_SAMPLE_ORDER_NV"/>
-        <enum extnumber="166"  offset="0"   name="VN_COMMAND_TYPE_CREATE_ACCELERATION_STRUCTURE_NV"/>
-        <enum extnumber="166"  offset="1"   name="VN_COMMAND_TYPE_DESTROY_ACCELERATION_STRUCTURE_KHR"/>
-        <enum extnumber="166"  offset="2"   name="VN_COMMAND_TYPE_GET_ACCELERATION_STRUCTURE_MEMORY_REQUIREMENTS_NV"/>
-        <enum extnumber="166"  offset="3"   name="VN_COMMAND_TYPE_BIND_ACCELERATION_STRUCTURE_MEMORY_KHR"/>
-        <enum extnumber="166"  offset="4"   name="VN_COMMAND_TYPE_CMD_BUILD_ACCELERATION_STRUCTURE_NV"/>
-        <enum extnumber="166"  offset="5"   name="VN_COMMAND_TYPE_CMD_COPY_ACCELERATION_STRUCTURE_NV"/>
-        <enum extnumber="166"  offset="6"   name="VN_COMMAND_TYPE_CMD_TRACE_RAYS_NV"/>
-        <enum extnumber="166"  offset="7"   name="VN_COMMAND_TYPE_CREATE_RAY_TRACING_PIPELINES_NV"/>
-        <enum extnumber="166"  offset="8"   name="VN_COMMAND_TYPE_GET_RAY_TRACING_SHADER_GROUP_HANDLES_KHR"/>
-        <enum extnumber="166"  offset="9"   name="VN_COMMAND_TYPE_GET_ACCELERATION_STRUCTURE_HANDLE_NV"/>
-        <enum extnumber="166"  offset="10"  name="VN_COMMAND_TYPE_CMD_WRITE_ACCELERATION_STRUCTURES_PROPERTIES_KHR"/>
-        <enum extnumber="166"  offset="11"  name="VN_COMMAND_TYPE_COMPILE_DEFERRED_NV"/>
-        <enum extnumber="179"  offset="0"   name="VN_COMMAND_TYPE_GET_MEMORY_HOST_POINTER_PROPERTIES_EXT"/>
-        <enum extnumber="180"  offset="0"   name="VN_COMMAND_TYPE_CMD_WRITE_BUFFER_MARKER_AMD"/>
-        <enum extnumber="185"  offset="0"   name="VN_COMMAND_TYPE_GET_PHYSICAL_DEVICE_CALIBRATEABLE_TIME_DOMAINS_EXT"/>
-        <enum extnumber="185"  offset="1"   name="VN_COMMAND_TYPE_GET_CALIBRATED_TIMESTAMPS_EXT"/>
-        <enum extnumber="203"  offset="0"   name="VN_COMMAND_TYPE_CMD_DRAW_MESH_TASKS_NV"/>
-        <enum extnumber="203"  offset="1"   name="VN_COMMAND_TYPE_CMD_DRAW_MESH_TASKS_INDIRECT_NV"/>
-        <enum extnumber="203"  offset="2"   name="VN_COMMAND_TYPE_CMD_DRAW_MESH_TASKS_INDIRECT_COUNT_NV"/>
-        <enum extnumber="206"  offset="0"   name="VN_COMMAND_TYPE_CMD_SET_EXCLUSIVE_SCISSOR_NV"/>
-        <enum extnumber="207"  offset="0"   name="VN_COMMAND_TYPE_CMD_SET_CHECKPOINT_NV"/>
-        <enum extnumber="207"  offset="1"   name="VN_COMMAND_TYPE_GET_QUEUE_CHECKPOINT_DATA_NV"/>
-        <enum extnumber="211"  offset="0"   name="VN_COMMAND_TYPE_INITIALIZE_PERFORMANCE_API_INTEL"/>
-        <enum extnumber="211"  offset="1"   name="VN_COMMAND_TYPE_UNINITIALIZE_PERFORMANCE_API_INTEL"/>
-        <enum extnumber="211"  offset="2"   name="VN_COMMAND_TYPE_CMD_SET_PERFORMANCE_MARKER_INTEL"/>
-        <enum extnumber="211"  offset="3"   name="VN_COMMAND_TYPE_CMD_SET_PERFORMANCE_STREAM_MARKER_INTEL"/>
-        <enum extnumber="211"  offset="4"   name="VN_COMMAND_TYPE_CMD_SET_PERFORMANCE_OVERRIDE_INTEL"/>
-        <enum extnumber="211"  offset="5"   name="VN_COMMAND_TYPE_ACQUIRE_PERFORMANCE_CONFIGURATION_INTEL"/>
-        <enum extnumber="211"  offset="6"   name="VN_COMMAND_TYPE_RELEASE_PERFORMANCE_CONFIGURATION_INTEL"/>
-        <enum extnumber="211"  offset="7"   name="VN_COMMAND_TYPE_QUEUE_SET_PERFORMANCE_CONFIGURATION_INTEL"/>
-        <enum extnumber="211"  offset="8"   name="VN_COMMAND_TYPE_GET_PERFORMANCE_PARAMETER_INTEL"/>
-        <enum extnumber="214"  offset="0"   name="VN_COMMAND_TYPE_SET_LOCAL_DIMMING_AMD"/>
-        <enum extnumber="215"  offset="0"   name="VN_COMMAND_TYPE_CREATE_IMAGE_PIPE_SURFACE_FUCHSIA"/>
-        <enum extnumber="218"  offset="0"   name="VN_COMMAND_TYPE_CREATE_METAL_SURFACE_EXT"/>
-        <enum extnumber="246"  offset="0"   name="VN_COMMAND_TYPE_GET_PHYSICAL_DEVICE_TOOL_PROPERTIES_EXT"/>
-        <enum extnumber="250"  offset="0"   name="VN_COMMAND_TYPE_GET_PHYSICAL_DEVICE_COOPERATIVE_MATRIX_PROPERTIES_NV"/>
-        <enum extnumber="251"  offset="0"   name="VN_COMMAND_TYPE_GET_PHYSICAL_DEVICE_SUPPORTED_FRAMEBUFFER_MIXED_SAMPLES_COMBINATIONS_NV"/>
-        <enum extnumber="256"  offset="0"   name="VN_COMMAND_TYPE_GET_PHYSICAL_DEVICE_SURFACE_PRESENT_MODES2_EXT"/>
-        <enum extnumber="256"  offset="1"   name="VN_COMMAND_TYPE_ACQUIRE_FULL_SCREEN_EXCLUSIVE_MODE_EXT"/>
-        <enum extnumber="256"  offset="2"   name="VN_COMMAND_TYPE_RELEASE_FULL_SCREEN_EXCLUSIVE_MODE_EXT"/>
-        <enum extnumber="256"  offset="3"   name="VN_COMMAND_TYPE_GET_DEVICE_GROUP_SURFACE_PRESENT_MODES2_EXT"/>
-        <enum extnumber="257"  offset="0"   name="VN_COMMAND_TYPE_CREATE_HEADLESS_SURFACE_EXT"/>
-        <enum extnumber="260"  offset="0"   name="VN_COMMAND_TYPE_CMD_SET_LINE_STIPPLE_EXT"/>
-        <enum extnumber="269"  offset="0"   name="VN_COMMAND_TYPE_CREATE_DEFERRED_OPERATION_KHR"/>
-        <enum extnumber="269"  offset="1"   name="VN_COMMAND_TYPE_DESTROY_DEFERRED_OPERATION_KHR"/>
-        <enum extnumber="269"  offset="2"   name="VN_COMMAND_TYPE_GET_DEFERRED_OPERATION_MAX_CONCURRENCY_KHR"/>
-        <enum extnumber="269"  offset="3"   name="VN_COMMAND_TYPE_GET_DEFERRED_OPERATION_RESULT_KHR"/>
-        <enum extnumber="269"  offset="4"   name="VN_COMMAND_TYPE_DEFERRED_OPERATION_JOIN_KHR"/>
-        <enum extnumber="270"  offset="0"   name="VN_COMMAND_TYPE_GET_PIPELINE_EXECUTABLE_PROPERTIES_KHR"/>
-        <enum extnumber="270"  offset="1"   name="VN_COMMAND_TYPE_GET_PIPELINE_EXECUTABLE_STATISTICS_KHR"/>
-        <enum extnumber="270"  offset="2"   name="VN_COMMAND_TYPE_GET_PIPELINE_EXECUTABLE_INTERNAL_REPRESENTATIONS_KHR"/>
-        <enum extnumber="278"  offset="0"   name="VN_COMMAND_TYPE_GET_GENERATED_COMMANDS_MEMORY_REQUIREMENTS_NV"/>
-        <enum extnumber="278"  offset="1"   name="VN_COMMAND_TYPE_CMD_PREPROCESS_GENERATED_COMMANDS_NV"/>
-        <enum extnumber="278"  offset="2"   name="VN_COMMAND_TYPE_CMD_EXECUTE_GENERATED_COMMANDS_NV"/>
-        <enum extnumber="278"  offset="3"   name="VN_COMMAND_TYPE_CMD_BIND_PIPELINE_SHADER_GROUP_NV"/>
-        <enum extnumber="278"  offset="4"   name="VN_COMMAND_TYPE_CREATE_INDIRECT_COMMANDS_LAYOUT_NV"/>
-        <enum extnumber="278"  offset="5"   name="VN_COMMAND_TYPE_DESTROY_INDIRECT_COMMANDS_LAYOUT_NV"/>
-        <enum extnumber="296"  offset="0"   name="VN_COMMAND_TYPE_CREATE_PRIVATE_DATA_SLOT_EXT"/>
-        <enum extnumber="296"  offset="1"   name="VN_COMMAND_TYPE_DESTROY_PRIVATE_DATA_SLOT_EXT"/>
-        <enum extnumber="296"  offset="2"   name="VN_COMMAND_TYPE_SET_PRIVATE_DATA_EXT"/>
-        <enum extnumber="296"  offset="3"   name="VN_COMMAND_TYPE_GET_PRIVATE_DATA_EXT"/>
+        <enum value="0" name="VN_COMMAND_TYPE_vnExecuteCommandStream"/>
+        <enum value="1" name="VN_COMMAND_TYPE_vnBeginReplyStream"/>
+        <enum value="2" name="VN_COMMAND_TYPE_vnEndReplyStream"/>
+        <enum value="3" name="VN_COMMAND_TYPE_vkCreateInstance"/>
+        <enum value="4" name="VN_COMMAND_TYPE_vkDestroyInstance"/>
+        <enum value="5" name="VN_COMMAND_TYPE_vkEnumeratePhysicalDevices"/>
+        <enum value="6" name="VN_COMMAND_TYPE_vkGetPhysicalDeviceFeatures"/>
+        <enum value="7" name="VN_COMMAND_TYPE_vkGetPhysicalDeviceFormatProperties"/>
+        <enum value="8" name="VN_COMMAND_TYPE_vkGetPhysicalDeviceImageFormatProperties"/>
+        <enum value="9" name="VN_COMMAND_TYPE_vkGetPhysicalDeviceProperties"/>
+        <enum value="10" name="VN_COMMAND_TYPE_vkGetPhysicalDeviceQueueFamilyProperties"/>
+        <enum value="11" name="VN_COMMAND_TYPE_vkGetPhysicalDeviceMemoryProperties"/>
+        <enum value="12" name="VN_COMMAND_TYPE_vkGetInstanceProcAddr"/>
+        <enum value="13" name="VN_COMMAND_TYPE_vkGetDeviceProcAddr"/>
+        <enum value="14" name="VN_COMMAND_TYPE_vkCreateDevice"/>
+        <enum value="15" name="VN_COMMAND_TYPE_vkDestroyDevice"/>
+        <enum value="16" name="VN_COMMAND_TYPE_vkEnumerateInstanceExtensionProperties"/>
+        <enum value="17" name="VN_COMMAND_TYPE_vkEnumerateDeviceExtensionProperties"/>
+        <enum value="18" name="VN_COMMAND_TYPE_vkEnumerateInstanceLayerProperties"/>
+        <enum value="19" name="VN_COMMAND_TYPE_vkEnumerateDeviceLayerProperties"/>
+        <enum value="20" name="VN_COMMAND_TYPE_vkGetDeviceQueue"/>
+        <enum value="21" name="VN_COMMAND_TYPE_vkQueueSubmit"/>
+        <enum value="22" name="VN_COMMAND_TYPE_vkQueueWaitIdle"/>
+        <enum value="23" name="VN_COMMAND_TYPE_vkDeviceWaitIdle"/>
+        <enum value="24" name="VN_COMMAND_TYPE_vkAllocateMemory"/>
+        <enum value="25" name="VN_COMMAND_TYPE_vkFreeMemory"/>
+        <enum value="26" name="VN_COMMAND_TYPE_vkMapMemory"/>
+        <enum value="27" name="VN_COMMAND_TYPE_vkUnmapMemory"/>
+        <enum value="28" name="VN_COMMAND_TYPE_vkFlushMappedMemoryRanges"/>
+        <enum value="29" name="VN_COMMAND_TYPE_vkInvalidateMappedMemoryRanges"/>
+        <enum value="30" name="VN_COMMAND_TYPE_vkGetDeviceMemoryCommitment"/>
+        <enum value="31" name="VN_COMMAND_TYPE_vkBindBufferMemory"/>
+        <enum value="32" name="VN_COMMAND_TYPE_vkBindImageMemory"/>
+        <enum value="33" name="VN_COMMAND_TYPE_vkGetBufferMemoryRequirements"/>
+        <enum value="34" name="VN_COMMAND_TYPE_vkGetImageMemoryRequirements"/>
+        <enum value="35" name="VN_COMMAND_TYPE_vkGetImageSparseMemoryRequirements"/>
+        <enum value="36" name="VN_COMMAND_TYPE_vkGetPhysicalDeviceSparseImageFormatProperties"/>
+        <enum value="37" name="VN_COMMAND_TYPE_vkQueueBindSparse"/>
+        <enum value="38" name="VN_COMMAND_TYPE_vkCreateFence"/>
+        <enum value="39" name="VN_COMMAND_TYPE_vkDestroyFence"/>
+        <enum value="40" name="VN_COMMAND_TYPE_vkResetFences"/>
+        <enum value="41" name="VN_COMMAND_TYPE_vkGetFenceStatus"/>
+        <enum value="42" name="VN_COMMAND_TYPE_vkWaitForFences"/>
+        <enum value="43" name="VN_COMMAND_TYPE_vkCreateSemaphore"/>
+        <enum value="44" name="VN_COMMAND_TYPE_vkDestroySemaphore"/>
+        <enum value="45" name="VN_COMMAND_TYPE_vkCreateEvent"/>
+        <enum value="46" name="VN_COMMAND_TYPE_vkDestroyEvent"/>
+        <enum value="47" name="VN_COMMAND_TYPE_vkGetEventStatus"/>
+        <enum value="48" name="VN_COMMAND_TYPE_vkSetEvent"/>
+        <enum value="49" name="VN_COMMAND_TYPE_vkResetEvent"/>
+        <enum value="50" name="VN_COMMAND_TYPE_vkCreateQueryPool"/>
+        <enum value="51" name="VN_COMMAND_TYPE_vkDestroyQueryPool"/>
+        <enum value="52" name="VN_COMMAND_TYPE_vkGetQueryPoolResults"/>
+        <enum value="53" name="VN_COMMAND_TYPE_vkCreateBuffer"/>
+        <enum value="54" name="VN_COMMAND_TYPE_vkDestroyBuffer"/>
+        <enum value="55" name="VN_COMMAND_TYPE_vkCreateBufferView"/>
+        <enum value="56" name="VN_COMMAND_TYPE_vkDestroyBufferView"/>
+        <enum value="57" name="VN_COMMAND_TYPE_vkCreateImage"/>
+        <enum value="58" name="VN_COMMAND_TYPE_vkDestroyImage"/>
+        <enum value="59" name="VN_COMMAND_TYPE_vkGetImageSubresourceLayout"/>
+        <enum value="60" name="VN_COMMAND_TYPE_vkCreateImageView"/>
+        <enum value="61" name="VN_COMMAND_TYPE_vkDestroyImageView"/>
+        <enum value="62" name="VN_COMMAND_TYPE_vkCreateShaderModule"/>
+        <enum value="63" name="VN_COMMAND_TYPE_vkDestroyShaderModule"/>
+        <enum value="64" name="VN_COMMAND_TYPE_vkCreatePipelineCache"/>
+        <enum value="65" name="VN_COMMAND_TYPE_vkDestroyPipelineCache"/>
+        <enum value="66" name="VN_COMMAND_TYPE_vkGetPipelineCacheData"/>
+        <enum value="67" name="VN_COMMAND_TYPE_vkMergePipelineCaches"/>
+        <enum value="68" name="VN_COMMAND_TYPE_vkCreateGraphicsPipelines"/>
+        <enum value="69" name="VN_COMMAND_TYPE_vkCreateComputePipelines"/>
+        <enum value="70" name="VN_COMMAND_TYPE_vkDestroyPipeline"/>
+        <enum value="71" name="VN_COMMAND_TYPE_vkCreatePipelineLayout"/>
+        <enum value="72" name="VN_COMMAND_TYPE_vkDestroyPipelineLayout"/>
+        <enum value="73" name="VN_COMMAND_TYPE_vkCreateSampler"/>
+        <enum value="74" name="VN_COMMAND_TYPE_vkDestroySampler"/>
+        <enum value="75" name="VN_COMMAND_TYPE_vkCreateDescriptorSetLayout"/>
+        <enum value="76" name="VN_COMMAND_TYPE_vkDestroyDescriptorSetLayout"/>
+        <enum value="77" name="VN_COMMAND_TYPE_vkCreateDescriptorPool"/>
+        <enum value="78" name="VN_COMMAND_TYPE_vkDestroyDescriptorPool"/>
+        <enum value="79" name="VN_COMMAND_TYPE_vkResetDescriptorPool"/>
+        <enum value="80" name="VN_COMMAND_TYPE_vkAllocateDescriptorSets"/>
+        <enum value="81" name="VN_COMMAND_TYPE_vkFreeDescriptorSets"/>
+        <enum value="82" name="VN_COMMAND_TYPE_vkUpdateDescriptorSets"/>
+        <enum value="83" name="VN_COMMAND_TYPE_vkCreateFramebuffer"/>
+        <enum value="84" name="VN_COMMAND_TYPE_vkDestroyFramebuffer"/>
+        <enum value="85" name="VN_COMMAND_TYPE_vkCreateRenderPass"/>
+        <enum value="86" name="VN_COMMAND_TYPE_vkDestroyRenderPass"/>
+        <enum value="87" name="VN_COMMAND_TYPE_vkGetRenderAreaGranularity"/>
+        <enum value="88" name="VN_COMMAND_TYPE_vkCreateCommandPool"/>
+        <enum value="89" name="VN_COMMAND_TYPE_vkDestroyCommandPool"/>
+        <enum value="90" name="VN_COMMAND_TYPE_vkResetCommandPool"/>
+        <enum value="91" name="VN_COMMAND_TYPE_vkAllocateCommandBuffers"/>
+        <enum value="92" name="VN_COMMAND_TYPE_vkFreeCommandBuffers"/>
+        <enum value="93" name="VN_COMMAND_TYPE_vkBeginCommandBuffer"/>
+        <enum value="94" name="VN_COMMAND_TYPE_vkEndCommandBuffer"/>
+        <enum value="95" name="VN_COMMAND_TYPE_vkResetCommandBuffer"/>
+        <enum value="96" name="VN_COMMAND_TYPE_vkCmdBindPipeline"/>
+        <enum value="97" name="VN_COMMAND_TYPE_vkCmdSetViewport"/>
+        <enum value="98" name="VN_COMMAND_TYPE_vkCmdSetScissor"/>
+        <enum value="99" name="VN_COMMAND_TYPE_vkCmdSetLineWidth"/>
+        <enum value="100" name="VN_COMMAND_TYPE_vkCmdSetDepthBias"/>
+        <enum value="101" name="VN_COMMAND_TYPE_vkCmdSetBlendConstants"/>
+        <enum value="102" name="VN_COMMAND_TYPE_vkCmdSetDepthBounds"/>
+        <enum value="103" name="VN_COMMAND_TYPE_vkCmdSetStencilCompareMask"/>
+        <enum value="104" name="VN_COMMAND_TYPE_vkCmdSetStencilWriteMask"/>
+        <enum value="105" name="VN_COMMAND_TYPE_vkCmdSetStencilReference"/>
+        <enum value="106" name="VN_COMMAND_TYPE_vkCmdBindDescriptorSets"/>
+        <enum value="107" name="VN_COMMAND_TYPE_vkCmdBindIndexBuffer"/>
+        <enum value="108" name="VN_COMMAND_TYPE_vkCmdBindVertexBuffers"/>
+        <enum value="109" name="VN_COMMAND_TYPE_vkCmdDraw"/>
+        <enum value="110" name="VN_COMMAND_TYPE_vkCmdDrawIndexed"/>
+        <enum value="111" name="VN_COMMAND_TYPE_vkCmdDrawIndirect"/>
+        <enum value="112" name="VN_COMMAND_TYPE_vkCmdDrawIndexedIndirect"/>
+        <enum value="113" name="VN_COMMAND_TYPE_vkCmdDispatch"/>
+        <enum value="114" name="VN_COMMAND_TYPE_vkCmdDispatchIndirect"/>
+        <enum value="115" name="VN_COMMAND_TYPE_vkCmdCopyBuffer"/>
+        <enum value="116" name="VN_COMMAND_TYPE_vkCmdCopyImage"/>
+        <enum value="117" name="VN_COMMAND_TYPE_vkCmdBlitImage"/>
+        <enum value="118" name="VN_COMMAND_TYPE_vkCmdCopyBufferToImage"/>
+        <enum value="119" name="VN_COMMAND_TYPE_vkCmdCopyImageToBuffer"/>
+        <enum value="120" name="VN_COMMAND_TYPE_vkCmdUpdateBuffer"/>
+        <enum value="121" name="VN_COMMAND_TYPE_vkCmdFillBuffer"/>
+        <enum value="122" name="VN_COMMAND_TYPE_vkCmdClearColorImage"/>
+        <enum value="123" name="VN_COMMAND_TYPE_vkCmdClearDepthStencilImage"/>
+        <enum value="124" name="VN_COMMAND_TYPE_vkCmdClearAttachments"/>
+        <enum value="125" name="VN_COMMAND_TYPE_vkCmdResolveImage"/>
+        <enum value="126" name="VN_COMMAND_TYPE_vkCmdSetEvent"/>
+        <enum value="127" name="VN_COMMAND_TYPE_vkCmdResetEvent"/>
+        <enum value="128" name="VN_COMMAND_TYPE_vkCmdWaitEvents"/>
+        <enum value="129" name="VN_COMMAND_TYPE_vkCmdPipelineBarrier"/>
+        <enum value="130" name="VN_COMMAND_TYPE_vkCmdBeginQuery"/>
+        <enum value="131" name="VN_COMMAND_TYPE_vkCmdEndQuery"/>
+        <enum value="132" name="VN_COMMAND_TYPE_vkCmdResetQueryPool"/>
+        <enum value="133" name="VN_COMMAND_TYPE_vkCmdWriteTimestamp"/>
+        <enum value="134" name="VN_COMMAND_TYPE_vkCmdCopyQueryPoolResults"/>
+        <enum value="135" name="VN_COMMAND_TYPE_vkCmdPushConstants"/>
+        <enum value="136" name="VN_COMMAND_TYPE_vkCmdBeginRenderPass"/>
+        <enum value="137" name="VN_COMMAND_TYPE_vkCmdNextSubpass"/>
+        <enum value="138" name="VN_COMMAND_TYPE_vkCmdEndRenderPass"/>
+        <enum value="139" name="VN_COMMAND_TYPE_vkCmdExecuteCommands"/>
+        <enum value="140" name="VN_COMMAND_TYPE_vkEnumerateInstanceVersion"/>
+        <enum value="141" name="VN_COMMAND_TYPE_vkBindBufferMemory2"/>
+        <enum value="142" name="VN_COMMAND_TYPE_vkBindImageMemory2"/>
+        <enum value="143" name="VN_COMMAND_TYPE_vkGetDeviceGroupPeerMemoryFeatures"/>
+        <enum value="144" name="VN_COMMAND_TYPE_vkCmdSetDeviceMask"/>
+        <enum value="145" name="VN_COMMAND_TYPE_vkCmdDispatchBase"/>
+        <enum value="146" name="VN_COMMAND_TYPE_vkEnumeratePhysicalDeviceGroups"/>
+        <enum value="147" name="VN_COMMAND_TYPE_vkGetImageMemoryRequirements2"/>
+        <enum value="148" name="VN_COMMAND_TYPE_vkGetBufferMemoryRequirements2"/>
+        <enum value="149" name="VN_COMMAND_TYPE_vkGetImageSparseMemoryRequirements2"/>
+        <enum value="150" name="VN_COMMAND_TYPE_vkGetPhysicalDeviceFeatures2"/>
+        <enum value="151" name="VN_COMMAND_TYPE_vkGetPhysicalDeviceProperties2"/>
+        <enum value="152" name="VN_COMMAND_TYPE_vkGetPhysicalDeviceFormatProperties2"/>
+        <enum value="153" name="VN_COMMAND_TYPE_vkGetPhysicalDeviceImageFormatProperties2"/>
+        <enum value="154" name="VN_COMMAND_TYPE_vkGetPhysicalDeviceQueueFamilyProperties2"/>
+        <enum value="155" name="VN_COMMAND_TYPE_vkGetPhysicalDeviceMemoryProperties2"/>
+        <enum value="156" name="VN_COMMAND_TYPE_vkGetPhysicalDeviceSparseImageFormatProperties2"/>
+        <enum value="157" name="VN_COMMAND_TYPE_vkTrimCommandPool"/>
+        <enum value="158" name="VN_COMMAND_TYPE_vkGetDeviceQueue2"/>
+        <enum value="159" name="VN_COMMAND_TYPE_vkCreateSamplerYcbcrConversion"/>
+        <enum value="160" name="VN_COMMAND_TYPE_vkDestroySamplerYcbcrConversion"/>
+        <enum value="161" name="VN_COMMAND_TYPE_vkCreateDescriptorUpdateTemplate"/>
+        <enum value="162" name="VN_COMMAND_TYPE_vkDestroyDescriptorUpdateTemplate"/>
+        <enum value="163" name="VN_COMMAND_TYPE_vkUpdateDescriptorSetWithTemplate"/>
+        <enum value="164" name="VN_COMMAND_TYPE_vkGetPhysicalDeviceExternalBufferProperties"/>
+        <enum value="165" name="VN_COMMAND_TYPE_vkGetPhysicalDeviceExternalFenceProperties"/>
+        <enum value="166" name="VN_COMMAND_TYPE_vkGetPhysicalDeviceExternalSemaphoreProperties"/>
+        <enum value="167" name="VN_COMMAND_TYPE_vkGetDescriptorSetLayoutSupport"/>
+        <enum value="168" name="VN_COMMAND_TYPE_vkCmdDrawIndirectCount"/>
+        <enum value="169" name="VN_COMMAND_TYPE_vkCmdDrawIndexedIndirectCount"/>
+        <enum value="170" name="VN_COMMAND_TYPE_vkCreateRenderPass2"/>
+        <enum value="171" name="VN_COMMAND_TYPE_vkCmdBeginRenderPass2"/>
+        <enum value="172" name="VN_COMMAND_TYPE_vkCmdNextSubpass2"/>
+        <enum value="173" name="VN_COMMAND_TYPE_vkCmdEndRenderPass2"/>
+        <enum value="174" name="VN_COMMAND_TYPE_vkResetQueryPool"/>
+        <enum value="175" name="VN_COMMAND_TYPE_vkGetSemaphoreCounterValue"/>
+        <enum value="176" name="VN_COMMAND_TYPE_vkWaitSemaphores"/>
+        <enum value="177" name="VN_COMMAND_TYPE_vkSignalSemaphore"/>
+        <enum value="178" name="VN_COMMAND_TYPE_vkGetBufferDeviceAddress"/>
+        <enum value="179" name="VN_COMMAND_TYPE_vkGetBufferOpaqueCaptureAddress"/>
+        <enum value="180" name="VN_COMMAND_TYPE_vkGetDeviceMemoryOpaqueCaptureAddress"/>
     </enums>
 
     <enums name="VnCommandFlagBits" type="bitmask">

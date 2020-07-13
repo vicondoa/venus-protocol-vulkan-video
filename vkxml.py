@@ -679,8 +679,10 @@ class VkApi(object):
         self.venus = None
         self.vulkan = []
         self.extensions = []
-        self.vk_xml_version = None
+
         self.vn_xml_version = None
+        self.vk_xml_version = None
+        self.max_vn_command_type_value = None
 
     def parse_xml(self, xml):
         tree = ET.parse(xml)
@@ -710,58 +712,14 @@ class VkApi(object):
                 self.type_table['VK_HEADER_VERSION'],
                 self.type_table['VK_HEADER_VERSION_COMPLETE'])
 
+        max_val = 0
+        vn_command_type_enums = self.type_table['VnCommandType'].enums.values
+        for val in vn_command_type_enums.values():
+            max_val = max(max_val, int(val))
+        self.max_vn_command_type_value = max_val
+
         for ty in self.type_table.values():
             ty.validate()
-
-        command_ids = {}
-        core_id_next = 0
-        ext_command_id_base = 1 * 1000 * 1000 * 1000
-        venus_id_next = 2 * 1000 * 1000 * 1000
-        # add extension commands first
-        for ext in self.extensions:
-            for offset, cmd in enumerate(ext.commands):
-                key = 'VN_COMMAND_TYPE_' + self.uppercase_name(cmd)
-                val = ext_command_id_base + (ext.number - 1) * 1000 + offset
-                if key in command_ids:
-                    command_ids[key].append(val)
-                else:
-                    command_ids[key] = [val]
-
-        # add venus commands
-        for cmd in self.venus.commands:
-            key = 'VN_COMMAND_TYPE_' + self.uppercase_name(cmd)
-            val = venus_id_next
-            if key not in command_ids:
-                command_ids[key] = [val]
-                venus_id_next += 1
-
-        # add core commands
-        for feat in self.vulkan:
-            for cmd in feat.commands:
-                key = 'VN_COMMAND_TYPE_' + self.uppercase_name(cmd)
-                val = core_id_next
-                if key not in command_ids:
-                    command_ids[key] = [val]
-                    core_id_next += 1
-
-        c_type_enums = self.type_table['VnCommandType'].enums
-        for key, val in c_type_enums.values.items():
-            assert(int(val) in command_ids[key])
-
-    def uppercase_name(self, ty):
-        words = []
-        begin = len('vk')
-        end = begin + 1
-        while end < len(ty.name):
-            if ty.name[end].isupper():
-                words.append(ty.name[begin:end].upper())
-                begin = end
-                if ty.name[begin:] in self.tags:
-                    break
-            end += 1
-        words.append(ty.name[begin:].upper())
-
-        return '_'.join(words)
 
     def _parse_platforms(self, platforms_elem):
         for plat_elem in platforms_elem.iterfind('platform'):
