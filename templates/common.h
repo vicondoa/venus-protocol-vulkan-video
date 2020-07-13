@@ -25,7 +25,7 @@ struct vn_command_${ty.name} {
     ${ty.c_func_params(';\n    ')};
 % if ty.ret:
 
-    ${ty.ret.name} ret;
+    ${ty.ret.to_c()};
 % endif
 };
 </%def>

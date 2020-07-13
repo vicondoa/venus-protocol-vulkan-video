@@ -23,7 +23,7 @@ static inline ${ty.c_func_ret()} vn_call_${ty.name}(struct vn_instance *vn_insta
     vn_cs_set_in_data(&vn_instance->cs, vn_instance->reply_ptr, vn_instance->reply_size);
 
 %   if ty.ret:
-    const ${ty.ret.name} ret = vn_decode_${ty.name}_reply(&vn_instance->cs, ${ty.c_func_args()});
+    const ${ty.ret.to_c()} = vn_decode_${ty.name}_reply(&vn_instance->cs, ${ty.c_func_args()});
 %   else:
     vn_decode_${ty.name}_reply(&vn_instance->cs, ${ty.c_func_args()});
 %   endif
@@ -33,7 +33,7 @@ static inline ${ty.c_func_ret()} vn_call_${ty.name}(struct vn_instance *vn_insta
     mtx_unlock(&vn_instance->mutex);
 %   if ty.ret:
 
-    return ret;
+    return ${ty.ret.name};
 %   endif
 }
 </%def>\

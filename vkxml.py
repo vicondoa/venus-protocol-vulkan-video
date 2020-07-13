@@ -248,7 +248,7 @@ class VkType(object):
         return var_list
 
     def c_func_ret(self):
-        return self.ret.name if self.ret else 'void'
+        return self.ret.ty.name if self.ret else 'void'
 
     def c_func_params(self, separator=', '):
         c_params = [var.to_c() for var in self.variables]
@@ -474,7 +474,8 @@ class VkType(object):
                     type_table)
             assert(pfn == name)
             ty.variables = params
-            ty.ret = ret_ty
+            if ret_ty:
+                ty.ret = VkVariable('ret', ret_ty)
 
     @classmethod
     def parse_command(cls, command_elem, type_table):
@@ -502,7 +503,8 @@ class VkType(object):
         ty = cls._get_type(name, type_table)
         ty.init(name, cls.COMMAND)
         ty.variables = params
-        ty.ret = ret_ty
+        if ret_ty:
+            ty.ret = VkVariable('ret', ret_ty)
 
 class VkEnums(object):
     def __init__(self, values, bitmask):

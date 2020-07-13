@@ -18,9 +18,9 @@ static inline void vn_dispatch_${ty.name}(struct vn_dispatch_context *ctx, VnCom
     if (!vn_cs_has_error(ctx->cs))
         ctx->dispatch_${ty.name}(ctx, &args);
 
-% if ty.ret and ty.ret.name == 'VkResult':
-    if (!vn_cs_has_error(ctx->cs) && args.ret < VK_SUCCESS)
-        vn_dispatch_debug_log(ctx, "${ty.name} returned %d", args.ret);
+% if ty.ret and ty.ret.ty.name == 'VkResult':
+    if (!vn_cs_has_error(ctx->cs) && args.${ty.ret.name} < VK_SUCCESS)
+        vn_dispatch_debug_log(ctx, "${ty.name} returned %d", args.${ty.ret.name});
 % endif
 
     if (!vn_cs_has_error(ctx->cs) && (flags & VN_COMMAND_GENERATE_REPLY_BIT))

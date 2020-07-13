@@ -78,10 +78,10 @@ class Gen(object):
                     self._set_type_attr(var.ty, 'need_encode', True)
 
         if ty.ret:
-            if ty.ret.is_pointer() or ty.ret.is_array():
-                ty.ret.base.attrs['need_array'] = True
-                if var.ty.base.typedef:
-                    var.ty.base.typedef.base.attrs['need_array'] = True
+            if ty.ret.ty.is_pointer() or ty.ret.ty.is_array():
+                ty.ret.ty.base.attrs['need_array'] = True
+                if ty.ret.ty.base.typedef:
+                    ty.ret.ty.base.typedef.base.attrs['need_array'] = True
 
             if self.is_driver:
                 self._set_type_attr(var.ty, 'need_decode', True)
@@ -103,6 +103,8 @@ class Gen(object):
                 assert(c_type in c_type_enums.values)
                 ty.attrs['c_type'] = c_type
 
+                if ty.ret:
+                    ty.ret.attrs['var_out'] = True
                 for var in ty.variables:
                     # non-const pointers are considerer outs
                     if var.ty.is_pointer() and not var.ty.is_const_pointer():
@@ -477,13 +479,11 @@ class Gen(object):
             return '/* skip %s%s */' % (prefix, var.name)
         return self._decode_variable(ty, var, prefix, False, False)
 
-    def encode_command_ret(self, ty, ret_name, prefix):
-        var = VkVariable(ret_name, ty.ret)
-        return self._encode_variable(ty, var, prefix, False)
+    def encode_command_ret(self, ty, prefix):
+        return self._encode_variable(ty, ty.ret, prefix, False)
 
-    def decode_command_ret(self, ty, ret_name, prefix):
-        var = VkVariable(ret_name, ty.ret)
-        return self._decode_variable(ty, var, prefix, False, False)
+    def decode_command_ret(self, ty, prefix):
+        return self._decode_variable(ty, ty.ret, prefix, False, False)
 
 class GenCS(object):
     def __init__(self, gen, template):
