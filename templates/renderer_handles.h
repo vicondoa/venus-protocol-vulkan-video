@@ -15,7 +15,7 @@
 /* ${types.vn_type_descriptive_name(ty)} */
 
 ${types.vn_encode_type(ty)}
-%   if ty.category == ty.HANDLE:
+%   if ty.dispatchable:
 ${types.vn_decode_type_temp(ty)}
 %   else:
 ${types.vn_decode_type(ty)}

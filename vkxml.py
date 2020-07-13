@@ -165,7 +165,6 @@ class VkType(object):
     DEFINE         = 1
     BASETYPE       = 2
     HANDLE         = 3
-    ND_HANDLE      = 4
     ENUM           = 5
     BITMASK        = 6
     STRUCT         = 7
@@ -187,6 +186,9 @@ class VkType(object):
 
         # for basetype/bitmask
         self.typedef = None
+
+        # for handle
+        self.dispatchable = None
 
         # for enum/bitmask (optional)
         self.enums = None
@@ -238,7 +240,7 @@ class VkType(object):
         return self.category in [self.DEFINE, self.BASETYPE, self.ENUM]
 
     def is_handle(self):
-        return self.category in [self.HANDLE, self.ND_HANDLE]
+        return self.category == self.HANDLE
 
     def is_array(self):
         return bool(self.decor.dim) if self.decor else False
@@ -469,10 +471,7 @@ class VkType(object):
             'union':       cls.UNION,
             'funcpointer': cls.FUNCPOINTER,
         }[category]
-        if category == cls.HANDLE:
-            if type_elem.find('type').text != 'VK_DEFINE_HANDLE':
-                category = cls.ND_HANDLE
-        elif category == cls.BASETYPE:
+        if category == cls.BASETYPE:
             if type_elem.find('type') is None:
                 category = cls.DEFINE
 
@@ -489,6 +488,9 @@ class VkType(object):
         elif category == cls.BASETYPE:
             to = type_elem.find('type').text
             ty.typedef = cls._get_type(to, type_table)
+        elif category == cls.HANDLE:
+            if type_elem.find('type').text == 'VK_DEFINE_HANDLE':
+                ty.dispatchable = True
         elif category == cls.BITMASK:
             to = type_elem.find('type').text
             ty.typedef = cls._get_type(to, type_table)

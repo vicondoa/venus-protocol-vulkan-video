@@ -153,7 +153,6 @@ class Gen(object):
             return False
 
         if ty.category in [ty.HANDLE,
-                           ty.ND_HANDLE,
                            ty.BITMASK,
                            ty.ENUM]:
             return True
@@ -284,7 +283,7 @@ class Gen(object):
     def _encode_variable(self, ty, var, prefix, is_out):
         var_name = prefix + var.name
 
-        partially_initialized = [ty.HANDLE, ty.ND_HANDLE, ty.STRUCT]
+        partially_initialized = [ty.HANDLE, ty.STRUCT]
         if is_out and var.ty.base.category not in partially_initialized:
             if var.ty.is_pointer():
                 return 'vn_encode_pointer(cs, %s); /* out */' % var_name
@@ -339,7 +338,7 @@ class Gen(object):
         if alloc_storage:
             if var.ty.base.category in [ty.STRUCT, ty.UNION]:
                 func_stem += '_temp'
-            elif var.ty.base.category == ty.HANDLE and is_out:
+            elif var.ty.base.category == ty.HANDLE and var.ty.base.dispatchable and is_out:
                 func_stem += '_temp'
             elif var.is_string():
                 func_stem += '_temp'
@@ -367,7 +366,7 @@ class Gen(object):
     def _decode_variable(self, ty, var, prefix, is_out, alloc_storage):
         var_name = prefix + var.name
 
-        partially_initialized = [ty.HANDLE, ty.ND_HANDLE, ty.STRUCT]
+        partially_initialized = [ty.HANDLE, ty.STRUCT]
         if is_out and var.ty.base.category not in partially_initialized:
             if alloc_storage and var.ty.is_pointer() and not var.is_string():
                 # we still need to allocate the storage
@@ -428,7 +427,7 @@ class Gen(object):
     def _replace_variable_handle(self, ty, var, prefix, is_out):
         var_name = prefix + var.name
 
-        might_contain_handle = [ty.HANDLE, ty.ND_HANDLE, ty.STRUCT]
+        might_contain_handle = [ty.HANDLE, ty.STRUCT]
         if is_out or var.ty.base.category not in might_contain_handle or \
            not self.is_serializable(var):
             return '/* skip %s */' % var_name

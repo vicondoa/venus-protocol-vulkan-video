@@ -17,9 +17,7 @@ typedef ${ty.typedef.name} ${ty.name}\
 % elif ty.category == ty.ENUM:
 enum ${ty.name}\
 % elif ty.category == ty.HANDLE:
-VK_DEFINE_HANDLE(${ty.name})\
-% elif ty.category == ty.ND_HANDLE:
-VK_DEFINE_NON_DISPATCHABLE_HANDLE(${ty.name})\
+VK_DEFINE_${"" if ty.dispatchable else "NON_DISPATCHABLE_"}HANDLE(${ty.name})\
 % elif ty.category == ty.UNION:
 union ${ty.name}\
 % elif ty.category == ty.STRUCT:
@@ -35,7 +33,7 @@ vn_size_${ty.name}(const ${ty.name} *val)
 {
 % if ty.category in [ty.DEFINE, ty.BASETYPE, ty.ENUM]:
 ${scalar.vn_size_scalar_body(ty)}\
-% elif ty.category in [ty.HANDLE, ty.ND_HANDLE]:
+% elif ty.category == ty.HANDLE:
 ${handle.vn_size_handle_body(ty)}\
 % elif ty.category == ty.UNION:
 ${union.vn_size_union_body(ty)}\
@@ -55,7 +53,7 @@ vn_encode_${ty.name}(struct vn_cs *cs, const ${ty.name} *val)
 {
 % if ty.category in [ty.DEFINE, ty.BASETYPE, ty.ENUM]:
 ${scalar.vn_encode_scalar_body(ty)}\
-% elif ty.category in [ty.HANDLE, ty.ND_HANDLE]:
+% elif ty.category == ty.HANDLE:
 ${handle.vn_encode_handle_body(ty)}\
 % elif ty.category == ty.UNION:
 ${union.vn_encode_union_body(ty)}\
@@ -75,7 +73,7 @@ vn_decode_${ty.name}(struct vn_cs *cs, ${ty.name} *val)
 {
 % if ty.category in [ty.DEFINE, ty.BASETYPE, ty.ENUM]:
 ${scalar.vn_decode_scalar_body(ty)}\
-% elif ty.category in [ty.HANDLE, ty.ND_HANDLE]:
+% elif ty.category == ty.HANDLE:
 ${handle.vn_decode_handle_body(ty)}\
 % elif ty.category == ty.UNION:
 ${union.vn_decode_union_body(ty)}\
@@ -95,7 +93,7 @@ vn_decode_${ty.name}_temp(struct vn_cs *cs, ${ty.name} *val)
 {
 % if ty.category in [ty.DEFINE, ty.BASETYPE, ty.ENUM]:
 ${scalar.vn_decode_scalar_body(ty)}\
-% elif ty.category in [ty.HANDLE, ty.ND_HANDLE] and not GEN.is_driver:
+% elif ty.category == ty.HANDLE and not GEN.is_driver:
 ${handle.vn_decode_handle_body(ty, '_temp')}\
 % elif ty.category == ty.UNION:
 ${union.vn_decode_union_body(ty, '_temp')}\
@@ -115,7 +113,7 @@ vn_size_${ty.name}_partial(const ${ty.name} *val)
 {
 % if ty.category in [ty.DEFINE, ty.BASETYPE, ty.ENUM]:
 ${scalar.vn_size_scalar_body(ty)}\
-% elif ty.category in [ty.HANDLE, ty.ND_HANDLE]:
+% elif ty.category == ty.HANDLE:
 ${handle.vn_size_handle_body(ty)}\
 % elif ty.category == ty.UNION:
 ${union.vn_size_union_body(ty, '_partial')}\
@@ -135,7 +133,7 @@ vn_encode_${ty.name}_partial(struct vn_cs *cs, const ${ty.name} *val)
 {
 % if ty.category in [ty.DEFINE, ty.BASETYPE, ty.ENUM]:
 ${scalar.vn_encode_scalar_body(ty)}\
-% elif ty.category in [ty.HANDLE, ty.ND_HANDLE]:
+% elif ty.category == ty.HANDLE:
 ${handle.vn_encode_handle_body(ty)}\
 % elif ty.category == ty.UNION:
     assert(false); /* no user? */
@@ -155,7 +153,7 @@ vn_decode_${ty.name}_partial_temp(struct vn_cs *cs, ${ty.name} *val)
 {
 % if ty.category in [ty.DEFINE, ty.BASETYPE, ty.ENUM]:
 ${scalar.vn_decode_scalar_body(ty)}\
-% elif ty.category in [ty.HANDLE, ty.ND_HANDLE]:
+% elif ty.category == ty.HANDLE:
 ${handle.vn_decode_handle_body(ty, '_temp')}\
 % elif ty.category == ty.UNION:
     assert(false); /* no user? */
@@ -173,7 +171,7 @@ ${chain.vn_decode_chain_temp_body(ty, '_partial')}\
 static inline void
 vn_replace_${ty.name}_handle(${ty.name} *val)
 {
-% if ty.category in [ty.HANDLE, ty.ND_HANDLE] and not GEN.is_driver:
+% if ty.category == ty.HANDLE and not GEN.is_driver:
 ${handle.vn_replace_handle_handle_body(ty)}\
 % elif ty.category == ty.STRUCT and not ty.s_type and not GEN.is_driver:
 ${struct.vn_replace_struct_handle_body(ty)}\
