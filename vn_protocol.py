@@ -188,7 +188,7 @@ class Gen(object):
             elif ty.name in ['char', 'size_t']:
                 return True
             elif ty.name == 'void':
-                return var.is_buffer()
+                return var.is_data()
             return False
         elif ty.category == ty.UNION:
             return ty.name in self.UNION_DEFAULT_TAGS
@@ -222,8 +222,8 @@ class Gen(object):
     def _variable_func_stem(self, ty, var):
         if var.is_string():
             func_stem = 'string'
-        elif var.is_buffer():
-            func_stem = 'blob'
+        elif var.is_data():
+            func_stem = 'data'
         elif var.ty.base.category == var.ty.BITMASK:
             func_stem = 'VkFlags'
         else:
@@ -259,8 +259,7 @@ class Gen(object):
         # unroll loops for scalar arrays to get padding right
         if loop_type and var.ty.base.category in [ty.DEFAULT, ty.BASETYPE, ty.ENUM]:
             loop_type = None
-            if not var.is_buffer():
-                func_name += '_array'
+            func_name += '_array'
         return (func_name, loop_type)
 
     def _variable_args(self, const_cast, deref_count, var_name, loop_type, loop_count):
@@ -345,7 +344,7 @@ class Gen(object):
 
         alloc_stmt = None
         if alloc_storage and var.ty.is_pointer() and not var.is_string():
-            if var.is_buffer():
+            if var.is_data():
                 alloc_size = loop_count
             else:
                 alloc_size = 'sizeof(*%s)' % var_name

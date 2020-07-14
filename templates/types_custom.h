@@ -76,17 +76,17 @@ vn_decode_array_size(struct vn_cs *cs, uint64_t max_size)
     return size;
 }
 
-/* blob */
+/* opaque data */
 
 static inline void
-vn_encode_blob(struct vn_cs *cs, const void *val, size_t size)
+vn_encode_data_array(struct vn_cs *cs, const void *val, size_t size)
 {
     vn_encode_array_size(cs, size);
     vn_encode(cs, (size + 3) & ~3, val, size);
 }
 
 static inline void
-vn_decode_blob(struct vn_cs *cs, void *val, size_t max_size)
+vn_decode_data_array(struct vn_cs *cs, void *val, size_t max_size)
 {
     const size_t size = vn_decode_array_size(cs, max_size);
     vn_decode(cs, (size + 3) & ~3, val, size);
@@ -98,7 +98,7 @@ static inline void
 vn_encode_string(struct vn_cs *cs, const char *val)
 {
     const size_t len = strlen(val);
-    vn_encode_blob(cs, val, len + 1);
+    vn_encode_data_array(cs, val, len + 1);
 }
 
 static inline void
@@ -114,13 +114,13 @@ vn_encode_char_array(struct vn_cs *cs, const char *val, uint32_t count)
 {
     const size_t len = strlen(val);
     assert(len < count);
-    vn_encode_blob(cs, val, len + 1);
+    vn_encode_data_array(cs, val, len + 1);
 }
 
 static inline void
 vn_decode_char_array(struct vn_cs *cs, char *val, uint32_t max_count)
 {
-    vn_decode_blob(cs, val, max_count);
+    vn_decode_data_array(cs, val, max_count);
     val[max_count - 1] = '\0';
 }
 </%def>

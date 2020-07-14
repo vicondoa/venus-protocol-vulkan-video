@@ -34,11 +34,4 @@ ${scalar.vn_decode_scalar_array(ty)}
 %   endif
 % endfor
 \
-/* TODO remove this and all callers */
-static inline void
-vn_decode_string(struct vn_cs *cs, const char *val)
-{
-    vn_cs_set_error(cs);
-}
-
 #endif /* VN_PROTOCOL_DRIVER_TYPES_H */
