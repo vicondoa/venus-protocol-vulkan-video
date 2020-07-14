@@ -375,6 +375,8 @@ class VkType(object):
             len_names = []
             for l in lens:
                 if l == 'null-terminated':
+                    len_exprs.append(l)
+                    len_names.append(c_var.name)
                     continue
 
                 len_exprs.append(l)

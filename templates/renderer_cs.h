@@ -19,6 +19,7 @@
  *   vn_cs_get_object_handle
  *   vn_cs_reset_temp_pool
  *   vn_cs_alloc_temp
+ *   vn_cs_peek
  *   vn_cs_in
  *   vn_cs_reserve_out
  *   vn_cs_out
@@ -72,6 +73,13 @@ vn_cs_alloc_temp(struct vn_cs *cs, size_t size)
 {
    struct vkr_parser *parser = (struct vkr_parser *)cs;
    return vkr_parser_alloc_temp(parser, size);
+}
+
+static inline void
+vn_cs_peek(struct vn_cs *cs, void *val, size_t val_size)
+{
+   struct vkr_parser *parser = (struct vkr_parser *)cs;
+   vkr_parser_peek(parser, val, val_size);
 }
 
 static inline void

@@ -95,21 +95,6 @@ vn_decode_data_array(struct vn_cs *cs, void *val, size_t max_size)
 /* string */
 
 static inline void
-vn_encode_string(struct vn_cs *cs, const char *val)
-{
-    const size_t len = strlen(val);
-    vn_encode_data_array(cs, val, len + 1);
-}
-
-static inline void
-vn_encode_string_array(struct vn_cs *cs, const char * const *val, uint32_t count)
-{
-    vn_encode_array_size(cs, count);
-    for (uint32_t i = 0; i < count; i++)
-        vn_encode_string(cs, val[i]);
-}
-
-static inline void
 vn_encode_char_array(struct vn_cs *cs, const char *val, uint32_t count)
 {
     const size_t len = strlen(val);

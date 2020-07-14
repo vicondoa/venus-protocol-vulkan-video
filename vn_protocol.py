@@ -238,9 +238,7 @@ class Gen(object):
             self.alloc_stmts = []
 
         def _init_func_stem(self):
-            if self.var.is_string():
-                self.func_stem = 'string'
-            elif self.var.is_data():
+            if self.var.is_data() or self.var.is_string():
                 self.func_stem = 'data'
             elif self.var.ty.base.category == VkType.BITMASK:
                 self.func_stem = 'VkFlags'
@@ -257,7 +255,15 @@ class Gen(object):
             len_exprs = self.var.attrs['len_exprs']
             len_names = self.var.attrs['len_names']
             for expr, name in zip(len_exprs, len_names):
-                if name:
+                if expr == 'null-terminated':
+                    loop_ty = self.ty.find_variable(name)[-1].ty
+                    suffix = ''
+                    if loop_ty.indirection_depth() > 1:
+                        suffix = '[%c]' % (chr(ord('i') + loop_ty.indirection_depth() - 2))
+
+                    self.loop_types.append('size_t')
+                    self.loop_counts.append('strlen(%s%s%s) + 1' % (self.prefix, name, suffix))
+                elif name:
                     loop_ty = self.ty.find_variable(name)[-1].ty
                     deref = '*' * loop_ty.indirection_depth()
                     count = expr.replace(name, deref + self.prefix + name)
@@ -335,10 +341,6 @@ class Gen(object):
             func_name += '_partial'
 
         deref_count = var.ty.indirection_depth() + var.ty.is_array() - 1
-        # make a special case for char**
-        if var.is_string() and var.ty.indirection_depth() == 2:
-            deref_count -= 1
-
         info.func_stmt = '%s(cs, %s)' % (func_name, info.args('', deref_count))
 
         return info
@@ -374,13 +376,15 @@ class Gen(object):
         var_name = prefix + var.name
 
         info = self.VariableInfo(ty, var, prefix)
+        if var.is_string() and info.array_size:
+            info.array_size = 'vn_peek_array_size(cs)'
 
         if not self.is_serializable(var):
             assert(var.maybe_null())
             info.func_stmt = 'assert(false)'
             return info
 
-        if alloc_storage and var.ty.is_pointer() and not var.is_string():
+        if alloc_storage and var.ty.is_pointer():
             info.init_alloc_stmts()
 
         func_name = 'vn_decode_' + info.func_stem
@@ -397,20 +401,11 @@ class Gen(object):
                 func_name += '_temp'
             elif var.ty.base.category == ty.HANDLE and var.ty.base.dispatchable and is_out:
                 func_name += '_temp'
-            elif var.is_string():
-                func_name += '_temp'
 
         deref_count = var.ty.indirection_depth() + var.ty.is_array() - 1
-        # make a special case for char**
-        if var.is_string() and var.ty.indirection_depth() == 2:
-            deref_count -= 1
 
         const_cast = ''
-        if var.is_string():
-            if alloc_storage:
-                deref_count -= 1
-                const_cast = '(char %s)' % ('*' * (var.ty.indirection_depth() + 1))
-        elif var.ty.is_const_pointer() or var.ty.is_const_array():
+        if var.ty.is_const_pointer() or var.ty.is_const_array():
             const_cast = '(%s *)' % var.ty.base.name
 
         info.func_stmt = '%s(cs, %s)' % (func_name, info.args(const_cast, deref_count))
@@ -422,7 +417,7 @@ class Gen(object):
 
         partially_initialized = [ty.HANDLE, ty.STRUCT]
         if is_out and var.ty.base.category not in partially_initialized:
-            if alloc_storage and var.ty.is_pointer() and not var.is_string():
+            if alloc_storage and var.ty.is_pointer():
                 # we still need to allocate the storage
                 pass
             else:
