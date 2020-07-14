@@ -678,6 +678,7 @@ class GenCommands(object):
         command_types, command_skipped = self.get_commands()
         return self.template.render(
                 GEN=self.gen,
+                COMMAND_TABLE_SIZE=self.api.max_vn_command_type_value + 1,
                 COMMAND_TYPES=command_types,
                 COMMAND_SKIPPED=command_skipped)
 

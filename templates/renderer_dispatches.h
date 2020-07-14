@@ -69,6 +69,12 @@ static inline void vn_dispatch_debug_log(struct vn_dispatch_context *ctx, const 
 ${dispatch_command(ty)}
 % endfor
 \
+static void (*const vn_dispatch_table[${COMMAND_TABLE_SIZE}])(struct vn_dispatch_context *ctx, VnCommandFlags flags) = {
+% for ty in COMMAND_TYPES:
+    [${ty.attrs['c_type']}] = vn_dispatch_${ty.name},
+% endfor
+};
+
 static inline void vn_dispatch_command(struct vn_dispatch_context *ctx)
 {
     VnCommandType cmd_type;
@@ -77,20 +83,10 @@ static inline void vn_dispatch_command(struct vn_dispatch_context *ctx)
     vn_decode_VnCommandType(ctx->cs, &cmd_type);
     vn_decode_VkFlags(ctx->cs, &cmd_flags);
 
-    switch (cmd_type) {
-% for ty in COMMAND_TYPES:
-    case ${ty.attrs['c_type']}:
-        vn_dispatch_${ty.name}(ctx, cmd_flags);
-        break;
-% endfor
-% for ty in COMMAND_SKIPPED:
-    case ${ty.attrs['c_type']}:
-% endfor
-    default:
-        /* unexpected command */
+    if (cmd_type < ${COMMAND_TABLE_SIZE} && vn_dispatch_table[cmd_type])
+        vn_dispatch_table[cmd_type](ctx, cmd_flags);
+    else
         vn_cs_set_error(ctx->cs);
-        break;
-    }
 
     if (vn_cs_has_error(ctx->cs))
         vn_dispatch_debug_log(ctx, "%s resulted in CS error", vn_dispatch_command_name(cmd_type));
