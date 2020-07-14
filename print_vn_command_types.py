@@ -12,19 +12,19 @@ VN_XML = VN_PROTOCOL_DIR.joinpath('xml/vn.xml')
 
 def get_supported_commands(api):
     commands = []
-    for cmd in api.venus.commands:
-        if cmd not in commands:
-            commands.append(cmd)
+    for ty in api.venus.types:
+        if ty.category == ty.COMMAND and ty not in commands:
+            commands.append(ty)
     for feat in api.vulkan:
-        for cmd in feat.commands:
-            if cmd not in commands:
-                commands.append(cmd)
+        for ty in feat.types:
+            if ty.category == ty.COMMAND and ty not in commands:
+                commands.append(ty)
     for ext in api.extensions:
         if ext.name not in VK_XML_EXTENSION_LIST:
             continue
-        for cmd in ext.commands:
-            if cmd not in commands:
-                commands.append(cmd)
+        for ty in ext.types:
+            if ty.category == ty.COMMAND and ty not in commands:
+                commands.append(ty)
 
     return commands
 

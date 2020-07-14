@@ -596,17 +596,15 @@ class VkEnums(object):
         ty.enums.init(bitmask, values)
 
 class VkFeature(object):
-    def __init__(self, api, name, number, types, commands):
+    def __init__(self, api, name, number, types):
         self.api = api
         self.name = name
         self.number = number
         self.types = types
-        self.commands = commands
 
     @staticmethod
     def parse_require(require_elem, type_table, ext_number=None):
         types = []
-        commands = []
         for child in require_elem:
             if child.tag == 'enum':
                 if 'extends' not in child.attrib:
@@ -616,12 +614,9 @@ class VkFeature(object):
             elif child.tag in ['type', 'command']:
                 name = child.attrib['name']
                 ty = type_table[name]
-                if ty.category == ty.COMMAND:
-                    commands.append(ty)
-                else:
-                    types.append(ty)
+                types.append(ty)
 
-        return types, commands
+        return types
 
     @classmethod
     def parse_feature(cls, feature_elem, type_table):
@@ -630,26 +625,20 @@ class VkFeature(object):
         number = feature_elem.attrib['number']
 
         types = []
-        commands = []
         for require_elem in feature_elem.iterfind('require'):
-            require_types, require_commands = \
-                    cls.parse_require(require_elem, type_table)
+            require_types = cls.parse_require(require_elem, type_table)
             for ty in require_types:
                 if ty not in types:
                     types.append(ty)
-            for ty in require_commands:
-                if ty not in commands:
-                    commands.append(ty)
 
-        return cls(api, name, number, types, commands)
+        return cls(api, name, number, types)
 
 class VkExtension(object):
-    def __init__(self, name, number, platform, types, commands):
+    def __init__(self, name, number, platform, types):
         self.name = name
         self.number = int(number)
         self.platform = platform
         self.types = types
-        self.commands = commands
 
     @classmethod
     def parse_extension(cls, elem, type_table):
@@ -658,18 +647,14 @@ class VkExtension(object):
         platform = elem.attrib.get('platform')
 
         types = []
-        commands = []
         for require_elem in elem.iterfind('require'):
-            require_types, require_commands = \
-                    VkFeature.parse_require(require_elem, type_table, number)
+            require_types = VkFeature.parse_require(
+                    require_elem, type_table, number)
             for ty in require_types:
                 if ty not in types:
                     types.append(ty)
-            for ty in require_commands:
-                if ty not in commands:
-                    commands.append(ty)
 
-        return cls(name, number, platform, types, commands)
+        return cls(name, number, platform, types)
 
 class VkApi(object):
     def __init__(self):

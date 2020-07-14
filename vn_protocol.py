@@ -131,14 +131,11 @@ class Gen(object):
     def _get_supported_types(self):
         types = []
         types.extend(self.api.venus.types)
-        types.extend(self.api.venus.commands)
         for feat in self.api.vulkan:
             types.extend(feat.types)
-            types.extend(feat.commands)
         for ext in self.api.extensions:
             if ext.name in VK_XML_EXTENSION_LIST:
                 types.extend(ext.types)
-                types.extend(ext.commands)
 
         types_with_deps = set()
         for ty in types:
