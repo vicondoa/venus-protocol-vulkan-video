@@ -143,7 +143,6 @@ class VkType(object):
         self.category = None
         self.base = None
 
-        self.platforms = []
         self.aliases = []
 
         self.attrs = {}
@@ -664,13 +663,9 @@ class VkExtension(object):
             require_types, require_commands = \
                     VkFeature.parse_require(require_elem, type_table, number)
             for ty in require_types:
-                if platform:
-                    ty.platforms.append(platform)
                 if ty not in types:
                     types.append(ty)
             for ty in require_commands:
-                if platform:
-                    ty.platforms.append(platform)
                 if ty not in commands:
                     commands.append(ty)
 

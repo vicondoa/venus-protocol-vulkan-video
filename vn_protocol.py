@@ -130,8 +130,9 @@ class Gen(object):
             types.extend(feat.types)
             types.extend(feat.commands)
         for ext in self.api.extensions:
-            types.extend(ext.types)
-            types.extend(ext.commands)
+            if ext.name in VK_XML_EXTENSION_LIST:
+                types.extend(ext.types)
+                types.extend(ext.commands)
 
         types_with_deps = set()
         for ty in types:
@@ -170,10 +171,6 @@ class Gen(object):
             if not ty.typedef:
                 return False
             ty = ty.typedef
-
-        # ignore platform extensions for now
-        if ty.platforms:
-            return False
 
         if ty.category in [ty.FUNCPOINTER]:
             return False
@@ -535,11 +532,7 @@ class GenDefines(object):
             elif ty.category == ty.BITMASK:
                 bitmask_types.append(ty)
 
-        command_types = []
-        for ty in self.gen.supported_types[VkType.COMMAND]:
-            if ty.platforms:
-                continue
-            command_types.append(ty)
+        command_types = self.gen.supported_types[VkType.COMMAND]
 
         return self.template.render(
                 TYPEDEF_TYPES=typedef_types,
@@ -581,20 +574,14 @@ class GenTypes(object):
         }
 
         for ty in self.gen.supported_types[VkType.DEFAULT]:
-            if ty.platforms:
-                continue
             if ty.name in self.gen.PRIMITIVE_TYPES:
                 assert(self.gen.is_serializable(ty))
                 types[ty.category].append(ty)
         for ty in self.gen.supported_types[VkType.BASETYPE]:
-            if ty.platforms:
-                continue
             if ty.typedef:
                 assert(self.gen.is_serializable(ty))
                 types[ty.category].append(ty)
         for ty in self.gen.supported_types[VkType.ENUM]:
-            if ty.platforms:
-                continue
             if ty.enums.values:
                 assert(self.gen.is_serializable(ty))
                 types[ty.category].append(ty)
@@ -623,12 +610,7 @@ class GenHandles(object):
         self.template = template
 
     def generate(self):
-        handle_types = []
-        for ty in self.gen.supported_types[VkType.HANDLE]:
-            if ty.platforms:
-                continue
-            handle_types.append(ty)
-
+        handle_types = self.gen.supported_types[VkType.HANDLE]
         return self.template.render(
                 GEN=self.gen,
                 HANDLE_TYPES=handle_types)
