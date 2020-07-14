@@ -219,87 +219,129 @@ class Gen(object):
                 skipped.append(next_ty)
         return (types, skipped)
 
-    def _variable_func_stem(self, ty, var):
-        if var.is_string():
-            func_stem = 'string'
-        elif var.is_data():
-            func_stem = 'data'
-        elif var.ty.base.category == var.ty.BITMASK:
-            func_stem = 'VkFlags'
-        else:
-            func_stem = var.ty.base.name
+    class VariableInfo(object):
+        def __init__(self, ty, var, prefix):
+            self.ty = ty
+            self.var = var
+            self.prefix = prefix
 
-        return func_stem
+            self.func_stem = None
+            self.loop_types = []
+            self.loop_counts = []
+            self.array_size = None
 
-    def _variable_loop_info(self, ty, var, prefix):
-        loop_type = None
-        loop_count = None
-        if 'len_exprs' in var.attrs:
-            # this is very limiting
-            assert(len(var.attrs['len_exprs']) == 1)
-            loop_expr = var.attrs['len_exprs'][0]
-            loop_name = var.attrs['len_names'][0]
+            self._init_func_stem()
+            self._init_loop_info()
+            self._unroll_loop()
 
-            loop_ty = ty.find_variable(loop_name)[-1].ty
-            deref = '*' * loop_ty.indirection_depth()
+            self.func_stmt = None
+            self.alloc_stmts = []
 
-            loop_type = loop_ty.base.name
-            loop_count = loop_expr.replace(loop_name, deref + prefix + loop_name)
-        elif var.ty.is_array():
-            loop_type = 'uint32_t'
-            loop_count = var.ty.array_size()
+        def _init_func_stem(self):
+            if self.var.is_string():
+                self.func_stem = 'string'
+            elif self.var.is_data():
+                self.func_stem = 'data'
+            elif self.var.ty.base.category == VkType.BITMASK:
+                self.func_stem = 'VkFlags'
+            else:
+                self.func_stem = self.var.ty.base.name
 
-        return (loop_type, loop_count)
+        def _init_loop_info(self):
+            if 'len_exprs' not in self.var.attrs:
+                if self.var.ty.is_array():
+                    self.loop_types.append('uint32_t')
+                    self.loop_counts.append(self.var.ty.array_size())
+                return
 
-    def _variable_unroll(self, ty, var, func_name, loop_type):
-        # unroll loops for scalar arrays to get padding right
-        if loop_type and var.ty.base.category in [ty.DEFAULT, ty.BASETYPE, ty.ENUM]:
-            loop_type = None
-            func_name += '_array'
-        return (func_name, loop_type)
+            len_exprs = self.var.attrs['len_exprs']
+            len_names = self.var.attrs['len_names']
+            for expr, name in zip(len_exprs, len_names):
+                if name:
+                    loop_ty = self.ty.find_variable(name)[-1].ty
+                    deref = '*' * loop_ty.indirection_depth()
+                    count = expr.replace(name, deref + self.prefix + name)
 
-    def _variable_args(self, const_cast, deref_count, var_name, loop_type, loop_count):
-        if loop_type:
-            var_name += '[i]'
-            deref_count -= 1
-            loop_count = None
+                    self.loop_types.append(loop_ty.base.name)
+                    self.loop_counts.append(count)
+                else:
+                    self.loop_types.append('uint32_t')
+                    self.loop_counts.append(expr)
 
-        deref = ''
-        if deref_count > 0:
-            deref = '*' * deref_count
-        elif deref_count < 0:
-            deref = '&' * -deref_count
+        def _unroll_loop(self):
+            if not self.loop_types:
+                return
 
-        args = '%s%s%s' % (const_cast, deref, var_name)
-        if loop_count:
-            args += ', ' + loop_count
+            # unroll loops for scalar arrays to get padding right
+            scalar_categories = [VkType.DEFAULT, VkType.BASETYPE, VkType.ENUM]
+            if self.var.ty.base.category in scalar_categories:
+                self.func_stem += '_array'
+                self.loop_types.pop()
+                self.array_size = self.loop_counts.pop()
 
-        return args
+        def init_alloc_stmts(self):
+            var_name = self.prefix + self.var.name
+
+            alloc_counts = self.loop_counts
+            if self.array_size or not alloc_counts:
+                alloc_counts.append(self.array_size)
+
+            for level, count in enumerate(alloc_counts):
+                if self.var.is_data():
+                    size = count
+                else:
+                    size = 'sizeof(%s%s)' % ('*' * (level + 1), var_name)
+                    if count:
+                        size += ' * ' + count
+
+                suffix = ''
+                for i in range(level):
+                    suffix += '[%c]' % (chr(ord('i') + i))
+                if suffix:
+                    stmt = '((void **)%s)%s = vn_cs_alloc_temp(cs, %s)' % (var_name, suffix, size)
+                else:
+                    stmt = '%s = vn_cs_alloc_temp(cs, %s)' % (var_name, size)
+                self.alloc_stmts.append(stmt)
+
+        def args(self, const_cast, deref_count):
+            var_name = self.prefix + self.var.name
+
+            for i in range(len(self.loop_types)):
+                var_name += '[%c]' % chr(ord('i') + i)
+                deref_count -= 1
+
+            deref = ''
+            if deref_count > 0:
+                deref = '*' * deref_count
+            elif deref_count < 0:
+                deref = '&' * -deref_count
+
+            args = '%s%s%s' % (const_cast, deref, var_name)
+            if self.array_size:
+                args += ', ' + self.array_size
+
+            return args
 
     def _encode_variable_info(self, ty, var, prefix, is_out):
-        var_name = prefix + var.name
+        info = self.VariableInfo(ty, var, prefix)
 
         if not self.is_serializable(var):
             assert(var.maybe_null())
-            return ('assert', 'false', None, None)
+            info.func_stmt = 'assert(false)'
+            return info
 
-        func_stem = self._variable_func_stem(ty, var)
-        loop_type, loop_count = self._variable_loop_info(ty, var, prefix)
-        func_stem, loop_type = self._variable_unroll(ty, var, func_stem, loop_type)
-
+        func_name = 'vn_encode_' + info.func_stem
         if is_out and var.ty.base.category == ty.STRUCT:
-            func_stem += '_partial'
-        func_name = 'vn_encode_' + func_stem
+            func_name += '_partial'
 
         deref_count = var.ty.indirection_depth() + var.ty.is_array() - 1
         # make a special case for char**
         if var.is_string() and var.ty.indirection_depth() == 2:
             deref_count -= 1
 
-        func_args = 'cs, ' + self._variable_args(
-                '', deref_count, var_name, loop_type, loop_count)
+        info.func_stmt = '%s(cs, %s)' % (func_name, info.args('', deref_count))
 
-        return (func_name, func_args, loop_type, loop_count)
+        return info
 
     def _encode_variable(self, ty, var, prefix, is_out):
         var_name = prefix + var.name
@@ -311,8 +353,9 @@ class Gen(object):
             else:
                 return '/* skip %s */' % var_name
 
-        func_name, func_args, loop_type, loop_count = \
-            self._encode_variable_info(ty, var, prefix, is_out)
+        info = self._encode_variable_info(ty, var, prefix, is_out)
+        loop_type = info.loop_types[0] if info.loop_types else None
+        loop_count = info.loop_counts[0] if info.loop_counts else None
 
         code = ''
         if var.ty.is_pointer():
@@ -321,7 +364,7 @@ class Gen(object):
                 code += '{ '
         if loop_type:
             code += 'vn_encode_array_size(cs, %s); for (%s i = 0; i < %s; i++) ' % (loop_count, loop_type, loop_count)
-        code += '%s(%s);' % (func_name, func_args)
+        code += '%s;' % info.func_stmt
         if var.ty.is_pointer() and loop_type:
             code += ' }'
 
@@ -330,41 +373,32 @@ class Gen(object):
     def _decode_variable_info(self, ty, var, prefix, is_out, alloc_storage):
         var_name = prefix + var.name
 
+        info = self.VariableInfo(ty, var, prefix)
+
         if not self.is_serializable(var):
             assert(var.maybe_null())
-            return (None, 'assert', 'false', None, None)
+            info.func_stmt = 'assert(false)'
+            return info
 
-        func_stem = self._variable_func_stem(ty, var)
-        loop_type, loop_count = self._variable_loop_info(ty, var, prefix)
-        func_stem, loop_type = self._variable_unroll(ty, var, func_stem, loop_type)
-
-        alloc_stmt = None
         if alloc_storage and var.ty.is_pointer() and not var.is_string():
-            if var.is_data():
-                alloc_size = loop_count
-            else:
-                alloc_size = 'sizeof(*%s)' % var_name
-                if loop_count:
-                    alloc_size += ' * ' + loop_count
+            info.init_alloc_stmts()
 
-            alloc_stmt = '%s = vn_cs_alloc_temp(cs, %s)' % (var_name, alloc_size)
+        func_name = 'vn_decode_' + info.func_stem
 
         # automatic handle lookup
         if not self.is_driver:
             if var.ty.base.is_handle() and not is_out:
-                func_stem += '_lookup'
+                func_name += '_lookup'
 
         if var.ty.base.category == ty.STRUCT and is_out:
-            func_stem += '_partial'
+            func_name += '_partial'
         if alloc_storage:
             if var.ty.base.category in [ty.STRUCT, ty.UNION]:
-                func_stem += '_temp'
+                func_name += '_temp'
             elif var.ty.base.category == ty.HANDLE and var.ty.base.dispatchable and is_out:
-                func_stem += '_temp'
+                func_name += '_temp'
             elif var.is_string():
-                func_stem += '_temp'
-
-        func_name = 'vn_decode_' + func_stem
+                func_name += '_temp'
 
         deref_count = var.ty.indirection_depth() + var.ty.is_array() - 1
         # make a special case for char**
@@ -379,10 +413,9 @@ class Gen(object):
         elif var.ty.is_const_pointer() or var.ty.is_const_array():
             const_cast = '(%s *)' % var.ty.base.name
 
-        func_args = 'cs, ' + self._variable_args(
-                const_cast, deref_count, var_name, loop_type, loop_count)
+        info.func_stmt = '%s(cs, %s)' % (func_name, info.args(const_cast, deref_count))
 
-        return (alloc_stmt, func_name, func_args, loop_type, loop_count)
+        return info
 
     def _decode_variable(self, ty, var, prefix, is_out, alloc_storage):
         var_name = prefix + var.name
@@ -395,8 +428,9 @@ class Gen(object):
             else:
                 return '/* skip %s%s */' % (prefix, var.name)
 
-        alloc_stmt, func_name, func_args, loop_type, loop_count = \
-                self._decode_variable_info(ty, var, prefix, is_out, alloc_storage)
+        info = self._decode_variable_info(ty, var, prefix, is_out, alloc_storage)
+        loop_type = info.loop_types[0] if info.loop_types else None
+        loop_count = info.loop_counts[0] if info.loop_counts else None
 
         code = ''
         indent = ''
@@ -405,17 +439,30 @@ class Gen(object):
             indent += '    '
 
         if is_out and var.ty.base.category not in partially_initialized:
-            assert(alloc_stmt)
-            code += '%s%s;\n    ' % (indent, alloc_stmt)
+            assert(len(info.alloc_stmts) == 1)
+            code += '%s%s;\n    ' % (indent, info.alloc_stmts[0])
             code += '%sif (!%s) return;' % (indent, var_name)
+        elif info.alloc_stmts and len(info.alloc_stmts) > 1:
+            for level, alloc_stmt in enumerate(info.alloc_stmts):
+                if alloc_stmt:
+                    code += '%s%s;\n    ' % (indent, alloc_stmt)
+                    code += '%sif (!%s) return;\n    ' % (indent, var_name)
+                if level == 0 and loop_count:
+                    code += '%svn_decode_array_size(cs, %s);\n    ' % (indent, loop_count)
+                    code += '%sfor (uint32_t i = 0; i < %s; i++) {\n    ' % (indent, loop_count)
+                    indent += '    '
+            code += '%s%s;' % (indent, info.func_stmt)
+            if loop_count:
+                code += '\n        }'
         else:
-            if alloc_stmt:
-                code += '%s%s;\n    ' % (indent, alloc_stmt)
+            if info.alloc_stmts:
+                code += '%s%s;\n    ' % (indent, info.alloc_stmts[0])
                 code += '%sif (!%s) return;\n    ' % (indent, var_name)
             if loop_type:
                 code += '%svn_decode_array_size(cs, %s);\n    ' % (indent, loop_count)
-                code += '%sfor (uint32_t i = 0; i < %s; i++)\n        ' % (indent, loop_count)
-            code += '%s%s(%s);' % (indent, func_name, func_args)
+                code += '%sfor (uint32_t i = 0; i < %s; i++)\n    ' % (indent, loop_count)
+                indent += '    '
+            code += '%s%s;' % (indent, info.func_stmt)
 
         if var.ty.is_pointer():
             code += '\n    '
@@ -426,13 +473,9 @@ class Gen(object):
         return code
 
     def _replace_variable_handle_info(self, ty, var, prefix):
-        var_name = prefix + var.name
+        info = self.VariableInfo(ty, var, prefix)
 
-        func_stem = self._variable_func_stem(ty, var)
-        loop_type, loop_count = self._variable_loop_info(ty, var, prefix)
-        func_stem, loop_type = self._variable_unroll(ty, var, func_stem, loop_type)
-
-        func_name = 'vn_replace_%s_handle' % func_stem
+        func_name = 'vn_replace_%s_handle' % info.func_stem
 
         deref_count = var.ty.indirection_depth() + var.ty.is_array() - 1
 
@@ -440,10 +483,9 @@ class Gen(object):
         if var.ty.is_const_pointer() or var.ty.is_const_array():
             const_cast = '(%s *)' % var.ty.base.name
 
-        func_args = self._variable_args(
-                const_cast, deref_count, var_name, loop_type, loop_count)
+        info.func_stmt = '%s(%s)' % (func_name, info.args(const_cast, deref_count))
 
-        return (func_name, func_args, loop_type, loop_count)
+        return info
 
     def _replace_variable_handle(self, ty, var, prefix, is_out):
         var_name = prefix + var.name
@@ -453,15 +495,16 @@ class Gen(object):
            not self.is_serializable(var):
             return '/* skip %s */' % var_name
 
-        func_name, func_args, loop_type, loop_count = \
-                self._replace_variable_handle_info(ty, var, prefix)
+        info = self._replace_variable_handle_info(ty, var, prefix)
+        loop_type = info.loop_types[0] if info.loop_types else None
+        loop_count = info.loop_counts[0] if info.loop_counts else None
 
         code = ''
         if var.ty.is_pointer():
             code += 'if (%s) ' % var_name
         if loop_type:
             code += 'for (%s i = 0; i < %s; i++) ' % (loop_type, loop_count)
-        code += '%s(%s);' % (func_name, func_args)
+        code += '%s;' % info.func_stmt
 
         return code
 
