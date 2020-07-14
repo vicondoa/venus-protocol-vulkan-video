@@ -112,7 +112,7 @@ class VkVariable(object):
         return self.ty.indirection_depth() == 1 and \
                not self.ty.is_array() and \
                self.ty.base.name == 'void' and  \
-               'len' in self.attrs
+               'len_exprs' in self.attrs
 
     def is_string(self):
         return self.ty.base.name == 'char' and not self.ty.is_array()
@@ -366,29 +366,40 @@ class VkType(object):
             attrs['values'] = elem.attrib['values'].split(',')
         if 'len' in elem.attrib:
             lens = []
-            altlens = []
             if 'altlen' in elem.attrib:
-                altlens = elem.attrib['altlen'].split(',')
-                if altlens[-1] == 'null-terminated':
-                    altlens.pop()
-
-                for alt in altlens:
-                    begin = 0
-                    while not alt[begin].isalpha():
-                        begin += 1
-                    end = begin + 1
-                    while alt[end].isalnum():
-                        end += 1
-                    lens.append(alt[begin:end])
+                lens = elem.attrib['altlen'].split(',')
             else:
                 lens = elem.attrib['len'].split(',')
-                if lens[-1] == 'null-terminated':
-                    lens.pop()
 
-            if lens:
-                attrs['len'] = lens
-            if altlens:
-                attrs['altlen'] = altlens
+            len_exprs = []
+            len_names = []
+            for l in lens:
+                if l == 'null-terminated':
+                    continue
+
+                len_exprs.append(l)
+
+                # extract "thisFoo->thatBar"
+                begin = 0
+                while begin < len(l):
+                    if l[begin].islower():
+                        break
+                    begin += 1
+
+                end = begin + 1
+                while end < len(l):
+                    if l[end].isidentifier() or l[end].isdigit():
+                        end += 1
+                    elif l[end:end + 2] == '->':
+                        end += 2
+                    else:
+                        break
+
+                len_names.append(l[begin:end])
+
+            if len_exprs:
+                attrs['len_exprs'] = len_exprs
+                attrs['len_names'] = len_names
         if 'optional' in elem.attrib:
             attrs['optional'] = elem.attrib['optional'].split(',')
 

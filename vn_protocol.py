@@ -116,9 +116,9 @@ class Gen(object):
                     else:
                         var.attrs['var_in'] = True
 
-                # outs appear in 'len' are in/out
+                # outs appear in 'len_exprs' are in/out
                 for var in ty.variables:
-                    for name in var.attrs.get('len', []):
+                    for name in var.attrs.get('len_exprs', []):
                         v = ty.find_variable(name)
                         if v:
                             v = v[0]
@@ -234,21 +234,17 @@ class Gen(object):
     def _variable_loop_info(self, ty, var, prefix):
         loop_type = None
         loop_count = None
-        if 'len' in var.attrs:
+        if 'len_exprs' in var.attrs:
             # this is very limiting
-            assert(len(var.attrs['len']) == 1)
-            loop_name = var.attrs['len'][0]
-            if 'altlen' in var.attrs:
-                loop_count = var.attrs['altlen'][0]
-            else:
-                loop_count = loop_name
+            assert(len(var.attrs['len_exprs']) == 1)
+            loop_expr = var.attrs['len_exprs'][0]
+            loop_name = var.attrs['len_names'][0]
 
-            loop_vars = ty.find_variable(loop_name)
-            loop_type = loop_vars[-1].ty.base.name
+            loop_ty = ty.find_variable(loop_name)[-1].ty
+            deref = '*' * loop_ty.indirection_depth()
 
-            val = prefix + '->'.join([v.name for v in loop_vars])
-            val = '*' * loop_vars[-1].ty.indirection_depth() + val
-            loop_count = loop_count.replace(loop_name, val)
+            loop_type = loop_ty.base.name
+            loop_count = loop_expr.replace(loop_name, deref + prefix + loop_name)
         elif var.ty.is_array():
             loop_type = 'uint32_t'
             loop_count = var.ty.array_size()
