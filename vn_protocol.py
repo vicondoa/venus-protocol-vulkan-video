@@ -224,9 +224,6 @@ class Gen:
             self.array_size = None
             self._unroll_loop()
 
-            self.loop_stmts = []
-            self._init_loop_stmts()
-
             self.loop_alloc_stmts = []
             self.loop_extra_stmts = []
             self.func_alloc_stmt = None
@@ -312,14 +309,6 @@ class Gen:
             self.loop_indices.pop()
             self.array_size = self.loop_counts.pop()
 
-        def _init_loop_stmts(self):
-            for loop_type, loop_index, loop_count in zip(self.loop_types,
-                                                         self.loop_indices,
-                                                         self.loop_counts):
-                stmt = 'for (%s %c = 0; %c < %s; %c++)' % (loop_type,
-                        loop_index, loop_index, loop_count, loop_index)
-                self.loop_stmts.append(stmt)
-
         def init_alloc_stmts(self):
             alloc_counts = self.loop_counts[:]
             if self.array_size:
@@ -379,10 +368,18 @@ class Gen:
                 if level < len(self.loop_extra_stmts):
                     code += '%s%s;\n' % (indent, self.loop_extra_stmts[level])
 
+                init_expr = '%s %c = 0' % (self.loop_types[level],
+                        self.loop_indices[level])
+                cond_expr = '%c < %s' % (self.loop_indices[level],
+                        self.loop_counts[level])
+                incr_expr = '%c++' % self.loop_indices[level]
+
                 bracket = ' {'
                 if not bracket_last and level == self.loop_level - 1:
                     bracket = ''
-                code += '%s%s%s\n' % (indent, self.loop_stmts[level], bracket)
+
+                code += '%sfor (%s; %s; %s)%s\n' % (indent, init_expr,
+                        cond_expr, incr_expr, bracket)
 
                 indent += '    '
 
@@ -448,7 +445,7 @@ class Gen:
         info = self._encode_variable_info(ty, var, prefix, is_out)
 
         code = ''
-        if var.ty.is_pointer() and info.loop_stmts:
+        if var.ty.is_pointer() and info.loop_level:
             code += 'if (vn_encode_pointer(cs, %s)) {\n    ' % var_name
             code += '    %s\n    ' % info.code(8)
             code += '}'
@@ -539,7 +536,7 @@ class Gen:
                 info.func_stem, info.func_args(True))
 
         code = ''
-        if var.ty.is_pointer() and info.loop_stmts:
+        if var.ty.is_pointer() and info.loop_level:
             code += 'if (%s) {\n    ' % var_name
             code += '   %s\n    ' % info.code(8)
             code += '}'
