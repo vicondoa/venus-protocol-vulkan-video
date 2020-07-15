@@ -495,7 +495,8 @@ class Gen:
             return info
 
         if var.is_string() and info.array_size:
-            info.array_size = 'vn_peek_array_size(cs)'
+            info.func_array_size_stmt = 'const size_t string_size = vn_peek_array_size(cs)'
+            info.array_size = 'string_size'
 
         if alloc_storage and var.ty.is_pointer():
             info.init_alloc_stmts()
