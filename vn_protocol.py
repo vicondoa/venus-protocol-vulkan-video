@@ -224,11 +224,11 @@ class Gen:
             self.array_size = None
             self._unroll_loop()
 
-            self.before_loop_stmts = []
             self.loop_stmts = []
             self._init_loop_stmts()
 
             self.alloc_stmts = []
+            self.loop_extra_stmts = []
             self.func_stmt = None
 
         def _init_func_stem(self):
@@ -370,8 +370,8 @@ class Gen:
                     code += '%s%s;\n' % (indent, self.alloc_stmts[level])
                     code += '%sif (!%s) return;\n' % (indent, self._var_name(level))
 
-                if level < len(self.before_loop_stmts):
-                    code += '%s%s;\n' % (indent, self.before_loop_stmts[level])
+                if level < len(self.loop_extra_stmts):
+                    code += '%s%s;\n' % (indent, self.loop_extra_stmts[level])
 
                 bracket = ' {'
                 if not bracket_last and level == self.loop_level - 1:
@@ -424,7 +424,7 @@ class Gen:
         # encode array sizes
         for loop_count in info.loop_counts:
             stmt = 'vn_encode_array_size(cs, %s)' % loop_count
-            info.before_loop_stmts.append(stmt)
+            info.loop_extra_stmts.append(stmt)
 
         func_name = 'vn_encode_' + info.func_stem
         if is_out and var.ty.base.category == ty.STRUCT:
@@ -476,7 +476,7 @@ class Gen:
         # decode array sizes
         for loop_count in info.loop_counts:
             stmt = 'vn_decode_array_size(cs, %s)' % loop_count
-            info.before_loop_stmts.append(stmt)
+            info.loop_extra_stmts.append(stmt)
 
         func_name = 'vn_decode_' + info.func_stem
 
