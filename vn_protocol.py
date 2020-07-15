@@ -362,49 +362,56 @@ class Gen:
 
             return args
 
-        def code(self, indent):
-            indent = ' ' * indent
-
-            if self.alloc_stmts:
-                alloc_stmts = self.alloc_stmts
-            else:
-                alloc_stmts = [None] * self.loop_level
-
-            if self.before_loop_stmts:
-                before_loop_stmts = self.before_loop_stmts
-                assert(len(before_loop_stmts) == self.loop_level)
-            else:
-                before_loop_stmts = [None] * self.loop_level
-
-            bracket_last = len(alloc_stmts) > self.loop_level
-
+        def _code_enter_loops(self, indent_count, bracket_last):
             code = ''
-            for level, (loop_stmt, alloc_stmt, before_loop_stmt) in enumerate(zip(
-                    self.loop_stmts, alloc_stmts, before_loop_stmts)):
-                is_last = loop_stmt == self.loop_stmts[-1]
-                bracket = '' if is_last and not bracket_last else ' {'
-                if alloc_stmt:
-                    code += '%s%s;\n' % (indent, alloc_stmt)
+            indent = ' ' * indent_count
+            for level in range(self.loop_level):
+                if level < len(self.alloc_stmts):
+                    code += '%s%s;\n' % (indent, self.alloc_stmts[level])
                     code += '%sif (!%s) return;\n' % (indent, self._var_name(level))
-                if before_loop_stmt:
-                    code += '%s%s;\n' % (indent, before_loop_stmt)
-                code += '%s%s%s\n' % (indent, loop_stmt, bracket)
+
+                if level < len(self.before_loop_stmts):
+                    code += '%s%s;\n' % (indent, self.before_loop_stmts[level])
+
+                bracket = ' {'
+                if not bracket_last and level == self.loop_level - 1:
+                    bracket = ''
+                code += '%s%s%s\n' % (indent, self.loop_stmts[level], bracket)
+
                 indent += '    '
 
-            if len(alloc_stmts) > self.loop_level:
-                code += '%s%s;\n' % (indent, alloc_stmts[-1])
-                code += '%sif (!%s) return;\n' % (indent,
-                        self._var_name(self.loop_level))
+            return code
+
+        def _code_leave_loops(self, indent_count, bracket_last):
+            code = ''
+            for level in reversed(range(self.loop_level)):
+                if bracket_last or level < self.loop_level - 1:
+                    indent = ' ' * (indent_count + level * 4)
+                    code += '%s}\n' % indent
+            return code
+
+        def code(self, indent_count):
+            if len(self.alloc_stmts) > self.loop_level:
+                alloc_stmt = self.alloc_stmts[-1]
+            else:
+                alloc_stmt = None
+
+            code_enter_loops = self._code_enter_loops(
+                    indent_count, bool(alloc_stmt))
+
+            code = ''
+            indent = ' ' * (indent_count + self.loop_level * 4)
+            if alloc_stmt:
+                code += '%s%s;\n' % (indent, alloc_stmt)
+                code += '%sif (!%s) return;\n' % (
+                        indent, self._var_name(self.loop_level))
             if self.func_stmt:
                 code += '%s%s;\n' % (indent, self.func_stmt)
 
-            for loop_stmt in self.loop_stmts:
-                is_last = loop_stmt == self.loop_stmts[-1]
-                indent = indent[:-4]
-                if not is_last or bracket_last:
-                    code += '%s}\n' % indent
+            code_leave_loops = self._code_leave_loops(
+                    indent_count, bool(alloc_stmt))
 
-            return code.strip()
+            return (code_enter_loops + code + code_leave_loops).strip()
 
     def _encode_variable_info(self, ty, var, prefix, is_out):
         info = self.VariableInfo(ty, var, prefix)
@@ -505,9 +512,6 @@ class Gen:
         info = self._decode_variable_info(ty, var, prefix, is_out, alloc_storage)
         if is_out and var.ty.base.category not in partially_initialized:
             info.func_stmt = ''
-
-        loop_stmt = info.loop_stmts[0] if info.loop_stmts else None
-        loop_count = info.loop_counts[0] if info.loop_counts else None
 
         code = ''
         if var.ty.is_pointer():
