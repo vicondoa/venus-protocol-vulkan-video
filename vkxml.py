@@ -3,7 +3,7 @@
 
 import xml.etree.ElementTree as ET
 
-class VkCVar(object):
+class VkCVar:
     """Parse a C-declaration like 'int* const* const blah[4]' into
 
     name := 'blah'
@@ -13,7 +13,7 @@ class VkCVar(object):
     type_decor.ref_quals = ['', 'const']
     """
 
-    class Decor(object):
+    class Decor:
         def __init__(self, qual, dim, bit_size, ref_quals):
             self.qual = qual
             self.dim = dim
@@ -97,7 +97,7 @@ class VkCVar(object):
 
         return cls(name, type_name, type_decor)
 
-class VkVariable(object):
+class VkVariable:
     def __init__(self, ty, name='unnamed', attrs={}):
         self.ty = ty
         self.name = name
@@ -123,7 +123,7 @@ class VkVariable(object):
     def to_c(self):
         return VkCVar(self.name, self.ty.base.name, self.ty.decor).to_c(False)
 
-class VkType(object):
+class VkType:
     INCLUDE        = 0
     DEFINE         = 1
     DEFAULT        = 2
@@ -556,7 +556,7 @@ class VkType(object):
         if ret_ty:
             ty.ret = VkVariable(ret_ty, 'ret')
 
-class VkEnums(object):
+class VkEnums:
     def __init__(self):
         self.bitmask = False
         self.values = {}
@@ -614,7 +614,7 @@ class VkEnums(object):
 
         ty.enums.init(bitmask, values)
 
-class VkFeature(object):
+class VkFeature:
     def __init__(self, api, name, number, types):
         self.api = api
         self.name = name
@@ -652,7 +652,7 @@ class VkFeature(object):
 
         return cls(api, name, number, types)
 
-class VkExtension(object):
+class VkExtension:
     def __init__(self, name, number, platform, types):
         self.name = name
         self.number = int(number)
@@ -675,7 +675,7 @@ class VkExtension(object):
 
         return cls(name, number, platform, types)
 
-class VkApi(object):
+class VkApi:
     def __init__(self):
         self.platform_guards = {}
         self.tags = []

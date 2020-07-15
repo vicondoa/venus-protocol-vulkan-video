@@ -21,7 +21,7 @@ VN_PROTOCOL_DIR = Path(__file__).parent.resolve()
 VK_XML = VN_PROTOCOL_DIR.joinpath('xml/vk.xml')
 VN_XML = VN_PROTOCOL_DIR.joinpath('xml/vn.xml')
 
-class Gen(object):
+class Gen:
     TEMPLATE_DIR = VN_PROTOCOL_DIR.joinpath('templates')
     TEMPLATE_LOOKUP = TemplateLookup(str(TEMPLATE_DIR))
 
@@ -204,9 +204,9 @@ class Gen(object):
                 types.append(next_ty)
             else:
                 skipped.append(next_ty)
-        return (types, skipped)
+        return types, skipped
 
-    class VariableInfo(object):
+    class VariableInfo:
         def __init__(self, ty, var, prefix):
             self.ty = ty
             self.var = var
@@ -516,7 +516,7 @@ class Gen(object):
     def decode_command_ret(self, ty, prefix):
         return self._decode_variable(ty, ty.ret, prefix, False, False)
 
-class GenCS(object):
+class GenCS:
     def __init__(self, gen, template):
         self.gen = gen
         self.template = template
@@ -524,7 +524,7 @@ class GenCS(object):
     def generate(self):
         return self.template.render()
 
-class GenDefines(object):
+class GenDefines:
     def __init__(self, gen, template):
         self.gen = gen
         self.template = template
@@ -550,7 +550,7 @@ class GenDefines(object):
                 BITMASK_TYPES=bitmask_types,
                 COMMAND_TYPES=command_types)
 
-class GenCapset(object):
+class GenCapset:
     def __init__(self, gen, template):
         self.gen = gen
         self.template = template
@@ -569,7 +569,7 @@ class GenCapset(object):
                 VK_XML_VERSION=self.gen.api.vk_xml_version,
                 VK_XML_EXTENSION_TABLE=ext_table)
 
-class GenTypes(object):
+class GenTypes:
     def __init__(self, gen, template):
         self.gen = gen
         self.template = template
@@ -596,7 +596,7 @@ class GenTypes(object):
                 EARLY_SCALAR_TYPES=early_scalar_types,
                 SCALAR_TYPES=scalar_types)
 
-class GenHandles(object):
+class GenHandles:
     def __init__(self, gen, template):
         self.gen = gen
         self.template = template
@@ -607,7 +607,7 @@ class GenHandles(object):
                 GEN=self.gen,
                 HANDLE_TYPES=handle_types)
 
-class GenStructs(object):
+class GenStructs:
     def __init__(self, gen, template):
         self.gen = gen
         self.template = template
@@ -656,7 +656,7 @@ class GenStructs(object):
                 STRUCT_SKIPPED=self.skipped,
                 MANUAL_UNION_TYPES=self.manual_unions)
 
-class GenCommands(object):
+class GenCommands:
     def __init__(self, gen, template):
         self.gen = gen
         self.template = template
