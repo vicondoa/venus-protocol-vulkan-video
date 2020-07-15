@@ -339,6 +339,9 @@ class Gen:
                 self.func_alloc_stmt = alloc_stmts.pop()
             self.loop_alloc_stmts = alloc_stmts
 
+        def func_var_name(self):
+            return self._var_name(self.loop_level)
+
         def func_args(self, const_cast):
             var_name = self.prefix + self.var.name
 
@@ -447,6 +450,12 @@ class Gen:
             assert(var.maybe_null())
             info.func_stmt = 'assert(false)'
             return info
+
+        if var.is_string() and info.array_size:
+            info.func_array_size_stmt = \
+                    'const size_t string_size = strlen(%s) + 1' % (
+                            info.func_var_name())
+            info.array_size = 'string_size'
 
         # encode array sizes
         for loop_count in info.loop_counts:
