@@ -34,12 +34,4 @@ ${scalar.vn_decode_scalar_array(ty)}
 %   endif
 % endfor
 \
-static inline size_t
-vn_peek_array_size(struct vn_cs *cs)
-{
-    uint64_t size;
-    vn_cs_peek(cs, &size, sizeof(size));
-    return size;
-}
-
 #endif /* VN_PROTOCOL_RENDERER_TYPES_H */

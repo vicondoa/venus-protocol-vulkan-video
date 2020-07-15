@@ -47,13 +47,6 @@ vkr_parser_alloc_temp(struct vkr_parser *parser, size_t size)
 }
 
 static inline void
-vkr_parser_peek(struct vkr_parser *parser,
-                void *val,
-                size_t val_size)
-{
-}
-
-static inline void
 vkr_parser_read(struct vkr_parser *parser,
                 size_t size,
                 void *val,
