@@ -226,7 +226,9 @@ class Gen:
 
             self.loop_alloc_stmts = []
             self.loop_extra_stmts = []
+            self.func_array_size_stmt = None
             self.func_alloc_stmt = None
+            self.func_extra_stmt = None
             self.func_stmt = None
 
         def _init_func_stem(self):
@@ -388,10 +390,18 @@ class Gen:
         def _code_body(self, indent_level):
             code = ''
             indent = '    ' * (indent_level + self.loop_level)
+
+            if self.func_array_size_stmt:
+                code += '%s%s;\n' % (indent, self.func_array_size_stmt)
+
             if self.func_alloc_stmt:
                 code += '%s%s;\n' % (indent, self.func_alloc_stmt)
                 code += '%sif (!%s) return;\n' % (
                         indent, self._var_name(self.loop_level))
+
+            if self.func_extra_stmt:
+                code += '%s%s;\n' % (indent, self.func_extra_stmt)
+
             if self.func_stmt:
                 code += '%s%s;\n' % (indent, self.func_stmt)
 
@@ -405,14 +415,28 @@ class Gen:
                     code += '%s}\n' % indent
             return code
 
+        def need_bracket(self):
+            if self.loop_alloc_stmts or self.loop_extra_stmts:
+                return True
+            count = (bool(self.func_array_size_stmt) +
+                     bool(self.func_extra_stmt) +
+                     bool(self.func_stmt))
+            if count > 1:
+                return True
+
+            if self.loop_level:
+                return True
+
+            return False
+
         def code(self, indent_level):
             code_body = self._code_body(indent_level)
 
-            need_bracket = code_body.count(';') > 1
+            bracket_last = code_body.count(';') > 1
             code_enter_loops = self._code_enter_loops(
-                    indent_level, need_bracket)
+                    indent_level, bracket_last)
             code_leave_loops = self._code_leave_loops(
-                    indent_level, need_bracket)
+                    indent_level, bracket_last)
 
             return code_enter_loops + code_body + code_leave_loops
 
@@ -450,7 +474,7 @@ class Gen:
         info = self._encode_variable_info(ty, var, prefix, is_out)
 
         code = ''
-        if var.ty.is_pointer() and info.loop_level:
+        if var.ty.is_pointer() and info.need_bracket():
             code += 'if (vn_encode_pointer(cs, %s)) {\n    ' % var_name
             code += '    %s\n    ' % info.code(2).strip()
             code += '}'
@@ -541,7 +565,7 @@ class Gen:
                 info.func_stem, info.func_args(True))
 
         code = ''
-        if var.ty.is_pointer() and info.loop_level:
+        if var.ty.is_pointer() and info.need_bracket():
             code += 'if (%s) {\n    ' % var_name
             code += '   %s\n    ' % info.code(2).strip()
             code += '}'
