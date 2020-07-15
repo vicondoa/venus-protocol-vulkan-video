@@ -224,6 +224,7 @@ class Gen:
             self.array_size = None
             self._unroll_loop()
 
+            self.before_loop_stmts = []
             self.loop_stmts = []
             self._init_loop_stmts()
 
@@ -314,9 +315,9 @@ class Gen:
             for loop_type, loop_index, loop_count in zip(self.loop_types,
                                                          self.loop_indices,
                                                          self.loop_counts):
-                loop_stmt = 'for (%s %c = 0; %c < %s; %c++)' % (loop_type,
+                stmt = 'for (%s %c = 0; %c < %s; %c++)' % (loop_type,
                         loop_index, loop_index, loop_count, loop_index)
-                self.loop_stmts.append(loop_stmt)
+                self.loop_stmts.append(stmt)
 
         def init_alloc_stmts(self):
             alloc_counts = self.loop_counts[:]
@@ -361,6 +362,50 @@ class Gen:
 
             return args
 
+        def code(self, indent):
+            indent = ' ' * indent
+
+            if self.alloc_stmts:
+                alloc_stmts = self.alloc_stmts
+            else:
+                alloc_stmts = [None] * self.loop_level
+
+            if self.before_loop_stmts:
+                before_loop_stmts = self.before_loop_stmts
+                assert(len(before_loop_stmts) == self.loop_level)
+            else:
+                before_loop_stmts = [None] * self.loop_level
+
+            bracket_last = len(alloc_stmts) > self.loop_level
+
+            code = ''
+            for level, (loop_stmt, alloc_stmt, before_loop_stmt) in enumerate(zip(
+                    self.loop_stmts, alloc_stmts, before_loop_stmts)):
+                is_last = loop_stmt == self.loop_stmts[-1]
+                bracket = '' if is_last and not bracket_last else ' {'
+                if alloc_stmt:
+                    code += '%s%s;\n' % (indent, alloc_stmt)
+                    code += '%sif (!%s) return;\n' % (indent, self._var_name(level))
+                if before_loop_stmt:
+                    code += '%s%s;\n' % (indent, before_loop_stmt)
+                code += '%s%s%s\n' % (indent, loop_stmt, bracket)
+                indent += '    '
+
+            if len(alloc_stmts) > self.loop_level:
+                code += '%s%s;\n' % (indent, alloc_stmts[-1])
+                code += '%sif (!%s) return;\n' % (indent,
+                        self._var_name(self.loop_level))
+            if self.func_stmt:
+                code += '%s%s;\n' % (indent, self.func_stmt)
+
+            for loop_stmt in self.loop_stmts:
+                is_last = loop_stmt == self.loop_stmts[-1]
+                indent = indent[:-4]
+                if not is_last or bracket_last:
+                    code += '%s}\n' % indent
+
+            return code.strip()
+
     def _encode_variable_info(self, ty, var, prefix, is_out):
         info = self.VariableInfo(ty, var, prefix)
 
@@ -368,6 +413,11 @@ class Gen:
             assert(var.maybe_null())
             info.func_stmt = 'assert(false)'
             return info
+
+        # encode array sizes
+        for loop_count in info.loop_counts:
+            stmt = 'vn_encode_array_size(cs, %s)' % loop_count
+            info.before_loop_stmts.append(stmt)
 
         func_name = 'vn_encode_' + info.func_stem
         if is_out and var.ty.base.category == ty.STRUCT:
@@ -388,19 +438,17 @@ class Gen:
                 return '/* skip %s */' % var_name
 
         info = self._encode_variable_info(ty, var, prefix, is_out)
-        loop_stmt = info.loop_stmts[0] if info.loop_stmts else None
-        loop_count = info.loop_counts[0] if info.loop_counts else None
 
         code = ''
-        if var.ty.is_pointer():
-            code += 'if (vn_encode_pointer(cs, %s)) ' % var_name
-            if loop_stmt:
-                code += '{ '
-        if loop_stmt:
-            code += 'vn_encode_array_size(cs, %s); %s ' % (loop_count, loop_stmt)
-        code += '%s;' % info.func_stmt
-        if var.ty.is_pointer() and loop_stmt:
-            code += ' }'
+        if var.ty.is_pointer() and info.loop_stmts:
+            code += 'if (vn_encode_pointer(cs, %s)) {\n    ' % var_name
+            code += '    %s\n    ' % info.code(8)
+            code += '}'
+        elif var.ty.is_pointer():
+            code += 'if (vn_encode_pointer(cs, %s))\n    ' % var_name
+            code += '    %s' % info.code(8)
+        else:
+            code += info.code(4)
 
         return code
 
@@ -417,6 +465,11 @@ class Gen:
 
         if alloc_storage and var.ty.is_pointer():
             info.init_alloc_stmts()
+
+        # decode array sizes
+        for loop_count in info.loop_counts:
+            stmt = 'vn_decode_array_size(cs, %s)' % loop_count
+            info.before_loop_stmts.append(stmt)
 
         func_name = 'vn_decode_' + info.func_stem
 
@@ -450,54 +503,23 @@ class Gen:
                 return '/* skip %s%s */' % (prefix, var.name)
 
         info = self._decode_variable_info(ty, var, prefix, is_out, alloc_storage)
+        if is_out and var.ty.base.category not in partially_initialized:
+            info.func_stmt = ''
+
         loop_stmt = info.loop_stmts[0] if info.loop_stmts else None
         loop_count = info.loop_counts[0] if info.loop_counts else None
 
         code = ''
-        indent = ''
         if var.ty.is_pointer():
             code += 'if (vn_decode_pointer(cs)) {\n    '
-            indent += '    '
-
-        if is_out and var.ty.base.category not in partially_initialized:
-            assert(len(info.alloc_stmts) == 1)
-            code += '%s%s;\n    ' % (indent, info.alloc_stmts[0])
-            code += '%sif (!%s) return;' % (indent, var_name)
-        elif info.alloc_stmts and len(info.alloc_stmts) > 1:
-            for level, alloc_stmt in enumerate(info.alloc_stmts):
-                if alloc_stmt:
-                    code += '%s%s;\n    ' % (indent, alloc_stmt)
-                    code += '%sif (!%s) return;\n    ' % (indent, var_name)
-                if level == 0 and loop_count:
-                    code += '%svn_decode_array_size(cs, %s);\n    ' % (indent, loop_count)
-                    code += '%s%s {\n    ' % (indent, loop_stmt)
-                    indent += '    '
-            code += '%s%s;' % (indent, info.func_stmt)
-            if loop_count:
-                code += '\n        }'
-        else:
-            if info.alloc_stmts:
-                code += '%s%s;\n    ' % (indent, info.alloc_stmts[0])
-                code += '%sif (!%s) return;\n    ' % (indent, var_name)
-            if loop_stmt:
-                code += '%svn_decode_array_size(cs, %s);\n    ' % (indent, loop_count)
-                code += '%s%s\n    ' % (indent, loop_stmt)
-                indent += '    '
-            code += '%s%s;' % (indent, info.func_stmt)
-
-        if var.ty.is_pointer():
-            code += '\n    '
+            code += '    %s\n    ' % info.code(8)
             code += '} else {\n    '
             code += '    %s = NULL;\n    ' % var_name
             code += '}'
+        else:
+            code += info.code(4)
 
         return code
-
-    def _replace_variable_handle_info(self, ty, var, prefix):
-        info = self.VariableInfo(ty, var, prefix)
-        info.func_stmt = 'vn_replace_%s_handle(%s)' % (
-                info.func_stem, info.func_args(True))
-        return info
 
     def _replace_variable_handle(self, ty, var, prefix, is_out):
         var_name = prefix + var.name
@@ -507,16 +529,20 @@ class Gen:
            not self.is_serializable(var):
             return '/* skip %s */' % var_name
 
-        info = self._replace_variable_handle_info(ty, var, prefix)
-        loop_stmt = info.loop_stmts[0] if info.loop_stmts else None
-        loop_count = info.loop_counts[0] if info.loop_counts else None
+        info = self.VariableInfo(ty, var, prefix)
+        info.func_stmt = 'vn_replace_%s_handle(%s)' % (
+                info.func_stem, info.func_args(True))
 
         code = ''
-        if var.ty.is_pointer():
-            code += 'if (%s) ' % var_name
-        if loop_stmt:
-            code += '%s ' % loop_stmt
-        code += '%s;' % info.func_stmt
+        if var.ty.is_pointer() and info.loop_stmts:
+            code += 'if (%s) {\n    ' % var_name
+            code += '   %s\n    ' % info.code(8)
+            code += '}'
+        elif var.ty.is_pointer():
+            code += 'if (%s)\n    ' % var_name
+            code += '    %s' % info.code(8)
+        else:
+            code += info.code(4)
 
         return code
 
