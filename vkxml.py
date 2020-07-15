@@ -382,7 +382,7 @@ class VkType:
             for l in lens:
                 if l == 'null-terminated':
                     len_exprs.append(l)
-                    len_names.append(c_var.name)
+                    len_names.append('')
                     continue
 
                 len_exprs.append(l)
