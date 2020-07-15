@@ -227,7 +227,7 @@ class Gen:
             self.loop_stmts = []
             self._init_loop_stmts()
 
-            self.alloc_stmts = []
+            self.loop_alloc_stmts = []
             self.loop_extra_stmts = []
             self.func_stmt = None
 
@@ -329,7 +329,7 @@ class Gen:
                 deref = self._var_deref()
                 stmt = '%s = vn_cs_alloc_temp(cs, sizeof(%s%s))' % (
                         var_name, deref, var_name)
-                self.alloc_stmts.append(stmt)
+                self.loop_alloc_stmts.append(stmt)
                 return
 
             for level, count in enumerate(alloc_counts):
@@ -340,7 +340,7 @@ class Gen:
 
                 stmt = '%s = vn_cs_alloc_temp(cs, %s)' % (
                         self._var_name(level, level > 0), size)
-                self.alloc_stmts.append(stmt)
+                self.loop_alloc_stmts.append(stmt)
 
         def func_args(self, const_cast):
             var_name = self.prefix + self.var.name
@@ -366,8 +366,8 @@ class Gen:
             code = ''
             indent = ' ' * indent_count
             for level in range(self.loop_level):
-                if level < len(self.alloc_stmts):
-                    code += '%s%s;\n' % (indent, self.alloc_stmts[level])
+                if level < len(self.loop_alloc_stmts):
+                    code += '%s%s;\n' % (indent, self.loop_alloc_stmts[level])
                     code += '%sif (!%s) return;\n' % (indent, self._var_name(level))
 
                 if level < len(self.loop_extra_stmts):
@@ -391,8 +391,8 @@ class Gen:
             return code
 
         def code(self, indent_count):
-            if len(self.alloc_stmts) > self.loop_level:
-                alloc_stmt = self.alloc_stmts[-1]
+            if len(self.loop_alloc_stmts) > self.loop_level:
+                alloc_stmt = self.loop_alloc_stmts[-1]
             else:
                 alloc_stmt = None
 
