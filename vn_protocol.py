@@ -56,19 +56,8 @@ class Gen(object):
         for cmd in self.supported_types[VkType.COMMAND]:
             key = 'VN_COMMAND_TYPE_' + cmd.name
             assert(key in vn_command_type_ty.enums.values)
-        for key in vn_command_type_ty.enums.values.keys():
-            cmd_name = key.replace('VN_COMMAND_TYPE_', '')
-            cmd = self.api.type_table[cmd_name]
-            assert(cmd in self.supported_types[VkType.COMMAND])
-
-    def _set_type_attr(self, ty, key, val):
-        ty = ty.base
-
-        ty.attrs[key] = val
-        for var in ty.variables:
-            self._set_type_attr(var.ty, key, val)
-        for next_ty in ty.p_next:
-            self._set_type_attr(next_ty, key, val)
+        assert(len(self.supported_types[VkType.COMMAND]) ==
+                len(vn_command_type_ty.enums.values))
 
     def _set_type_needs(self, ty):
         for var in ty.variables:
@@ -79,17 +68,17 @@ class Gen(object):
 
             if 'var_in' in var.attrs:
                 if self.is_driver:
-                    self._set_type_attr(var.ty, 'need_encode', True)
+                    var.ty.set_attribute('need_encode', True)
                 else:
-                    self._set_type_attr(var.ty, 'need_decode', True)
+                    var.ty.set_attribute('need_decode', True)
 
             if 'var_out' in var.attrs:
                 if self.is_driver:
-                    self._set_type_attr(var.ty, 'need_partial', True)
-                    self._set_type_attr(var.ty, 'need_decode', True)
+                    var.ty.set_attribute('need_partial', True)
+                    var.ty.set_attribute('need_decode', True)
                 else:
-                    self._set_type_attr(var.ty, 'need_partial', True)
-                    self._set_type_attr(var.ty, 'need_encode', True)
+                    var.ty.set_attribute('need_partial', True)
+                    var.ty.set_attribute('need_encode', True)
 
         if ty.ret:
             if ty.ret.ty.is_pointer() or ty.ret.ty.is_array():
@@ -98,9 +87,9 @@ class Gen(object):
                     ty.ret.ty.base.typedef.base.attrs['need_array'] = True
 
             if self.is_driver:
-                self._set_type_attr(var.ty, 'need_decode', True)
+                var.ty.set_attribute('need_decode', True)
             else:
-                self._set_type_attr(var.ty, 'need_encode', True)
+                var.ty.set_attribute('need_encode', True)
 
     def _fixup_api(self):
         for ty in self.api.type_table.values():
@@ -116,10 +105,10 @@ class Gen(object):
                     else:
                         var.attrs['var_in'] = True
 
-                # outs appear in 'len_exprs' are in/out
+                # outs appear in 'len_names' are in/out
                 for var in ty.variables:
-                    for name in var.attrs.get('len_exprs', []):
-                        v = ty.find_variable(name)
+                    for name in var.attrs.get('len_names', []):
+                        v = ty.find_variables(name)
                         if v:
                             v = v[0]
                         if v and 'var_out' in v.attrs:
@@ -129,6 +118,7 @@ class Gen(object):
             self._set_type_needs(ty)
 
     def _get_supported_types(self):
+        # collect types from features and extensions
         types = []
         types.extend(self.api.venus.types)
         for feat in self.api.vulkan:
@@ -147,7 +137,7 @@ class Gen(object):
     def _init_supported_types(self):
         supported_types = self._get_supported_types()
 
-        # fix p_next
+        # filter p_next
         for ty in supported_types:
             p_next = []
             for tmp in ty.p_next:
@@ -167,7 +157,7 @@ class Gen(object):
 
     def is_serializable(self, var):
         if isinstance(var, VkType):
-            return self.is_serializable(VkVariable('', var))
+            return self.is_serializable(VkVariable(var))
 
         ty = var.ty.base
         if ty.category == ty.BASETYPE:
@@ -175,13 +165,8 @@ class Gen(object):
                 return False
             ty = ty.typedef
 
-        if ty.category in [ty.FUNCPOINTER]:
+        if ty.category in [ty.INCLUDE, ty.DEFINE, ty.FUNCPOINTER]:
             return False
-
-        if ty.category in [ty.HANDLE,
-                           ty.BITMASK,
-                           ty.ENUM]:
-            return True
         elif ty.category == ty.DEFAULT:
             if ty.name in self.PRIMITIVE_TYPES:
                 return True
@@ -190,26 +175,28 @@ class Gen(object):
             elif ty.name == 'void':
                 return var.is_data()
             return False
+        elif ty.category in [ty.HANDLE, ty.ENUM, ty.BITMASK]:
+            return True
         elif ty.category == ty.UNION:
             return ty.name in self.UNION_DEFAULT_TAGS
 
         assert(ty.category in [ty.STRUCT, ty.COMMAND])
         if ty.category == ty.STRUCT:
-            if ty.name in ['VkBaseOutStructure', 'VkBaseInStructure']:
+            if ty.name in ['VkBaseInStructure', 'VkBaseOutStructure']:
                 return False
         elif ty.category == ty.COMMAND:
             if ty.ret and not self.is_serializable(ty.ret):
                 return False
 
         for var in ty.variables:
-            if var.maybe_null() or var.is_pnext():
+            if var.maybe_null() or var.is_p_next():
                 continue
             if not self.is_serializable(var):
                 return False
 
         return True
 
-    def get_pnext_chain(self, ty):
+    def get_chain(self, ty):
         types = []
         skipped = []
         for next_ty in ty.p_next:
@@ -256,7 +243,7 @@ class Gen(object):
             len_names = self.var.attrs['len_names']
             for expr, name in zip(len_exprs, len_names):
                 if expr == 'null-terminated':
-                    loop_ty = self.ty.find_variable(name)[-1].ty
+                    loop_ty = self.ty.find_variables(name)[-1].ty
                     suffix = ''
                     if loop_ty.indirection_depth() > 1:
                         suffix = '[%c]' % (chr(ord('i') + loop_ty.indirection_depth() - 2))
@@ -264,7 +251,7 @@ class Gen(object):
                     self.loop_types.append('size_t')
                     self.loop_counts.append('strlen(%s%s%s) + 1' % (self.prefix, name, suffix))
                 elif name:
-                    loop_ty = self.ty.find_variable(name)[-1].ty
+                    loop_ty = self.ty.find_variables(name)[-1].ty
                     deref = '*' * loop_ty.indirection_depth()
                     count = expr.replace(name, deref + self.prefix + name)
 
@@ -309,9 +296,10 @@ class Gen(object):
                     stmt = '%s = vn_cs_alloc_temp(cs, %s)' % (var_name, size)
                 self.alloc_stmts.append(stmt)
 
-        def args(self, const_cast, deref_count):
+        def args(self, const_cast):
             var_name = self.prefix + self.var.name
 
+            deref_count = self.var.ty.indirection_depth() + self.var.ty.is_array() - 1
             for i in range(len(self.loop_types)):
                 var_name += '[%c]' % chr(ord('i') + i)
                 deref_count -= 1
@@ -322,7 +310,11 @@ class Gen(object):
             elif deref_count < 0:
                 deref = '&' * -deref_count
 
-            args = '%s%s%s' % (const_cast, deref, var_name)
+            cast = ''
+            if const_cast and (self.var.ty.is_const_pointer() or self.var.ty.is_const_array()):
+                cast = '(%s *)' % self.var.ty.base.name
+
+            args = '%s%s%s' % (cast, deref, var_name)
             if self.array_size:
                 args += ', ' + self.array_size
 
@@ -340,8 +332,7 @@ class Gen(object):
         if is_out and var.ty.base.category == ty.STRUCT:
             func_name += '_partial'
 
-        deref_count = var.ty.indirection_depth() + var.ty.is_array() - 1
-        info.func_stmt = '%s(cs, %s)' % (func_name, info.args('', deref_count))
+        info.func_stmt = '%s(cs, %s)' % (func_name, info.args(False))
 
         return info
 
@@ -373,16 +364,15 @@ class Gen(object):
         return code
 
     def _decode_variable_info(self, ty, var, prefix, is_out, alloc_storage):
-        var_name = prefix + var.name
-
         info = self.VariableInfo(ty, var, prefix)
-        if var.is_string() and info.array_size:
-            info.array_size = 'vn_peek_array_size(cs)'
 
         if not self.is_serializable(var):
             assert(var.maybe_null())
             info.func_stmt = 'assert(false)'
             return info
+
+        if var.is_string() and info.array_size:
+            info.array_size = 'vn_peek_array_size(cs)'
 
         if alloc_storage and var.ty.is_pointer():
             info.init_alloc_stmts()
@@ -391,24 +381,19 @@ class Gen(object):
 
         # automatic handle lookup
         if not self.is_driver:
-            if var.ty.base.is_handle() and not is_out:
+            if var.ty.base.category == ty.HANDLE and not is_out:
                 func_name += '_lookup'
 
         if var.ty.base.category == ty.STRUCT and is_out:
             func_name += '_partial'
+
         if alloc_storage:
             if var.ty.base.category in [ty.STRUCT, ty.UNION]:
                 func_name += '_temp'
             elif var.ty.base.category == ty.HANDLE and var.ty.base.dispatchable and is_out:
                 func_name += '_temp'
 
-        deref_count = var.ty.indirection_depth() + var.ty.is_array() - 1
-
-        const_cast = ''
-        if var.ty.is_const_pointer() or var.ty.is_const_array():
-            const_cast = '(%s *)' % var.ty.base.name
-
-        info.func_stmt = '%s(cs, %s)' % (func_name, info.args(const_cast, deref_count))
+        info.func_stmt = '%s(cs, %s)' % (func_name, info.args(True))
 
         return info
 
@@ -469,17 +454,8 @@ class Gen(object):
 
     def _replace_variable_handle_info(self, ty, var, prefix):
         info = self.VariableInfo(ty, var, prefix)
-
-        func_name = 'vn_replace_%s_handle' % info.func_stem
-
-        deref_count = var.ty.indirection_depth() + var.ty.is_array() - 1
-
-        const_cast = ''
-        if var.ty.is_const_pointer() or var.ty.is_const_array():
-            const_cast = '(%s *)' % var.ty.base.name
-
-        info.func_stmt = '%s(%s)' % (func_name, info.args(const_cast, deref_count))
-
+        info.func_stmt = 'vn_replace_%s_handle(%s)' % (
+                info.func_stem, info.args(True))
         return info
 
     def _replace_variable_handle(self, ty, var, prefix, is_out):
@@ -543,7 +519,6 @@ class Gen(object):
 class GenCS(object):
     def __init__(self, gen, template):
         self.gen = gen
-        self.api = gen.api
         self.template = template
 
     def generate(self):
@@ -552,15 +527,14 @@ class GenCS(object):
 class GenDefines(object):
     def __init__(self, gen, template):
         self.gen = gen
-        self.api = gen.api
         self.template = template
 
     def generate(self):
+        # venus only
         typedef_types = []
         enum_types = []
         bitmask_types = []
-        # venus only
-        for ty in self.api.venus.types:
+        for ty in self.gen.api.venus.types:
             if ty.category == ty.BASETYPE and ty.typedef:
                 typedef_types.append(ty)
             elif ty.category == ty.ENUM:
@@ -579,12 +553,11 @@ class GenDefines(object):
 class GenCapset(object):
     def __init__(self, gen, template):
         self.gen = gen
-        self.api = gen.api
         self.template = template
 
     def generate(self):
         ext_table = []
-        for ext in self.api.extensions:
+        for ext in self.gen.api.extensions:
             if ext.number >= len(ext_table):
                 ext_table.extend([None] * (ext.number - len(ext_table) + 1))
             if ext.name in VK_XML_EXTENSION_LIST:
@@ -592,47 +565,31 @@ class GenCapset(object):
 
         return self.template.render(
                 WIRE_FORMAT_VERSION=VN_WIRE_FORMAT_VERSION,
-                VN_XML_VERSION=self.api.vn_xml_version,
-                VK_XML_VERSION=self.api.vk_xml_version,
+                VN_XML_VERSION=self.gen.api.vn_xml_version,
+                VK_XML_VERSION=self.gen.api.vk_xml_version,
                 VK_XML_EXTENSION_TABLE=ext_table)
 
 class GenTypes(object):
     def __init__(self, gen, template):
         self.gen = gen
-        self.api = gen.api
         self.template = template
 
     def generate(self):
-        types = {
-            VkType.DEFAULT: [],
-            VkType.BASETYPE: [],
-            VkType.ENUM: [],
-        }
-
+        early_scalar_types = []
+        scalar_types = []
         for ty in self.gen.supported_types[VkType.DEFAULT]:
             if ty.name in self.gen.PRIMITIVE_TYPES:
-                assert(self.gen.is_serializable(ty))
-                types[ty.category].append(ty)
+                if ty.name in ['uint64_t', 'int32_t']:
+                    early_scalar_types.append(ty)
+                scalar_types.append(ty)
         for ty in self.gen.supported_types[VkType.BASETYPE]:
-            if ty.typedef:
-                assert(self.gen.is_serializable(ty))
-                types[ty.category].append(ty)
+            if ty.typedef and self.gen.is_serializable(ty.typedef):
+                scalar_types.append(ty)
         for ty in self.gen.supported_types[VkType.ENUM]:
             if ty.enums.values:
-                assert(self.gen.is_serializable(ty))
-                types[ty.category].append(ty)
-
-        scalar_types = (types[VkType.DEFAULT] + types[VkType.BASETYPE] +
-                        types[VkType.ENUM])
-
-        # some scalar types are used by custom types
-        early_scalar_names = [
-            'uint64_t',
-            'int32_t',
-            'VkStructureType'
-        ]
-        early_scalar_types = [self.api.type_table[name] for name in
-                early_scalar_names]
+                if ty.name == 'VkStructureType':
+                    early_scalar_types.append(ty)
+                scalar_types.append(ty)
 
         return self.template.render(
                 GEN=self.gen,
@@ -642,7 +599,6 @@ class GenTypes(object):
 class GenHandles(object):
     def __init__(self, gen, template):
         self.gen = gen
-        self.api = gen.api
         self.template = template
 
     def generate(self):
@@ -654,7 +610,6 @@ class GenHandles(object):
 class GenStructs(object):
     def __init__(self, gen, template):
         self.gen = gen
-        self.api = gen.api
         self.template = template
 
         self.generated = set()
@@ -704,18 +659,9 @@ class GenStructs(object):
 class GenCommands(object):
     def __init__(self, gen, template):
         self.gen = gen
-        self.api = gen.api
         self.template = template
 
     def generate(self):
-        command_types, command_skipped = self.get_commands()
-        return self.template.render(
-                GEN=self.gen,
-                COMMAND_TABLE_SIZE=self.api.max_vn_command_type_value + 1,
-                COMMAND_TYPES=command_types,
-                COMMAND_SKIPPED=command_skipped)
-
-    def get_commands(self):
         types = []
         skipped = []
         for ty in self.gen.supported_types[VkType.COMMAND]:
@@ -724,7 +670,11 @@ class GenCommands(object):
             else:
                 skipped.append(ty)
 
-        return (types, skipped)
+        return self.template.render(
+                GEN=self.gen,
+                COMMAND_TABLE_SIZE=self.gen.api.max_vn_command_type_value + 1,
+                COMMAND_TYPES=types,
+                COMMAND_SKIPPED=skipped)
 
 def get_args():
     parser = argparse.ArgumentParser()

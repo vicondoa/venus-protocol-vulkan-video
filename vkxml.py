@@ -98,9 +98,9 @@ class VkCVar(object):
         return cls(name, type_name, type_decor)
 
 class VkVariable(object):
-    def __init__(self, name, ty, attrs={}):
-        self.name = name
+    def __init__(self, ty, name='unnamed', attrs={}):
         self.ty = ty
+        self.name = name
         self.attrs = attrs
 
     def maybe_null(self):
@@ -117,7 +117,7 @@ class VkVariable(object):
     def is_string(self):
         return self.ty.base.name == 'char' and not self.ty.is_array()
 
-    def is_pnext(self):
+    def is_p_next(self):
         return self.name == 'pNext'
 
     def to_c(self):
@@ -204,9 +204,6 @@ class VkType(object):
             assert(self.variables[0].name == 'sType')
             assert(self.variables[1].name == 'pNext')
 
-    def is_handle(self):
-        return self.category == self.HANDLE
-
     def is_array(self):
         return bool(self.decor.dim) if self.decor else False
 
@@ -229,8 +226,8 @@ class VkType(object):
                     return True
         return False
 
-    def find_variable(self, name):
-        names = name.split('->')
+    def find_variables(self, len_name):
+        names = len_name.split('->')
         var_list = []
         for name in names:
             if var_list:
@@ -257,7 +254,7 @@ class VkType(object):
         if ty.requires:
             ty.requires._add_deps(deps)
 
-        # ty.p_next is not dependency
+        # ty.p_next is not a dependency
 
         if ty.ret:
             ty.ret.ty._add_deps(deps)
@@ -272,6 +269,15 @@ class VkType(object):
         deps = []
         self._add_deps(deps)
         return deps
+
+    def set_attribute(self, key, val):
+        ty = self.base
+
+        ty.attrs[key] = val
+        for var in ty.variables:
+            var.ty.set_attribute(key, val)
+        for next_ty in ty.p_next:
+            next_ty.set_attribute(key, val)
 
     def c_func_ret(self):
         return self.ret.ty.name if self.ret else 'void'
@@ -405,7 +411,7 @@ class VkType(object):
         if 'optional' in elem.attrib:
             attrs['optional'] = elem.attrib['optional'].split(',')
 
-        return VkVariable(c_var.name, ty, attrs)
+        return VkVariable(ty, c_var.name, attrs)
 
     @classmethod
     def _parse_struct(cls, type_elem, type_table):
@@ -451,7 +457,7 @@ class VkType(object):
         for c_decl in c_decls:
             c_var = VkCVar.from_c(c_decl)
             param_ty = cls._get_type(c_var, type_table)
-            params.append(VkVariable(c_var.name, param_ty))
+            params.append(VkVariable(param_ty, c_var.name))
 
         return name, params, ret_ty
 
@@ -519,7 +525,7 @@ class VkType(object):
             assert(pfn == name)
             ty.variables = params
             if ret_ty:
-                ty.ret = VkVariable('ret', ret_ty)
+                ty.ret = VkVariable(ret_ty, 'ret')
 
     @classmethod
     def parse_command(cls, command_elem, type_table):
@@ -548,7 +554,7 @@ class VkType(object):
         ty.init(name, cls.COMMAND)
         ty.variables = params
         if ret_ty:
-            ty.ret = VkVariable('ret', ret_ty)
+            ty.ret = VkVariable(ret_ty, 'ret')
 
 class VkEnums(object):
     def __init__(self):

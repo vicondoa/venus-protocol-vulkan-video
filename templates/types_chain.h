@@ -36,7 +36,7 @@ ${struct.vn_replace_struct_handle_body(ty, '_self')}\
 <%def name="vn_encode_chain_body(ty, variant='')">\
     const struct VkBaseInStructure *pnext = (const struct VkBaseInStructure *)val;
 <%
-    next_types, skipped_types = GEN.get_pnext_chain(ty)
+    next_types, skipped_types = GEN.get_chain(ty)
 %>
     do {
         switch (pnext->sType) {
@@ -62,7 +62,7 @@ ${struct.vn_replace_struct_handle_body(ty, '_self')}\
 <%def name="vn_decode_chain_body(ty)">\
     struct VkBaseOutStructure *pnext = (struct VkBaseOutStructure *)val;
 <%
-    next_types, skipped_types = GEN.get_pnext_chain(ty)
+    next_types, skipped_types = GEN.get_chain(ty)
 %>
     do {
         VkStructureType stype;
@@ -106,7 +106,7 @@ ${struct.vn_replace_struct_handle_body(ty, '_self')}\
     do {
         VkBaseOutStructure *pnext;
 <%
-    next_types, skipped_types = GEN.get_pnext_chain(ty)
+    next_types, skipped_types = GEN.get_chain(ty)
 %>
         VkStructureType stype;
         vn_decode_VkStructureType(cs, &stype);
@@ -146,7 +146,7 @@ ${struct.vn_replace_struct_handle_body(ty, '_self')}\
 <%def name="vn_replace_chain_handle_body(ty)">\
     struct VkBaseOutStructure *pnext = (struct VkBaseOutStructure *)val;
 <%
-    next_types, skipped_types = GEN.get_pnext_chain(ty)
+    next_types, skipped_types = GEN.get_chain(ty)
 %>
     do {
         switch (pnext->sType) {
