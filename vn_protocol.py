@@ -357,9 +357,9 @@ class Gen:
 
             return args
 
-        def _code_enter_loops(self, indent_count, bracket_last):
+        def _code_enter_loops(self, indent_level, bracket_last):
             code = ''
-            indent = ' ' * indent_count
+            indent = '    ' * indent_level
             for level in range(self.loop_level):
                 if level < len(self.loop_alloc_stmts):
                     code += '%s%s;\n' % (indent, self.loop_alloc_stmts[level])
@@ -385,20 +385,9 @@ class Gen:
 
             return code
 
-        def _code_leave_loops(self, indent_count, bracket_last):
+        def _code_body(self, indent_level):
             code = ''
-            for level in reversed(range(self.loop_level)):
-                if bracket_last or level < self.loop_level - 1:
-                    indent = ' ' * (indent_count + level * 4)
-                    code += '%s}\n' % indent
-            return code
-
-        def code(self, indent_count):
-            code_enter_loops = self._code_enter_loops(
-                    indent_count, bool(self.func_alloc_stmt))
-
-            code = ''
-            indent = ' ' * (indent_count + self.loop_level * 4)
+            indent = '    ' * (indent_level + self.loop_level)
             if self.func_alloc_stmt:
                 code += '%s%s;\n' % (indent, self.func_alloc_stmt)
                 code += '%sif (!%s) return;\n' % (
@@ -406,10 +395,26 @@ class Gen:
             if self.func_stmt:
                 code += '%s%s;\n' % (indent, self.func_stmt)
 
-            code_leave_loops = self._code_leave_loops(
-                    indent_count, bool(self.func_alloc_stmt))
+            return code
 
-            return (code_enter_loops + code + code_leave_loops).strip()
+        def _code_leave_loops(self, indent_level, bracket_last):
+            code = ''
+            for level in reversed(range(self.loop_level)):
+                if bracket_last or level < self.loop_level - 1:
+                    indent = '    ' * (indent_level + level)
+                    code += '%s}\n' % indent
+            return code
+
+        def code(self, indent_level):
+            code_body = self._code_body(indent_level)
+
+            need_bracket = code_body.count(';') > 1
+            code_enter_loops = self._code_enter_loops(
+                    indent_level, need_bracket)
+            code_leave_loops = self._code_leave_loops(
+                    indent_level, need_bracket)
+
+            return code_enter_loops + code_body + code_leave_loops
 
     def _encode_variable_info(self, ty, var, prefix, is_out):
         info = self.VariableInfo(ty, var, prefix)
@@ -447,13 +452,13 @@ class Gen:
         code = ''
         if var.ty.is_pointer() and info.loop_level:
             code += 'if (vn_encode_pointer(cs, %s)) {\n    ' % var_name
-            code += '    %s\n    ' % info.code(8)
+            code += '    %s\n    ' % info.code(2).strip()
             code += '}'
         elif var.ty.is_pointer():
             code += 'if (vn_encode_pointer(cs, %s))\n    ' % var_name
-            code += '    %s' % info.code(8)
+            code += '    %s' % info.code(2).strip()
         else:
-            code += info.code(4)
+            code += info.code(1).strip()
 
         return code
 
@@ -514,12 +519,12 @@ class Gen:
         code = ''
         if var.ty.is_pointer():
             code += 'if (vn_decode_pointer(cs)) {\n    '
-            code += '    %s\n    ' % info.code(8)
+            code += '    %s\n    ' % info.code(2).strip()
             code += '} else {\n    '
             code += '    %s = NULL;\n    ' % var_name
             code += '}'
         else:
-            code += info.code(4)
+            code += info.code(1).strip()
 
         return code
 
@@ -538,13 +543,13 @@ class Gen:
         code = ''
         if var.ty.is_pointer() and info.loop_level:
             code += 'if (%s) {\n    ' % var_name
-            code += '   %s\n    ' % info.code(8)
+            code += '   %s\n    ' % info.code(2).strip()
             code += '}'
         elif var.ty.is_pointer():
             code += 'if (%s)\n    ' % var_name
-            code += '    %s' % info.code(8)
+            code += '    %s' % info.code(2).strip()
         else:
-            code += info.code(4)
+            code += info.code(1).strip()
 
         return code
 
