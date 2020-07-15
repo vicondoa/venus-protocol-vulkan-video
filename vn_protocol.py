@@ -229,6 +229,7 @@ class Gen:
 
             self.loop_alloc_stmts = []
             self.loop_extra_stmts = []
+            self.func_alloc_stmt = None
             self.func_stmt = None
 
         def _init_func_stem(self):
@@ -329,9 +330,10 @@ class Gen:
                 deref = self._var_deref()
                 stmt = '%s = vn_cs_alloc_temp(cs, sizeof(%s%s))' % (
                         var_name, deref, var_name)
-                self.loop_alloc_stmts.append(stmt)
+                self.func_alloc_stmt = stmt
                 return
 
+            alloc_stmts = []
             for level, count in enumerate(alloc_counts):
                 if self.var.is_data():
                     size = count
@@ -340,7 +342,11 @@ class Gen:
 
                 stmt = '%s = vn_cs_alloc_temp(cs, %s)' % (
                         self._var_name(level, level > 0), size)
-                self.loop_alloc_stmts.append(stmt)
+                alloc_stmts.append(stmt)
+
+            if self.array_size:
+                self.func_alloc_stmt = alloc_stmts.pop()
+            self.loop_alloc_stmts = alloc_stmts
 
         def func_args(self, const_cast):
             var_name = self.prefix + self.var.name
@@ -391,25 +397,20 @@ class Gen:
             return code
 
         def code(self, indent_count):
-            if len(self.loop_alloc_stmts) > self.loop_level:
-                alloc_stmt = self.loop_alloc_stmts[-1]
-            else:
-                alloc_stmt = None
-
             code_enter_loops = self._code_enter_loops(
-                    indent_count, bool(alloc_stmt))
+                    indent_count, bool(self.func_alloc_stmt))
 
             code = ''
             indent = ' ' * (indent_count + self.loop_level * 4)
-            if alloc_stmt:
-                code += '%s%s;\n' % (indent, alloc_stmt)
+            if self.func_alloc_stmt:
+                code += '%s%s;\n' % (indent, self.func_alloc_stmt)
                 code += '%sif (!%s) return;\n' % (
                         indent, self._var_name(self.loop_level))
             if self.func_stmt:
                 code += '%s%s;\n' % (indent, self.func_stmt)
 
             code_leave_loops = self._code_leave_loops(
-                    indent_count, bool(alloc_stmt))
+                    indent_count, bool(self.func_alloc_stmt))
 
             return (code_enter_loops + code + code_leave_loops).strip()
 
