@@ -1,0 +1,17 @@
+Protocol
+
+ - finalize wire-format.md
+ - finalize xml/vn.xml
+ - verify the correctness of the generated code
+
+Features
+
+ - vn_sizeof_* and size estimation for both directions
+ - improve robustness for the renderer
+ - write tests
+ - clean up the generator
+
+Performance
+
+ - help compiler generate better code (always_inline, macros)
+ - rework templates/driver_calls.h
