@@ -615,12 +615,6 @@ class Gen:
             return '/* skip %s%s */' % (prefix, var.name)
         return self._decode_variable(ty, var, prefix, False, False)
 
-    def encode_command_ret(self, ty, prefix):
-        return self._encode_variable(ty, ty.ret, prefix, False)
-
-    def decode_command_ret(self, ty, prefix):
-        return self._decode_variable(ty, ty.ret, prefix, False, False)
-
 class GenCS:
     def __init__(self, gen, template):
         self.gen = gen
