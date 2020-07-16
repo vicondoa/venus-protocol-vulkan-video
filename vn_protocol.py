@@ -445,6 +445,62 @@ class Gen:
 
             return code_enter_loops + code_body + code_leave_loops
 
+    def _encode_variable(self, info):
+        if info.validity == info.INVALID:
+            if info.var.ty.is_pointer():
+                return 'vn_encode_pointer(cs, %s); /* out */' % info._var_name()
+            else:
+                return '/* skip %s */' % info._var_name()
+
+        code = ''
+        if info.var.ty.is_pointer() and info.need_bracket():
+            code += 'if (vn_encode_pointer(cs, %s)) {\n    ' % info._var_name()
+            code += '    %s\n    ' % info.code(2).strip()
+            code += '}'
+        elif info.var.ty.is_pointer():
+            code += 'if (vn_encode_pointer(cs, %s))\n    ' % info._var_name()
+            code += '    %s' % info.code(2).strip()
+        else:
+            code += info.code(1).strip()
+
+        return code
+
+    def _decode_variable(self, info):
+        if info.validity == info.INVALID:
+            if not info.var.ty.is_pointer():
+                return '/* skip %s */' % info._var_name()
+
+        code = ''
+        if info.var.ty.is_pointer():
+            code += 'if (vn_decode_pointer(cs)) {\n    '
+            code += '    %s\n    ' % info.code(2).strip()
+            code += '} else {\n    '
+            code += '    %s = NULL;\n    ' % info._var_name()
+            code += '}'
+        else:
+            code += info.code(1).strip()
+
+        return code
+
+    def _replace_variable_handle(self, info):
+        if info.validity != info.VALID or \
+           info.var.ty.base.category not in [VkType.HANDLE, VkType.STRUCT] or \
+           not self.is_serializable(info.var):
+            return '/* skip %s */' % info._var_name()
+
+        code = ''
+        if info.var.ty.is_pointer() and info.need_bracket():
+            code += 'if (%s) {\n    ' % info._var_name()
+            code += '   %s\n    ' % info.code(2).strip()
+            code += '}'
+        elif info.var.ty.is_pointer():
+            code += 'if (%s)\n    ' % info._var_name()
+            code += '    %s' % info.code(2).strip()
+        else:
+            code += info.code(1).strip()
+
+        return code
+
     def _encode_variable_info(self, ty, var, prefix, validity):
         info = self.VariableInfo(ty, var, prefix, validity)
         if not self.is_serializable(var):
@@ -475,26 +531,6 @@ class Gen:
         info.func_stmt = '%s(cs, %s)' % (func_name, info.func_args(False))
 
         return info
-
-    def _encode_variable(self, info):
-        if info.validity == info.INVALID:
-            if info.var.ty.is_pointer():
-                return 'vn_encode_pointer(cs, %s); /* out */' % info._var_name()
-            else:
-                return '/* skip %s */' % info._var_name()
-
-        code = ''
-        if info.var.ty.is_pointer() and info.need_bracket():
-            code += 'if (vn_encode_pointer(cs, %s)) {\n    ' % info._var_name()
-            code += '    %s\n    ' % info.code(2).strip()
-            code += '}'
-        elif info.var.ty.is_pointer():
-            code += 'if (vn_encode_pointer(cs, %s))\n    ' % info._var_name()
-            code += '    %s' % info.code(2).strip()
-        else:
-            code += info.code(1).strip()
-
-        return code
 
     def _decode_variable_info(self, ty, var, prefix, validity, alloc_storage):
         info = self.VariableInfo(ty, var, prefix, validity)
@@ -541,23 +577,6 @@ class Gen:
 
         return info
 
-    def _decode_variable(self, info):
-        if info.validity == info.INVALID:
-            if not info.var.ty.is_pointer():
-                return '/* skip %s */' % info._var_name()
-
-        code = ''
-        if info.var.ty.is_pointer():
-            code += 'if (vn_decode_pointer(cs)) {\n    '
-            code += '    %s\n    ' % info.code(2).strip()
-            code += '} else {\n    '
-            code += '    %s = NULL;\n    ' % info._var_name()
-            code += '}'
-        else:
-            code += info.code(1).strip()
-
-        return code
-
     def _replace_variable_handle_info(self, ty, var, prefix, validity):
         info = self.VariableInfo(ty, var, prefix, validity)
 
@@ -572,25 +591,6 @@ class Gen:
                 info.func_stem, info.func_args(True))
 
         return info
-
-    def _replace_variable_handle(self, info):
-        if info.validity != info.VALID or \
-           info.var.ty.base.category not in [VkType.HANDLE, VkType.STRUCT] or \
-           not self.is_serializable(info.var):
-            return '/* skip %s */' % info._var_name()
-
-        code = ''
-        if info.var.ty.is_pointer() and info.need_bracket():
-            code += 'if (%s) {\n    ' % info._var_name()
-            code += '   %s\n    ' % info.code(2).strip()
-            code += '}'
-        elif info.var.ty.is_pointer():
-            code += 'if (%s)\n    ' % info._var_name()
-            code += '    %s' % info.code(2).strip()
-        else:
-            code += info.code(1).strip()
-
-        return code
 
     def _get_variable_validity(self, ty, var, initialized):
         if initialized:
