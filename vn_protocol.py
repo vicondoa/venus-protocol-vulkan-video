@@ -207,10 +207,15 @@ class Gen:
         return types, skipped
 
     class VariableInfo:
-        def __init__(self, ty, var, prefix):
+        VALID = 0
+        INVALID = 1
+        PARTIAL = 2
+
+        def __init__(self, ty, var, prefix, validity):
             self.ty = ty
             self.var = var
             self.prefix = prefix
+            self.validity = validity
 
             self.func_stem = None
             self._init_func_stem()
@@ -440,19 +445,23 @@ class Gen:
 
             return code_enter_loops + code_body + code_leave_loops
 
-    def _encode_variable_info(self, ty, var, prefix, is_out):
-        info = self.VariableInfo(ty, var, prefix)
-
+    def _encode_variable_info(self, ty, var, prefix, validity):
+        info = self.VariableInfo(ty, var, prefix, validity)
         if not self.is_serializable(var):
             assert(var.maybe_null())
             info.func_stmt = 'assert(false)'
             return info
 
+        # save strlen result to a temp
         if var.is_string():
             assert(info.array_size.startswith('strlen'))
             info.func_array_size_stmt = \
                     'const size_t string_size = %s' % info.array_size
             info.array_size = 'string_size'
+
+        # nothing to encode
+        if validity == info.INVALID:
+            return info
 
         # encode array sizes
         for loop_count in info.loop_counts:
@@ -460,52 +469,53 @@ class Gen:
             info.loop_extra_stmts.append(stmt)
 
         func_name = 'vn_encode_' + info.func_stem
-        if is_out and var.ty.base.category == ty.STRUCT:
+        if validity == info.PARTIAL and var.ty.base.category == ty.STRUCT:
             func_name += '_partial'
 
         info.func_stmt = '%s(cs, %s)' % (func_name, info.func_args(False))
 
         return info
 
-    def _encode_variable(self, ty, var, prefix, is_out):
-        var_name = prefix + var.name
-
-        partially_initialized = [ty.HANDLE, ty.STRUCT]
-        if is_out and var.ty.base.category not in partially_initialized:
-            if var.ty.is_pointer():
-                return 'vn_encode_pointer(cs, %s); /* out */' % var_name
+    def _encode_variable(self, info):
+        if info.validity == info.INVALID:
+            if info.var.ty.is_pointer():
+                return 'vn_encode_pointer(cs, %s); /* out */' % info._var_name()
             else:
-                return '/* skip %s */' % var_name
-
-        info = self._encode_variable_info(ty, var, prefix, is_out)
+                return '/* skip %s */' % info._var_name()
 
         code = ''
-        if var.ty.is_pointer() and info.need_bracket():
-            code += 'if (vn_encode_pointer(cs, %s)) {\n    ' % var_name
+        if info.var.ty.is_pointer() and info.need_bracket():
+            code += 'if (vn_encode_pointer(cs, %s)) {\n    ' % info._var_name()
             code += '    %s\n    ' % info.code(2).strip()
             code += '}'
-        elif var.ty.is_pointer():
-            code += 'if (vn_encode_pointer(cs, %s))\n    ' % var_name
+        elif info.var.ty.is_pointer():
+            code += 'if (vn_encode_pointer(cs, %s))\n    ' % info._var_name()
             code += '    %s' % info.code(2).strip()
         else:
             code += info.code(1).strip()
 
         return code
 
-    def _decode_variable_info(self, ty, var, prefix, is_out, alloc_storage):
-        info = self.VariableInfo(ty, var, prefix)
-
+    def _decode_variable_info(self, ty, var, prefix, validity, alloc_storage):
+        info = self.VariableInfo(ty, var, prefix, validity)
         if not self.is_serializable(var):
             assert(var.maybe_null())
             info.func_stmt = 'assert(false)'
             return info
 
-        if var.is_string() and info.array_size:
-            info.func_array_size_stmt = 'const size_t string_size = vn_peek_array_size(cs)'
+        # peek the encoded string size
+        if var.is_string():
+            assert(info.array_size.startswith('strlen'))
+            info.func_array_size_stmt = \
+                    'const size_t string_size = vn_peek_array_size(cs)'
             info.array_size = 'string_size'
 
         if alloc_storage and var.ty.is_pointer():
             info.init_alloc_stmts()
+
+        # nothing to decode
+        if validity == info.INVALID:
+            return info
 
         # decode array sizes
         for loop_count in info.loop_counts:
@@ -513,107 +523,131 @@ class Gen:
             info.loop_extra_stmts.append(stmt)
 
         func_name = 'vn_decode_' + info.func_stem
-
-        # automatic handle lookup
-        if not self.is_driver:
-            if var.ty.base.category == ty.HANDLE and not is_out:
-                func_name += '_lookup'
-
-        if var.ty.base.category == ty.STRUCT and is_out:
+        if validity == info.PARTIAL and var.ty.base.category == ty.STRUCT:
             func_name += '_partial'
 
-        if alloc_storage:
-            if var.ty.base.category in [ty.STRUCT, ty.UNION]:
-                func_name += '_temp'
-            elif var.ty.base.category == ty.HANDLE and var.ty.base.dispatchable and is_out:
+        if alloc_storage and var.ty.base.category in [ty.STRUCT, ty.UNION]:
+            func_name += '_temp'
+
+        if var.ty.base.category == ty.HANDLE:
+            if validity == info.VALID:
+                # automatic handle lookup
+                if not self.is_driver:
+                    func_name += '_lookup'
+            elif alloc_storage and var.ty.base.dispatchable:
                 func_name += '_temp'
 
         info.func_stmt = '%s(cs, %s)' % (func_name, info.func_args(True))
 
         return info
 
-    def _decode_variable(self, ty, var, prefix, is_out, alloc_storage):
-        var_name = prefix + var.name
-
-        partially_initialized = [ty.HANDLE, ty.STRUCT]
-        if is_out and var.ty.base.category not in partially_initialized:
-            if alloc_storage and var.ty.is_pointer():
-                # we still need to allocate the storage
-                pass
-            else:
-                return '/* skip %s%s */' % (prefix, var.name)
-
-        info = self._decode_variable_info(ty, var, prefix, is_out, alloc_storage)
-        if is_out and var.ty.base.category not in partially_initialized:
-            info.func_stmt = ''
+    def _decode_variable(self, info):
+        if info.validity == info.INVALID:
+            if not info.var.ty.is_pointer():
+                return '/* skip %s */' % info._var_name()
 
         code = ''
-        if var.ty.is_pointer():
+        if info.var.ty.is_pointer():
             code += 'if (vn_decode_pointer(cs)) {\n    '
             code += '    %s\n    ' % info.code(2).strip()
             code += '} else {\n    '
-            code += '    %s = NULL;\n    ' % var_name
+            code += '    %s = NULL;\n    ' % info._var_name()
             code += '}'
         else:
             code += info.code(1).strip()
 
         return code
 
-    def _replace_variable_handle(self, ty, var, prefix, is_out):
-        var_name = prefix + var.name
+    def _replace_variable_handle_info(self, ty, var, prefix, validity):
+        info = self.VariableInfo(ty, var, prefix, validity)
 
+        # nothing to replace
         might_contain_handle = [ty.HANDLE, ty.STRUCT]
-        if is_out or var.ty.base.category not in might_contain_handle or \
-           not self.is_serializable(var):
-            return '/* skip %s */' % var_name
+        if (validity != info.VALID or
+            var.ty.base.category not in might_contain_handle or
+            not self.is_serializable(var)):
+            return info
 
-        info = self.VariableInfo(ty, var, prefix)
         info.func_stmt = 'vn_replace_%s_handle(%s)' % (
                 info.func_stem, info.func_args(True))
 
+        return info
+
+    def _replace_variable_handle(self, info):
+        if info.validity != info.VALID or \
+           info.var.ty.base.category not in [VkType.HANDLE, VkType.STRUCT] or \
+           not self.is_serializable(info.var):
+            return '/* skip %s */' % info._var_name()
+
         code = ''
-        if var.ty.is_pointer() and info.need_bracket():
-            code += 'if (%s) {\n    ' % var_name
+        if info.var.ty.is_pointer() and info.need_bracket():
+            code += 'if (%s) {\n    ' % info._var_name()
             code += '   %s\n    ' % info.code(2).strip()
             code += '}'
-        elif var.ty.is_pointer():
-            code += 'if (%s)\n    ' % var_name
+        elif info.var.ty.is_pointer():
+            code += 'if (%s)\n    ' % info._var_name()
             code += '    %s' % info.code(2).strip()
         else:
             code += info.code(1).strip()
 
         return code
 
-    def encode_struct_member(self, ty, var, prefix, is_out):
-        return self._encode_variable(ty, var, prefix, is_out)
+    def _get_variable_validity(self, ty, var, initialized):
+        if initialized:
+            validity = self.VariableInfo.VALID
+        else:
+            partially_initialized = [ty.HANDLE, ty.STRUCT]
+            if var.ty.base.category in partially_initialized:
+                validity = self.VariableInfo.PARTIAL
+            else:
+                validity = self.VariableInfo.INVALID
+        return validity
 
-    def decode_struct_member(self, ty, var, prefix, is_out, alloc_storage):
-        return self._decode_variable(ty, var, prefix, is_out, alloc_storage)
+    def encode_struct_member(self, ty, var, prefix, struct_is_partial):
+        validity = self._get_variable_validity(ty, var, not struct_is_partial)
+        info = self._encode_variable_info(ty, var, prefix, validity)
+        return self._encode_variable(info)
+
+    def decode_struct_member(self, ty, var, prefix, struct_is_partial, alloc_storage):
+        validity = self._get_variable_validity(ty, var, not struct_is_partial)
+        info = self._decode_variable_info(ty, var, prefix, validity, alloc_storage)
+        return self._decode_variable(info)
 
     def replace_struct_member_handle(self, ty, var, prefix):
-        return self._replace_variable_handle(ty, var, prefix, False)
+        validity = self._get_variable_validity(ty, var, True)
+        info = self._replace_variable_handle_info(ty, var, prefix, validity)
+        return self._replace_variable_handle(info)
 
     def encode_command_arg(self, ty, var, prefix):
-        is_out = 'var_in' not in var.attrs
-        return self._encode_variable(ty, var, prefix, is_out)
+        validity = self._get_variable_validity(ty, var, 'var_in' in var.attrs)
+        info = self._encode_variable_info(ty, var, prefix, validity)
+        return self._encode_variable(info)
 
     def decode_command_arg(self, ty, var, prefix):
-        is_out = 'var_in' not in var.attrs
-        return self._decode_variable(ty, var, prefix, is_out, True)
+        validity = self._get_variable_validity(ty, var, 'var_in' in var.attrs)
+        info = self._decode_variable_info(ty, var, prefix, validity, True)
+        return self._decode_variable(info)
 
     def replace_command_arg_handle(self, ty, var, prefix):
-        is_out = 'var_in' not in var.attrs
-        return self._replace_variable_handle(ty, var, prefix, is_out)
+        validity = self._get_variable_validity(ty, var, 'var_in' in var.attrs)
+        info = self._replace_variable_handle_info(ty, var, prefix, validity)
+        return self._replace_variable_handle(info)
 
     def encode_command_reply(self, ty, var, prefix):
         if 'var_out' not in var.attrs:
             return '/* skip %s%s */' % (prefix, var.name)
-        return self._encode_variable(ty, var, prefix, False)
+
+        info = self._encode_variable_info(ty, var, prefix,
+                self.VariableInfo.VALID)
+        return self._encode_variable(info)
 
     def decode_command_reply(self, ty, var, prefix):
         if 'var_out' not in var.attrs:
             return '/* skip %s%s */' % (prefix, var.name)
-        return self._decode_variable(ty, var, prefix, False, False)
+
+        info = self._decode_variable_info(ty, var, prefix,
+                self.VariableInfo.VALID, False)
+        return self._decode_variable(info)
 
 class GenCS:
     def __init__(self, gen, template):
