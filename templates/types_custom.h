@@ -55,6 +55,14 @@ vn_decode_array_size(struct vn_cs *cs, uint64_t max_size)
     return size;
 }
 
+static inline uint64_t
+vn_peek_array_size(struct vn_cs *cs)
+{
+    uint64_t size;
+    vn_cs_in_peek(cs, &size, sizeof(size));
+    return size;
+}
+
 /* pointer */
 
 static inline bool

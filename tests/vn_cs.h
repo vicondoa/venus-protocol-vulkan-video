@@ -29,6 +29,11 @@ vn_cs_in(struct vn_cs *cs, size_t size, void *val, size_t val_size)
 {
 }
 
+static inline void
+vn_cs_in_peek(struct vn_cs *cs, void *val, size_t val_size)
+{
+}
+
 static inline bool
 vn_cs_has_out(const struct vn_cs *cs)
 {

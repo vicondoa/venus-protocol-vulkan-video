@@ -16,6 +16,7 @@
  *   vn_cs_set_error
  *   vn_cs_set_in_data
  *   vn_cs_in
+ *   vn_cs_in_peek
  *   vn_cs_has_out
  *   vn_cs_reserve_out
  *   vn_cs_out
