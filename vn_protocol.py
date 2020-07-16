@@ -364,6 +364,11 @@ class Gen:
 
             return args
 
+        def will_handle_array_size(self):
+            return self.loop_extra_stmts or self.func_extra_stmt or \
+                   (self.func_array_size_stmt and 'decode' in
+                           self.func_array_size_stmt)
+
         def _code_enter_loops(self, indent_level, bracket_last):
             code = ''
             indent = '    ' * indent_level
@@ -447,18 +452,27 @@ class Gen:
 
     def _encode_variable(self, info):
         if info.validity == info.INVALID:
-            if info.var.ty.is_pointer():
-                return 'vn_encode_pointer(cs, %s); /* out */' % info._var_name()
+            if info.will_handle_array_size() and not info.var.ty.is_array():
+                return 'vn_encode_array_size(cs, %s ? %s : 0); /* out */' % (
+                        info._var_name(), info.array_size)
+            elif info.var.ty.is_pointer():
+                return 'vn_encode_simple_pointer(cs, %s); /* out */' % info._var_name()
             else:
                 return '/* skip %s */' % info._var_name()
 
         code = ''
-        if info.var.ty.is_pointer() and info.need_bracket():
-            code += 'if (vn_encode_pointer(cs, %s)) {\n    ' % info._var_name()
+        if info.var.ty.is_pointer() and info.will_handle_array_size():
+            code += 'if (%s) {\n    ' % info._var_name()
+            code += '    %s\n    ' % info.code(2).strip()
+            code += '} else {\n    '
+            code += '    vn_encode_array_size(cs, 0);\n    '
+            code += '}'
+        elif info.var.ty.is_pointer() and info.need_bracket():
+            code += 'if (vn_encode_simple_pointer(cs, %s)) {\n    ' % info._var_name()
             code += '    %s\n    ' % info.code(2).strip()
             code += '}'
         elif info.var.ty.is_pointer():
-            code += 'if (vn_encode_pointer(cs, %s))\n    ' % info._var_name()
+            code += 'if (vn_encode_simple_pointer(cs, %s))\n    ' % info._var_name()
             code += '    %s' % info.code(2).strip()
         else:
             code += info.code(1).strip()
@@ -471,8 +485,15 @@ class Gen:
                 return '/* skip %s */' % info._var_name()
 
         code = ''
-        if info.var.ty.is_pointer():
-            code += 'if (vn_decode_pointer(cs)) {\n    '
+        if info.var.ty.is_pointer() and info.will_handle_array_size():
+            code += 'if (vn_peek_array_size(cs)) {\n    '
+            code += '    %s\n    ' % info.code(2).strip()
+            code += '} else {\n    '
+            code += '    vn_decode_array_size(cs, 0);\n    '
+            code += '    %s = NULL;\n    ' % info._var_name()
+            code += '}'
+        elif info.var.ty.is_pointer():
+            code += 'if (vn_decode_simple_pointer(cs)) {\n    '
             code += '    %s\n    ' % info.code(2).strip()
             code += '} else {\n    '
             code += '    %s = NULL;\n    ' % info._var_name()
@@ -519,10 +540,6 @@ class Gen:
                     'const size_t string_size = %s' % info.array_size
             info.array_size = 'string_size'
 
-        # nothing to encode
-        if validity == info.INVALID:
-            return info
-
         # encode array sizes
         for loop_count in info.loop_counts:
             stmt = 'vn_encode_array_size(cs, %s)' % loop_count
@@ -530,6 +547,10 @@ class Gen:
         if info.array_size:
             info.func_extra_stmt = \
                     'vn_encode_array_size(cs, %s)' % info.array_size
+
+        # nothing to encode
+        if validity == info.INVALID:
+            return info
 
         func_name = 'vn_encode_' + info.func_stem
         if validity == info.PARTIAL and var.ty.base.category == ty.STRUCT:
@@ -547,7 +568,7 @@ class Gen:
             return info
 
         # decode the encoded array size
-        if validity != info.INVALID and info.array_size:
+        if info.array_size:
             if var.is_string():
                 assert(info.array_size.startswith('strlen'))
                 info.func_array_size_stmt = \
@@ -561,14 +582,14 @@ class Gen:
         if alloc_storage and var.ty.is_pointer():
             info.init_alloc_stmts()
 
-        # nothing to decode
-        if validity == info.INVALID:
-            return info
-
         # decode array sizes
         for loop_count in info.loop_counts:
             stmt = 'vn_decode_array_size(cs, %s)' % loop_count
             info.loop_extra_stmts.append(stmt)
+
+        # nothing to decode
+        if validity == info.INVALID:
+            return info
 
         func_name = 'vn_decode_' + info.func_stem
         if validity == info.PARTIAL and var.ty.base.category == ty.STRUCT:

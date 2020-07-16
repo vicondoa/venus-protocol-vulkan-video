@@ -63,22 +63,19 @@ vn_peek_array_size(struct vn_cs *cs)
     return size;
 }
 
-/* pointer */
+/* non-array pointer */
 
 static inline bool
-vn_encode_pointer(struct vn_cs *cs, const void *val)
+vn_encode_simple_pointer(struct vn_cs *cs, const void *val)
 {
-    const uint64_t tmp = (uintptr_t)val;
-    vn_encode_uint64_t(cs, &tmp);
-    return tmp > 0;
+    vn_encode_array_size(cs, val ? 1 : 0);
+    return val;
 }
 
 static inline bool
-vn_decode_pointer(struct vn_cs *cs)
+vn_decode_simple_pointer(struct vn_cs *cs)
 {
-    uint64_t tmp;
-    vn_decode_uint64_t(cs, &tmp);
-    return tmp > 0;
+    return vn_decode_array_size(cs, 1);
 }
 
 /* pNext chain */
