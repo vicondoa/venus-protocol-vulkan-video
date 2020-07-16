@@ -10,8 +10,11 @@ Features
  - improve robustness for the renderer
  - write tests
  - clean up the generator
+ - easier to use APIs for the renderer and the driver
 
 Performance
 
  - help compiler generate better code (always_inline, macros)
  - rework templates/driver_calls.h
+ - add smartness to some commands (e.g., ignore some members of
+   VkWriteDescriptorSet according to VkDescriptorType)
