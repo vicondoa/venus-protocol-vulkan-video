@@ -237,7 +237,7 @@ class Gen:
             self.func_stmt = None
 
         def _init_func_stem(self):
-            if self.var.is_data() or self.var.is_string():
+            if self.var.is_data() or self.var.ty.base.name == 'char':
                 self.func_stem = 'data'
             elif self.var.ty.base.category == VkType.BITMASK:
                 self.func_stem = 'VkFlags'
@@ -477,6 +477,10 @@ class Gen:
             code += '} else {\n    '
             code += '    %s = NULL;\n    ' % info._var_name()
             code += '}'
+        elif info.need_bracket():
+            code += '{\n    '
+            code += '    %s\n    ' % info.code(2).strip()
+            code += '}'
         else:
             code += info.code(1).strip()
 
@@ -523,6 +527,9 @@ class Gen:
         for loop_count in info.loop_counts:
             stmt = 'vn_encode_array_size(cs, %s)' % loop_count
             info.loop_extra_stmts.append(stmt)
+        if info.array_size:
+            info.func_extra_stmt = \
+                    'vn_encode_array_size(cs, %s)' % info.array_size
 
         func_name = 'vn_encode_' + info.func_stem
         if validity == info.PARTIAL and var.ty.base.category == ty.STRUCT:
@@ -539,12 +546,17 @@ class Gen:
             info.func_stmt = 'assert(false)'
             return info
 
-        # peek the encoded string size
-        if var.is_string():
-            assert(info.array_size.startswith('strlen'))
-            info.func_array_size_stmt = \
-                    'const size_t string_size = vn_peek_array_size(cs)'
-            info.array_size = 'string_size'
+        # decode the encoded array size
+        if validity != info.INVALID and info.array_size:
+            if var.is_string():
+                assert(info.array_size.startswith('strlen'))
+                info.func_array_size_stmt = \
+                        'const size_t string_size = vn_decode_array_size(cs, UINT64_MAX)'
+                info.array_size = 'string_size'
+            else:
+                info.func_array_size_stmt = \
+                        'const size_t array_size = vn_decode_array_size(cs, %s)' % info.array_size
+                info.array_size = 'array_size'
 
         if alloc_storage and var.ty.is_pointer():
             info.init_alloc_stmts()
