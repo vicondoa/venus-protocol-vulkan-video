@@ -92,12 +92,11 @@ is assumed to be uninitialized except for
  - object handles
  - `uint32_t` indicating the size of another command parameter
 
-A special rule must be followed to encode only the initialized parts.  (The
-generated code likely have bugs.)
+A special rule must be followed to encode only the initialized parts.  (More
+specific?  The generated code likely have bugs as well.)
 
 ## Command Replies
 
-For a command reply, a `VnCommandType` is encoded first followed by a
-`VkResult` (why?).  If the command has a return value other than `VkResult`,
-the return value is then encoded.  Finally, command parameters that are
-non-const pointers/arrays are encoded in order.
+For a command reply, a `VnCommandType` is encoded first.  If the command has a
+return value, the return value is then encoded.  Finally, command parameters
+that are non-const pointers/arrays are encoded in order.
