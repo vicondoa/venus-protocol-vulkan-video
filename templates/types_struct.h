@@ -4,10 +4,14 @@
  */
 
 <%def name="vn_sizeof_struct_body(ty, variant='')">\
+<% skip_vars = 2 if '_self' in variant and ty.s_type else 0 %>\
     size_t size = 0;
-%   for var in ty.variables:
-    size += 256; /* TODO GEN.size_struct_member(ty, var, 'val->') */
-%   endfor
+% if skip_vars:
+    /* skip val->{${','.join([var.name for var in ty.variables[:skip_vars]])}} */
+% endif
+% for var in ty.variables[skip_vars:]:
+    ${GEN.sizeof_struct_member(ty, var, 'val->', '_partial' in variant, 'size')}
+% endfor
     return size;
 </%def>
 

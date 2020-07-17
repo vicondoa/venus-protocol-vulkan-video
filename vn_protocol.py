@@ -450,6 +450,37 @@ class Gen:
 
             return code_enter_loops + code_body + code_leave_loops
 
+    def _sizeof_variable(self, info, dst):
+        if info.validity == info.INVALID:
+            if info.var.ty.is_pointer():
+                return '%s += vn_sizeof_simple_pointer(%s); /* out */' % (
+                        dst, info._var_name())
+            else:
+                return '/* skip %s */' % info._var_name()
+
+        code = ''
+        if info.var.ty.is_pointer() and info.will_handle_array_size():
+            code += 'if (%s) {\n    ' % info._var_name()
+            code += '    %s\n    ' % info.code(2).strip()
+            code += '} else {\n    '
+            code += '    %s += vn_sizeof_array_size(0);\n    ' % dst
+            code += '}'
+        elif info.var.ty.is_pointer() and info.need_bracket():
+            code += '%s += vn_sizeof_simple_pointer(%s);\n    ' % (
+                        dst, info._var_name())
+            code += 'if (%s) {\n    ' % info._var_name()
+            code += '    %s\n    ' % info.code(2).strip()
+            code += '}'
+        elif info.var.ty.is_pointer():
+            code += '%s += vn_sizeof_simple_pointer(%s);\n    ' % (
+                        dst, info._var_name())
+            code += 'if (%s)\n    ' % info._var_name()
+            code += '    %s' % info.code(2).strip()
+        else:
+            code += info.code(1).strip()
+
+        return code
+
     def _encode_variable(self, info):
         if info.validity == info.INVALID:
             if info.will_handle_array_size() and not info.var.ty.is_array():
@@ -525,6 +556,40 @@ class Gen:
             code += info.code(1).strip()
 
         return code
+
+    def _sizeof_variable_info(self, ty, var, prefix, validity, dst):
+        info = self.VariableInfo(ty, var, prefix, validity)
+        if not self.is_serializable(var):
+            assert(var.maybe_null())
+            info.func_stmt = 'assert(false)'
+            return info
+
+        # save strlen result to a temp
+        if var.is_string():
+            assert(info.array_size.startswith('strlen'))
+            info.func_array_size_stmt = \
+                    'const size_t string_size = %s' % info.array_size
+            info.array_size = 'string_size'
+
+        # encode array sizes
+        for loop_count in info.loop_counts:
+            stmt = '%s += vn_sizeof_array_size(%s)' % (dst, loop_count)
+            info.loop_extra_stmts.append(stmt)
+        if info.array_size:
+            info.func_extra_stmt = \
+                    '%s += vn_sizeof_array_size(%s)' % (dst, info.array_size)
+
+        # nothing to encode
+        if validity == info.INVALID:
+            return info
+
+        func_name = 'vn_sizeof_' + info.func_stem
+        if validity == info.PARTIAL and var.ty.base.category == ty.STRUCT:
+            func_name += '_partial'
+
+        info.func_stmt = '%s += %s(%s)' % (dst, func_name, info.func_args(False))
+
+        return info
 
     def _encode_variable_info(self, ty, var, prefix, validity):
         info = self.VariableInfo(ty, var, prefix, validity)
@@ -636,6 +701,11 @@ class Gen:
                 validity = self.VariableInfo.INVALID
         return validity
 
+    def sizeof_struct_member(self, ty, var, prefix, struct_is_partial, dst):
+        validity = self._get_variable_validity(ty, var, not struct_is_partial)
+        info = self._sizeof_variable_info(ty, var, prefix, validity, dst)
+        return self._sizeof_variable(info, dst)
+
     def encode_struct_member(self, ty, var, prefix, struct_is_partial):
         validity = self._get_variable_validity(ty, var, not struct_is_partial)
         info = self._encode_variable_info(ty, var, prefix, validity)
@@ -651,6 +721,11 @@ class Gen:
         info = self._replace_variable_handle_info(ty, var, prefix, validity)
         return self._replace_variable_handle(info)
 
+    def sizeof_command_arg(self, ty, var, prefix, dst):
+        validity = self._get_variable_validity(ty, var, 'var_in' in var.attrs)
+        info = self._sizeof_variable_info(ty, var, prefix, validity, dst)
+        return self._sizeof_variable(info, dst)
+
     def encode_command_arg(self, ty, var, prefix):
         validity = self._get_variable_validity(ty, var, 'var_in' in var.attrs)
         info = self._encode_variable_info(ty, var, prefix, validity)
@@ -665,6 +740,14 @@ class Gen:
         validity = self._get_variable_validity(ty, var, 'var_in' in var.attrs)
         info = self._replace_variable_handle_info(ty, var, prefix, validity)
         return self._replace_variable_handle(info)
+
+    def sizeof_command_reply(self, ty, var, prefix, dst):
+        if 'var_out' not in var.attrs:
+            return '/* skip %s%s */' % (prefix, var.name)
+
+        info = self._sizeof_variable_info(ty, var, prefix,
+                self.VariableInfo.VALID, dst)
+        return self._sizeof_variable(info, dst)
 
     def encode_command_reply(self, ty, var, prefix):
         if 'var_out' not in var.attrs:

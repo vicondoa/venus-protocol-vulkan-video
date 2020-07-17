@@ -3,6 +3,21 @@
  * SPDX-License-Identifier: MIT
  */
 
+<%def name="vn_sizeof_command(ty)">\
+static inline size_t vn_sizeof_${ty.name}(${ty.c_func_params()})
+{
+    const VnCommandType cmd_type = ${ty.attrs['c_type']};
+    const VkFlags cmd_flags = 0;
+    size_t cmd_size = vn_sizeof_VnCommandType(&cmd_type) + vn_sizeof_VkFlags(&cmd_flags);
+
+% for var in ty.variables:
+    ${GEN.sizeof_command_arg(ty, var, '', 'cmd_size')}
+% endfor
+
+    return cmd_size;
+}
+</%def>
+
 <%def name="vn_encode_command(ty)">\
 static inline void vn_encode_${ty.name}(struct vn_cs *cs, VnCommandFlags cmd_flags, ${ty.c_func_params()})
 {
@@ -29,6 +44,24 @@ static inline void vn_decode_${ty.name}_args_temp(struct vn_cs *cs, struct vn_co
 % for var in ty.variables:
     ${GEN.decode_command_arg(ty, var, 'args->')}
 % endfor
+}
+</%def>
+
+<%def name="vn_sizeof_command_reply(ty)">\
+static inline size_t vn_sizeof_${ty.name}_reply(${ty.c_func_params()})
+{
+    const VnCommandType cmd_type = ${ty.attrs['c_type']};
+    size_t cmd_size = vn_sizeof_VnCommandType(&cmd_type);
+
+% if ty.ret:
+    ${ty.ret.to_c()};
+    ${GEN.sizeof_command_reply(ty, ty.ret, '', 'cmd_size')}
+% endif
+% for var in ty.variables:
+    ${GEN.sizeof_command_reply(ty, var, '', 'cmd_size')}
+% endfor
+
+    return cmd_size;
 }
 </%def>
 

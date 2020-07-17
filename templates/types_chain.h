@@ -5,6 +5,14 @@
 
 <%namespace name="struct" file="/types_struct.h"/>
 
+<%def name="vn_sizeof_chain_self(ty, variant='')">\
+static inline size_t
+vn_sizeof_${ty.name}_self${variant}(const ${ty.name} *val)
+{
+${struct.vn_sizeof_struct_body(ty, '_self' + variant)}\
+}
+</%def>
+
 <%def name="vn_encode_chain_self(ty, variant='')">\
 static inline void
 vn_encode_${ty.name}_self${variant}(struct vn_cs *cs, const ${ty.name} *val)
@@ -30,7 +38,30 @@ ${struct.vn_replace_struct_handle_body(ty, '_self')}\
 </%def>
 
 <%def name="vn_sizeof_chain_body(ty, variant='')">\
-    return 1024; /* TODO walk the chain */
+    const struct VkBaseInStructure *pnext = (const struct VkBaseInStructure *)val;
+    size_t size = 0;
+<%
+    next_types, skipped_types = GEN.get_chain(ty)
+%>
+    do {
+        switch (pnext->sType) {
+% for next_ty in [ty] + next_types:
+        case ${next_ty.s_type}:
+            size += vn_sizeof_VkStructureType(&pnext->sType);
+            size += vn_sizeof_${next_ty.name}_self${variant}((const ${next_ty.name} *)pnext);
+            break;
+% endfor
+% for skipped_ty in skipped_types:
+        case ${skipped_ty.s_type}:
+% endfor
+        default:
+            /* ignore unknown/unsupported struct */
+            break;
+        }
+        pnext = pnext->pNext;
+    } while (pnext);
+
+    return size + vn_sizeof_end_of_chain();
 </%def>
 
 <%def name="vn_encode_chain_body(ty, variant='')">\

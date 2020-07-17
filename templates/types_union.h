@@ -3,6 +3,25 @@
  * SPDX-License-Identifier: MIT
  */
 
+<%def name="vn_sizeof_union_tag(ty)">\
+static inline size_t
+vn_sizeof_${ty.name}_tag(const ${ty.name} *val, uint32_t tag)
+{
+    size_t size = vn_sizeof_uint32_t(&tag);
+    switch (tag) {
+% for (i, var) in enumerate(ty.variables):
+    case ${i}:
+        ${GEN.sizeof_struct_member(ty, var, 'val->', False, 'size')}
+        break;
+% endfor
+    default:
+        assert(false);
+        break;
+    }
+    return size;
+}
+</%def>
+
 <%def name="vn_encode_union_tag(ty)">\
 static inline void
 vn_encode_${ty.name}_tag(struct vn_cs *cs, const ${ty.name} *val, uint32_t tag)
@@ -23,7 +42,7 @@ vn_encode_${ty.name}_tag(struct vn_cs *cs, const ${ty.name} *val, uint32_t tag)
 
 <%def name="vn_sizeof_union_body(ty, variant='')">\
 <% tag = GEN.UNION_DEFAULT_TAGS[ty.name] %>\
-    return sizeof(uint32_t) + 16; /* TODO GEN.size_struct_member(ty, ty.variables[tag], 'val->') */
+    return vn_sizeof_${ty.name}_tag(val, ${tag});
 </%def>
 
 <%def name="vn_encode_union_body(ty)">\

@@ -19,7 +19,9 @@
  */
 
 % for ty in COMMAND_TYPES:
+${command.vn_sizeof_command(ty)}
 ${command.vn_encode_command(ty)}
+${command.vn_sizeof_command_reply(ty)}
 ${command.vn_decode_command_reply(ty)}
 % endfor
 \

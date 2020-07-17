@@ -3,16 +3,38 @@
  * SPDX-License-Identifier: MIT
  */
 
-<%def name="vn_encode_scalar_array(ty)">\
-static inline void
-vn_encode_${ty.name}_array(struct vn_cs *cs, const ${ty.name} *val, uint32_t count)
+<%def name="vn_sizeof_scalar_array(ty)">\
+static inline size_t
+vn_sizeof_${ty.name}_array(const ${ty.name} *val, uint32_t count)
 {
 % if ty.category == ty.DEFAULT:
 <% ty_size = GEN.PRIMITIVE_TYPES[ty.name] %>\
     assert(sizeof(*val) == ${ty_size});
     const size_t size = sizeof(*val) * count;
     assert(size >= count);
+%   if ty_size >= 4:
+    return size;
+%   else:
+    return (size + 3) & ~3;
+%   endif
+% elif ty.category == ty.BASETYPE:
+    return vn_sizeof_${ty.typedef.name}_array(val, count);
+% elif ty.category == ty.ENUM:
+    return vn_sizeof_int32_t_array((const int32_t *)val, count);
+% else:
+<% assert(False) %>
+% endif
+}
+</%def>
 
+<%def name="vn_encode_scalar_array(ty)">\
+static inline void
+vn_encode_${ty.name}_array(struct vn_cs *cs, const ${ty.name} *val, uint32_t count)
+{
+% if ty.category == ty.DEFAULT:
+<% ty_size = GEN.PRIMITIVE_TYPES[ty.name] %>\
+    const size_t size = sizeof(*val) * count;
+    assert(size >= count);
 %   if ty_size >= 4:
     vn_encode(cs, size, val, size);
 %   else:
@@ -34,10 +56,8 @@ vn_decode_${ty.name}_array(struct vn_cs *cs, ${ty.name} *val, uint32_t count)
 {
 % if ty.category == ty.DEFAULT:
 <% ty_size = GEN.PRIMITIVE_TYPES[ty.name] %>\
-    assert(sizeof(*val) == ${ty_size});
     const size_t size = sizeof(*val) * count;
     assert(size >= count);
-
 %   if ty_size >= 4:
     vn_decode(cs, size, val, size);
 %   else:
@@ -62,7 +82,7 @@ vn_decode_${ty.name}_array(struct vn_cs *cs, ${ty.name} *val, uint32_t count)
     return vn_sizeof_${ty.typedef.name}(val);
 % elif ty.category == ty.ENUM:
     assert(sizeof(*val) == sizeof(int32_t));
-    return sizeof(int32_t);
+    return vn_sizeof_int32_t((const int32_t *)val);
 % endif
 </%def>
 

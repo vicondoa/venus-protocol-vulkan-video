@@ -3,6 +3,38 @@
  * SPDX-License-Identifier: MIT
  */
 
+<%def name="vn_sizeof_custom_types()">\
+static inline size_t
+vn_sizeof_size_t(const size_t *val)
+{
+    return vn_sizeof_uint64_t(&(uint64_t){ *val });
+}
+
+static inline size_t
+vn_sizeof_data_array(const void *val, size_t size)
+{
+    return (size + 3) & ~3;
+}
+
+static inline size_t
+vn_sizeof_array_size(uint64_t size)
+{
+    return vn_sizeof_uint64_t(&size);
+}
+
+static inline size_t
+vn_sizeof_simple_pointer(const void *val)
+{
+    return vn_sizeof_array_size(val ? 1 : 0);
+}
+
+static inline size_t
+vn_sizeof_end_of_chain(void)
+{
+    return vn_sizeof_VkStructureType(&(VkStructureType){ VK_STRUCTURE_TYPE_MAX_ENUM });
+}
+</%def>
+
 <%def name="vn_custom_types()">\
 /* size_t */
 

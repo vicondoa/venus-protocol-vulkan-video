@@ -26,6 +26,13 @@
 % for ty in STRUCT_TYPES:
 /* ${types.vn_type_descriptive_name(ty)} */
 
+%     if ty.category == ty.UNION:
+${union.vn_sizeof_union_tag(ty)}
+%     elif ty.s_type:
+${chain.vn_sizeof_chain_self(ty)}
+%     endif
+${types.vn_sizeof_type(ty)}
+\
 %   if 'need_encode' in ty.attrs:
 %     if ty.category == ty.UNION:
 ${union.vn_encode_union_tag(ty)}
@@ -44,6 +51,11 @@ ${types.vn_decode_type(ty)}
 \
 %   if 'need_partial' in ty.attrs and ty.category == ty.STRUCT:
 %     if ty.s_type:
+${chain.vn_sizeof_chain_self(ty, '_partial')}
+%     endif
+${types.vn_sizeof_type_partial(ty)}
+\
+%     if ty.s_type:
 ${chain.vn_encode_chain_self(ty, '_partial')}
 %     endif
 ${types.vn_encode_type_partial(ty)}
@@ -56,6 +68,7 @@ ${types.vn_encode_type_partial(ty)}
 % for ty in MANUAL_UNION_TYPES:
 /* ${types.vn_type_descriptive_name(ty)} */
 
+${union.vn_sizeof_union_tag(ty)}
 %   if 'need_encode' in ty.attrs:
 ${union.vn_encode_union_tag(ty)}
 %   endif

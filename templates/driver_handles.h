@@ -13,6 +13,7 @@
 % for ty in HANDLE_TYPES:
 /* ${types.vn_type_descriptive_name(ty)} */
 
+${types.vn_sizeof_type(ty)}
 ${types.vn_encode_type(ty)}
 ${types.vn_decode_type(ty)}
 % endfor
