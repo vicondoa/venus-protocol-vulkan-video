@@ -21,7 +21,6 @@
  *   vn_cs_alloc_temp
  *   vn_cs_in
  *   vn_cs_in_peek
- *   vn_cs_reserve_out
  *   vn_cs_out
  *   vn_cs_handle_load_id
  *   vn_cs_handle_store_id
@@ -89,13 +88,6 @@ vn_cs_in_peek(struct vn_cs *cs, void *val, size_t val_size)
    vkr_parser_peek(parser, val, val_size);
 }
 
-static inline bool
-vn_cs_reserve_out(struct vn_cs *cs, size_t size)
-{
-   /* vkr_parser_reply will do size checking */
-   return true;
-}
-
 static inline void
 vn_cs_out(struct vn_cs *cs, size_t size, const void *val, size_t val_size)
 {
@@ -119,10 +111,9 @@ static inline void
 vn_encode(struct vn_cs *cs, size_t size, const void *data, size_t data_size)
 {
    assert(size % 4 == 0);
-   /* TODO move vn_cs_reserve_out up */
+   /* no vn_cs_reserve_out; vn_cs_out must do size check */
    /* TODO check if the generated code is optimal */
-   if (vn_cs_reserve_out(cs, size))
-      vn_cs_out(cs, size, data, data_size);
+   vn_cs_out(cs, size, data, data_size);
 }
 
 static inline void
