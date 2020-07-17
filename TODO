@@ -10,6 +10,7 @@ Features
  - improve robustness for the renderer
  - write tests
  - clean up the generator
+ - do not generate dead code
  - easier to use APIs for the renderer and the driver
 
 Performance
