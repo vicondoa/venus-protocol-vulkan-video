@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-<%def name="vn_size_struct_body(ty, variant='')">\
+<%def name="vn_sizeof_struct_body(ty, variant='')">\
     size_t size = 0;
 %   for var in ty.variables:
     size += 256; /* TODO GEN.size_struct_member(ty, var, 'val->') */

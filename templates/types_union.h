@@ -21,7 +21,7 @@ vn_encode_${ty.name}_tag(struct vn_cs *cs, const ${ty.name} *val, uint32_t tag)
 }
 </%def>
 
-<%def name="vn_size_union_body(ty, variant='')">\
+<%def name="vn_sizeof_union_body(ty, variant='')">\
 <% tag = GEN.UNION_DEFAULT_TAGS[ty.name] %>\
     return sizeof(uint32_t) + 16; /* TODO GEN.size_struct_member(ty, ty.variables[tag], 'val->') */
 </%def>

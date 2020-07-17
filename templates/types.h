@@ -27,20 +27,20 @@ struct ${ty.name}${" chain" if ty.s_type else ""}\
 % endif
 </%def>
 
-<%def name="vn_size_type(ty)">\
+<%def name="vn_sizeof_type(ty)">\
 static inline size_t
-vn_size_${ty.name}(const ${ty.name} *val)
+vn_sizeof_${ty.name}(const ${ty.name} *val)
 {
 % if ty.category in [ty.DEFAULT, ty.BASETYPE, ty.ENUM]:
-${scalar.vn_size_scalar_body(ty)}\
+${scalar.vn_sizeof_scalar_body(ty)}\
 % elif ty.category == ty.HANDLE:
-${handle.vn_size_handle_body(ty)}\
+${handle.vn_sizeof_handle_body(ty)}\
 % elif ty.category == ty.UNION:
-${union.vn_size_union_body(ty)}\
+${union.vn_sizeof_union_body(ty)}\
 % elif ty.category == ty.STRUCT and not ty.s_type:
-${struct.vn_size_struct_body(ty)}\
+${struct.vn_sizeof_struct_body(ty)}\
 % elif ty.category == ty.STRUCT and ty.s_type:
-${chain.vn_size_chain_body(ty)}\
+${chain.vn_sizeof_chain_body(ty)}\
 % else:
 <% assert(False) %>
 % endif
@@ -107,20 +107,20 @@ ${chain.vn_decode_chain_temp_body(ty)}\
 }
 </%def>
 
-<%def name="vn_size_type_partial(ty)">\
+<%def name="vn_sizeof_type_partial(ty)">\
 static inline size_t
-vn_size_${ty.name}_partial(const ${ty.name} *val)
+vn_sizeof_${ty.name}_partial(const ${ty.name} *val)
 {
 % if ty.category in [ty.DEFAULT, ty.BASETYPE, ty.ENUM]:
-${scalar.vn_size_scalar_body(ty)}\
+${scalar.vn_sizeof_scalar_body(ty)}\
 % elif ty.category == ty.HANDLE:
-${handle.vn_size_handle_body(ty)}\
+${handle.vn_sizeof_handle_body(ty)}\
 % elif ty.category == ty.UNION:
-${union.vn_size_union_body(ty, '_partial')}\
+${union.vn_sizeof_union_body(ty, '_partial')}\
 % elif ty.category == ty.STRUCT and not ty.s_type:
-${struct.vn_size_struct_body(ty, '_partial')}\
+${struct.vn_sizeof_struct_body(ty, '_partial')}\
 % elif ty.category == ty.STRUCT and ty.s_type:
-${chain.vn_size_chain_body(ty, '_partial')}\
+${chain.vn_sizeof_chain_body(ty, '_partial')}\
 % else:
 <% assert(False) %>
 % endif

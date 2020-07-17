@@ -29,7 +29,7 @@ ${struct.vn_replace_struct_handle_body(ty, '_self')}\
 }
 </%def>
 
-<%def name="vn_size_chain_body(ty, variant='')">\
+<%def name="vn_sizeof_chain_body(ty, variant='')">\
     return 1024; /* TODO walk the chain */
 </%def>
 

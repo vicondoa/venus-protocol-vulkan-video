@@ -53,13 +53,13 @@ vn_decode_${ty.name}_array(struct vn_cs *cs, ${ty.name} *val, uint32_t count)
 }
 </%def>
 
-<%def name="vn_size_scalar_body(ty)">\
+<%def name="vn_sizeof_scalar_body(ty)">\
 % if ty.category == ty.DEFAULT:
 <% ty_size = GEN.PRIMITIVE_TYPES[ty.name] %>\
     assert(sizeof(*val) == ${ty_size});
     return ${ty_size if ty_size >= 4 else 4};
 % elif ty.category == ty.BASETYPE:
-    return vn_size_${ty.typedef.name}(val);
+    return vn_sizeof_${ty.typedef.name}(val);
 % elif ty.category == ty.ENUM:
     assert(sizeof(*val) == sizeof(int32_t));
     return sizeof(int32_t);
