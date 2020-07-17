@@ -29,12 +29,6 @@ static inline void vn_encode_${ty.name}(struct vn_cs *cs, VnCommandFlags cmd_fla
 % for var in ty.variables:
     ${GEN.encode_command_arg(ty, var, '')}
 % endfor
-
-    /* TODO */
-    if (cmd_flags & VN_COMMAND_GENERATE_REPLY_BIT) {
-        size_t reply_size = 0;
-        vn_cs_reserve_out(cs, reply_size);
-    }
 }
 </%def>
 

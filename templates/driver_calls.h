@@ -6,14 +6,20 @@
 <%def name="call_command(ty)">\
 static inline ${ty.c_func_ret()} vn_call_${ty.name}(struct vn_instance *vn_instance, ${ty.c_func_params()})
 {
+    const size_t cmd_size = vn_sizeof_${ty.name}(${ty.c_func_args()});
+    const size_t reply_size = vn_sizeof_${ty.name}_reply(${ty.c_func_args()});
     const VnCommandFlags cmd_flags = VN_COMMAND_GENERATE_REPLY_BIT;
 
     mtx_lock(&vn_instance->mutex);
 
+    /* TODO suballocate from reply stream and avoid locking */
+    assert(reply_size <= vn_instance->reply_size);
+
     /* TODO too many commands... */
     vn_cs_out_begin_reply_stream(&vn_instance->cs);
-    vn_encode_${ty.name}(&vn_instance->cs, cmd_flags, ${ty.c_func_args()});
-    vn_cs_out_end_reply_stream(&vn_instance->cs, vn_instance->reply_bo->res_id, 0, vn_instance->reply_size);
+    if (vn_cs_reserve_out(&vn_instance->cs, cmd_size))
+        vn_encode_${ty.name}(&vn_instance->cs, cmd_flags, ${ty.c_func_args()});
+    vn_cs_out_end_reply_stream(&vn_instance->cs, vn_instance->reply_bo->res_id, 0, reply_size);
 
     vn_cs_end_out(&vn_instance->cs);
 
@@ -41,10 +47,12 @@ static inline ${ty.c_func_ret()} vn_call_${ty.name}(struct vn_instance *vn_insta
 <%def name="async_command(ty)">\
 static inline void vn_async_${ty.name}(struct vn_instance *vn_instance, ${ty.c_func_params()})
 {
+    const size_t cmd_size = vn_sizeof_${ty.name}(${ty.c_func_args()});
     const VnCommandFlags cmd_flags = 0;
 
     mtx_lock(&vn_instance->mutex);
-    vn_encode_${ty.name}(&vn_instance->cs, cmd_flags, ${ty.c_func_args()});
+    if (vn_cs_reserve_out(&vn_instance->cs, cmd_size))
+        vn_encode_${ty.name}(&vn_instance->cs, cmd_flags, ${ty.c_func_args()});
     mtx_unlock(&vn_instance->mutex);
 }
 </%def>\
