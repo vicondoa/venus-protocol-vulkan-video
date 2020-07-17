@@ -1,0 +1,9 @@
+Update vk.xml
+
+ - copy vk.xml from Vulkan-Docs to xml/
+ - copy headers from Vulkan-Headers to include/
+
+Add an extension
+
+ - add an extension string to VK_XML_EXTENSION_LIST
+ - update vn.xml with the help of print_vn_command_types.py
