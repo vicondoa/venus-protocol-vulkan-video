@@ -19,8 +19,15 @@ static inline void vn_dispatch_${ty.name}(struct vn_dispatch_context *ctx, VnCom
         ctx->dispatch_${ty.name}(ctx, &args);
 
 % if ty.ret and ty.ret.ty.name == 'VkResult':
-    if (!vn_cs_has_error(ctx->cs) && args.${ty.ret.name} < VK_SUCCESS)
-        vn_dispatch_debug_log(ctx, "${ty.name} returned %d", args.${ty.ret.name});
+    if (!vn_cs_has_error(ctx->cs) && args.${ty.ret.name} < VK_SUCCESS) {
+        switch (args.${ty.ret.name}) {
+        case VK_ERROR_FORMAT_NOT_SUPPORTED:
+            break;
+        default:
+            vn_dispatch_debug_log(ctx, "${ty.name} returned %d", args.${ty.ret.name});
+            break;
+        }
+    }
 % endif
 
     if (!vn_cs_has_error(ctx->cs) && (flags & VN_COMMAND_GENERATE_REPLY_BIT))
