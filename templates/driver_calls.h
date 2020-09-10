@@ -21,6 +21,17 @@ static inline ${ty.c_func_ret()} vn_call_${ty.name}(struct vn_instance *vn_insta
         vn_encode_${ty.name}(&vn_instance->cs, cmd_flags, ${ty.c_func_args()});
     vn_cs_out_end_reply_stream(&vn_instance->cs, vn_instance->reply_bo->res_id, 0, reply_size);
 
+   if (vn_cs_has_error(&vn_instance->cs)) {
+      vn_cs_reset(&vn_instance->cs);
+      vn_cs_set_error(&vn_instance->cs);
+      mtx_unlock(&vn_instance->mutex);
+%   if ty.ret:
+      return VK_ERROR_OUT_OF_HOST_MEMORY;
+%   else:
+      return;
+%   endif
+   }
+
     vn_cs_end_out(&vn_instance->cs);
 
     /* TODO suballocate reply_bo to avoid round trip with lock held... */
@@ -75,6 +86,13 @@ vn_async_flush(struct vn_instance *instance)
    mtx_lock(&instance->mutex);
 
    if (!vn_cs_has_out(&instance->cs)) {
+      mtx_unlock(&instance->mutex);
+      return;
+   }
+
+   if (vn_cs_has_error(&instance->cs)) {
+      vn_cs_reset(&instance->cs);
+      vn_cs_set_error(&instance->cs);
       mtx_unlock(&instance->mutex);
       return;
    }
