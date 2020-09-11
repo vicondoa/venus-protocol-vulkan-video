@@ -653,27 +653,47 @@ class VkFeature:
         return cls(api, name, number, types)
 
 class VkExtension:
-    def __init__(self, name, number, platform, types):
+    def __init__(self, name, number, supported):
         self.name = name
         self.number = int(number)
-        self.platform = platform
-        self.types = types
+        self.supported = supported
+
+        self.platform = None
+        self.promoted = None
+        self.requires = []
+        self.version = 0
+        self.types = []
 
     @classmethod
     def parse_extension(cls, elem, type_table):
         name = elem.attrib['name']
         number = elem.attrib['number']
-        platform = elem.attrib.get('platform')
+        supported = elem.attrib['supported']
 
-        types = []
+        ext = cls(name, number, supported)
+
+        ext.platform = elem.attrib.get('platform')
+        ext.promoted = elem.attrib.get('promotedto')
+
+        reqs = elem.attrib.get('requires')
+        if reqs:
+            ext.requires = reqs.split(',')
+
         for require_elem in elem.iterfind('require'):
+            for enum_elem in require_elem:
+                if enum_elem.tag != 'enum':
+                    continue
+                if enum_elem.attrib['name'].endswith('SPEC_VERSION'):
+                    ext.version = int(enum_elem.attrib['value'])
+                    break
+
             require_types = VkFeature.parse_require(
                     require_elem, type_table, number)
             for ty in require_types:
-                if ty not in types:
-                    types.append(ty)
+                if ty not in ext.types:
+                    ext.types.append(ty)
 
-        return cls(name, number, platform, types)
+        return ext
 
 class VkApi:
     def __init__(self):
