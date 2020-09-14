@@ -124,8 +124,13 @@ class Gen:
         for feat in self.api.vulkan:
             types.extend(feat.types)
         for ext in self.api.extensions:
-            if ext.name in VK_XML_EXTENSION_LIST:
-                types.extend(ext.types)
+            if ext.name not in VK_XML_EXTENSION_LIST:
+                continue
+
+            types.extend(ext.types)
+            for key in ext.optional_types:
+                if key in VK_XML_EXTENSION_LIST:
+                    types.extend(ext.optional_types[key])
 
         types_with_deps = set()
         for ty in types:

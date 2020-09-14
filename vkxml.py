@@ -661,8 +661,10 @@ class VkExtension:
         self.platform = None
         self.promoted = None
         self.requires = []
+
         self.version = 0
         self.types = []
+        self.optional_types = {}
 
     @classmethod
     def parse_extension(cls, elem, type_table):
@@ -689,9 +691,18 @@ class VkExtension:
 
             require_types = VkFeature.parse_require(
                     require_elem, type_table, number)
+
+            require_dep = require_elem.attrib.get('extension')
+            if require_dep:
+                if require_dep not in ext.optional_types:
+                    ext.optional_types[require_dep] = []
+                types = ext.optional_types[require_dep]
+            else:
+                types = ext.types
+
             for ty in require_types:
-                if ty not in ext.types:
-                    ext.types.append(ty)
+                if ty not in types:
+                    types.append(ty)
 
         return ext
 
