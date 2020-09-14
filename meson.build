@@ -40,23 +40,23 @@ vn_template_common_files = files(
 driver_basenames = [
   'driver.h',
   'driver_calls.h',
-  'driver_capset.h',
   'driver_commands.h',
   'driver_cs.h',
   'driver_defines.h',
   'driver_handles.h',
+  'driver_info.h',
   'driver_structs.h',
   'driver_types.h',
 ]
 
 renderer_basenames = [
   'renderer.h',
-  'renderer_capset.h',
   'renderer_commands.h',
   'renderer_cs.h',
   'renderer_defines.h',
   'renderer_dispatches.h',
   'renderer_handles.h',
+  'renderer_info.h',
   'renderer_structs.h',
   'renderer_types.h',
 ]

@@ -8,6 +8,7 @@
 #ifndef VN_PROTOCOL_RENDERER_DEFINES_H
 #define VN_PROTOCOL_RENDERER_DEFINES_H
 
+#include <stdlib.h>
 #include <string.h>
 
 #include "vulkan.h"

@@ -30,55 +30,50 @@ struct vn_command_${ty.name} {
 };
 </%def>
 
-<%def name="define_capset(wire_format_ver, vn_xml_ver, vk_xml_ver, ext_table)">\
+<%def name="define_info(wire_format_ver, vn_xml_ver, vk_xml_ver, exts)">\
 static inline uint32_t
-vn_capset_wire_format_version(void)
+vn_info_wire_format_version(void)
 {
     return ${wire_format_ver};
 }
 
 static inline uint32_t
-vn_capset_vn_xml_version(void)
+vn_info_vn_xml_version(void)
 {
     return ${vn_xml_ver};
 }
 
 static inline uint32_t
-vn_capset_vk_xml_version(void)
+vn_info_vk_xml_version(void)
 {
     return ${vk_xml_ver};
 }
-<%
-c_table_size = (len(ext_table) + 31) // 32
-c_table = []
-for i in range(c_table_size):
-  start = i * 32
-  stop = min((i + 1) * 32, len(ext_table))
-  val = 0
-  names = []
-  for j in range(start, stop):
-    if ext_table[j]:
-      val |= 1 << (j % 32)
-      names.append("%d. %s" % (j, ext_table[j]))
-  c_table.append((val, names))
-%>
-static inline const uint32_t *
-vn_capset_vk_xml_extension_table(uint32_t *size)
+
+static inline int
+vn_info_extension_compare(const void *a, const void *b)
 {
-    static const uint32_t vk_xml_extension_table[${c_table_size}] = {
-% for val, names in c_table:
-  % if names:
-        /*
-    % for name in names:
-         * ${name}
-    % endfor
-         */
-  % endif
-        ${"0x%08x" % val},
+   return strcmp(a, *(const char **)b);
+}
+
+static inline uint32_t
+vn_info_extension_spec_version(const char *name)
+{
+    static uint32_t ext_count = ${len(exts)};
+    static const char *ext_names[${len(exts)}] = {
+% for ext in exts:
+        "${ext.name}",
 % endfor
     };
+    static const uint32_t ext_versions[${len(exts)}] = {
+% for ext in exts:
+        ${ext.version},
+% endfor
+    };
+    const char **found;
 
-    *size = ${c_table_size};
-    return vk_xml_extension_table;
+    found = bsearch(name, ext_names, ext_count, sizeof(ext_names[0]),
+          vn_info_extension_compare);
+
+    return found ? ext_versions[found - ext_names] : 0;
 }
 </%def>

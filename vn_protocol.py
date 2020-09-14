@@ -804,24 +804,23 @@ class GenDefines:
                 BITMASK_TYPES=bitmask_types,
                 COMMAND_TYPES=command_types)
 
-class GenCapset:
+class GenInfo:
     def __init__(self, gen, template):
         self.gen = gen
         self.template = template
 
     def generate(self):
-        ext_table = []
+        exts = []
         for ext in self.gen.api.extensions:
-            if ext.number >= len(ext_table):
-                ext_table.extend([None] * (ext.number - len(ext_table) + 1))
             if ext.name in VK_XML_EXTENSION_LIST:
-                ext_table[ext.number] = ext.name
+                exts.append(ext)
+        exts.sort(key=lambda ext: ext.name)
 
         return self.template.render(
                 WIRE_FORMAT_VERSION=VN_WIRE_FORMAT_VERSION,
                 VN_XML_VERSION=self.gen.api.vn_xml_version,
                 VK_XML_VERSION=self.gen.api.vk_xml_version,
-                VK_XML_EXTENSION_TABLE=ext_table)
+                EXTENSIONS=exts)
 
 class GenTypes:
     def __init__(self, gen, template):
@@ -953,7 +952,7 @@ def main():
         outputs = [
             (GenCS,         'driver_cs.h'),
             (GenDefines,    'driver_defines.h'),
-            (GenCapset,     'driver_capset.h'),
+            (GenInfo,       'driver_info.h'),
             (GenTypes,      'driver_types.h'),
             (GenHandles,    'driver_handles.h'),
             (GenStructs,    'driver_structs.h'),
@@ -964,7 +963,7 @@ def main():
         outputs = [
             (GenCS,         'renderer_cs.h'),
             (GenDefines,    'renderer_defines.h'),
-            (GenCapset,     'renderer_capset.h'),
+            (GenInfo,       'renderer_info.h'),
             (GenTypes,      'renderer_types.h'),
             (GenHandles,    'renderer_handles.h'),
             (GenStructs,    'renderer_structs.h'),
