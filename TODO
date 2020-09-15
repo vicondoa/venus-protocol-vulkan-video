@@ -2,6 +2,7 @@ Protocol
 
  - finalize wire-format.md
  - finalize xml/vn.xml
+   - should we make it a Vulkan extension?
  - verify the correctness of the generated code
 
 Features
