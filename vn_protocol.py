@@ -64,8 +64,6 @@ VK_XML_EXTENSION_LIST = [
     'VK_EXT_scalar_block_layout',
     'VK_EXT_separate_stencil_usage',
     'VK_EXT_shader_viewport_index_layer',
-    # EXT
-    'VK_EXT_pci_bus_info',
 ]
 
 VN_PROTOCOL_DIR = Path(__file__).parent.resolve()
