@@ -199,6 +199,12 @@
         <enum value="178" name="VN_COMMAND_TYPE_vkGetBufferDeviceAddress"/>
         <enum value="179" name="VN_COMMAND_TYPE_vkGetBufferOpaqueCaptureAddress"/>
         <enum value="180" name="VN_COMMAND_TYPE_vkGetDeviceMemoryOpaqueCaptureAddress"/>
+        <enum value="181" name="VN_COMMAND_TYPE_vkCmdBindTransformFeedbackBuffersEXT"/>
+        <enum value="182" name="VN_COMMAND_TYPE_vkCmdBeginTransformFeedbackEXT"/>
+        <enum value="183" name="VN_COMMAND_TYPE_vkCmdEndTransformFeedbackEXT"/>
+        <enum value="184" name="VN_COMMAND_TYPE_vkCmdBeginQueryIndexedEXT"/>
+        <enum value="185" name="VN_COMMAND_TYPE_vkCmdEndQueryIndexedEXT"/>
+        <enum value="186" name="VN_COMMAND_TYPE_vkCmdDrawIndirectByteCountEXT"/>
     </enums>
 
     <enums name="VnCommandFlagBits" type="bitmask">

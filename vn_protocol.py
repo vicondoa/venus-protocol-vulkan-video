@@ -66,6 +66,8 @@ VK_XML_EXTENSION_LIST = [
     'VK_EXT_shader_viewport_index_layer',
     # KHR extensions
     'VK_KHR_shader_non_semantic_info',
+    # EXT extensions
+    'VK_EXT_transform_feedback',
 ]
 
 VN_PROTOCOL_DIR = Path(__file__).parent.resolve()
