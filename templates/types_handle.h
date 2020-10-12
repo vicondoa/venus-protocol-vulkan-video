@@ -20,7 +20,11 @@ vn_decode_${ty.name}_lookup(struct vn_cs *cs, ${ty.name} *val)
 {
     uint64_t id;
     vn_decode_uint64_t(cs, &id);
+% if ty.dispatchable:
     *val = (${ty.name})vn_cs_lookup_object(cs, id);
+% else:
+    *val = (${ty.name})(uintptr_t)vn_cs_lookup_object(cs, id);
+% endif
 }
 </%def>
 
@@ -58,5 +62,9 @@ vn_decode_${ty.name}_lookup(struct vn_cs *cs, ${ty.name} *val)
 
 <%def name="vn_replace_handle_handle_body(ty)">\
 <% assert(not GEN.is_driver) %>\
+% if ty.dispatchable:
+    *val = (${ty.name})(uintptr_t)vn_cs_get_object_handle(val);
+% else:
     *val = (${ty.name})vn_cs_get_object_handle(val);
+% endif
 </%def>
