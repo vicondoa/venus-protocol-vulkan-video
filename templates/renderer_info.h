@@ -10,6 +10,6 @@
 
 #include "vn_protocol_renderer_defines.h"
 
-${define_info(WIRE_FORMAT_VERSION, VN_XML_VERSION, VK_XML_VERSION, EXTENSIONS)}
+${define_info(WIRE_FORMAT_VERSION, VK_XML_VERSION, EXTENSIONS)}
 \
 #endif /* VN_PROTOCOL_RENDERER_INFO_H */

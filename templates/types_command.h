@@ -6,9 +6,9 @@
 <%def name="vn_sizeof_command(ty)">\
 static inline size_t vn_sizeof_${ty.name}(${ty.c_func_params()})
 {
-    const VnCommandType cmd_type = ${ty.attrs['c_type']};
+    const VkCommandTypeEXT cmd_type = ${ty.attrs['c_type']};
     const VkFlags cmd_flags = 0;
-    size_t cmd_size = vn_sizeof_VnCommandType(&cmd_type) + vn_sizeof_VkFlags(&cmd_flags);
+    size_t cmd_size = vn_sizeof_VkCommandTypeEXT(&cmd_type) + vn_sizeof_VkFlags(&cmd_flags);
 
 % for var in ty.variables:
     ${GEN.sizeof_command_arg(ty, var, '', 'cmd_size')}
@@ -19,11 +19,11 @@ static inline size_t vn_sizeof_${ty.name}(${ty.c_func_params()})
 </%def>
 
 <%def name="vn_encode_command(ty)">\
-static inline void vn_encode_${ty.name}(struct vn_cs *cs, VnCommandFlags cmd_flags, ${ty.c_func_params()})
+static inline void vn_encode_${ty.name}(struct vn_cs *cs, VkCommandFlagsEXT cmd_flags, ${ty.c_func_params()})
 {
-    const VnCommandType cmd_type = ${ty.attrs['c_type']};
+    const VkCommandTypeEXT cmd_type = ${ty.attrs['c_type']};
 
-    vn_encode_VnCommandType(cs, &cmd_type);
+    vn_encode_VkCommandTypeEXT(cs, &cmd_type);
     vn_encode_VkFlags(cs, &cmd_flags);
 
 % for var in ty.variables:
@@ -44,8 +44,8 @@ static inline void vn_decode_${ty.name}_args_temp(struct vn_cs *cs, struct vn_co
 <%def name="vn_sizeof_command_reply(ty)">\
 static inline size_t vn_sizeof_${ty.name}_reply(${ty.c_func_params()})
 {
-    const VnCommandType cmd_type = ${ty.attrs['c_type']};
-    size_t cmd_size = vn_sizeof_VnCommandType(&cmd_type);
+    const VkCommandTypeEXT cmd_type = ${ty.attrs['c_type']};
+    size_t cmd_size = vn_sizeof_VkCommandTypeEXT(&cmd_type);
 
 % if ty.ret:
     ${ty.ret.to_c()};
@@ -62,7 +62,7 @@ static inline size_t vn_sizeof_${ty.name}_reply(${ty.c_func_params()})
 <%def name="vn_encode_command_reply(ty)">\
 static inline void vn_encode_${ty.name}_reply(struct vn_cs *cs, const struct vn_command_${ty.name} *args)
 {
-    vn_encode_VnCommandType(cs, &(VnCommandType){${ty.attrs['c_type']}});
+    vn_encode_VkCommandTypeEXT(cs, &(VkCommandTypeEXT){${ty.attrs['c_type']}});
 
 % if ty.ret:
     ${GEN.encode_command_reply(ty, ty.ret, 'args->')}
@@ -76,8 +76,8 @@ static inline void vn_encode_${ty.name}_reply(struct vn_cs *cs, const struct vn_
 <%def name="vn_decode_command_reply(ty)">\
 static inline ${ty.c_func_ret()} vn_decode_${ty.name}_reply(struct vn_cs *cs, ${ty.c_func_params()})
 {
-    VnCommandType command_type;
-    vn_decode_VnCommandType(cs, &command_type);
+    VkCommandTypeEXT command_type;
+    vn_decode_VkCommandTypeEXT(cs, &command_type);
     assert(command_type == ${ty.attrs['c_type']});
 
 % if ty.ret:

@@ -1,5 +1,8 @@
-Venus Wire Format
-=================
+VK_EXT_command_serialization
+============================
+
+VK_EXT_command_serialization defines a wire format for Vulkan command
+serialization.
 
 A command stream consists of a sequence of command requests.  When requested,
 the renderer can generate a reply stream in response to a command stream.
@@ -80,9 +83,8 @@ are not serializable.
 
 ## Command Requests
 
-For a command request, a `VnCommandType` is encoded first followed by
-`VnCommandFlags` (merge them together?).  Command parameters are then encoded
-in order.
+For a command request, a `VkCommandTypeEXT` is encoded first followed by
+`VkCommandFlagsEXT`.  Command parameters are then encoded in order.
 
 When a command parameter is a non-const pointer/array, the value(s) pointed to
 is assumed to be uninitialized except for
@@ -97,6 +99,6 @@ specific?  The generated code likely have bugs as well.)
 
 ## Command Replies
 
-For a command reply, a `VnCommandType` is encoded first.  If the command has a
-return value, the return value is then encoded.  Finally, command parameters
-that are non-const pointers/arrays are encoded in order.
+For a command reply, a `VkCommandTypeEXT` is encoded first.  If the command
+has a return value, the return value is then encoded.  Finally, command
+parameters that are non-const pointers/arrays are encoded in order.

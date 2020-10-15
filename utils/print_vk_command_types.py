@@ -38,7 +38,7 @@ class Command:
 
     @staticmethod
     def _enum_name(name):
-        return 'VN_COMMAND_TYPE_%s' % name
+        return 'VK_COMMAND_TYPE_%s_EXT' % name
 
 class Group:
     def __init__(self, name, commands):
@@ -53,13 +53,6 @@ class Group:
 def get_commands(api):
     all_commands = set()
     groups = []
-
-    commands = []
-    for ty in api.venus.types:
-        if ty.category == ty.COMMAND and ty not in all_commands:
-            commands.append(Command(ty))
-            all_commands.add(ty)
-    groups.append(Group('venus', commands))
 
     for feat in api.features:
         commands = []
@@ -106,8 +99,8 @@ def main():
     groups = get_commands(api)
 
     # assign ids to commands
-    command_type_ty = api.type_table['VnCommandType']
-    next_id = api.max_vn_command_type_value + 1
+    command_type_ty = api.type_table['VkCommandTypeEXT']
+    next_id = api.max_vk_command_type_value + 1
     for group in groups:
         next_id = group.assign_ids(command_type_ty.enums.values, next_id)
 

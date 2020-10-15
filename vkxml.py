@@ -711,13 +711,13 @@ class VkApi:
         self.platform_guards = {}
         self.tags = []
         self.type_table = {}
-        self.venus = None
         self.features = []
         self.extensions = []
 
-        self.vn_xml_version = None
         self.vk_xml_version = None
-        self.max_vn_command_type_value = None
+        self.vk_ext_command_serialization = None
+        self.vk_mesa_venus_protocol = None
+        self.max_vk_command_type_value = None
 
     def parse_xmls(self, xmls):
         for xml in xmls:
@@ -768,11 +768,7 @@ class VkApi:
 
     def _parse_feature(self, feature_elem):
         feat = VkFeature.parse_feature(feature_elem, self.type_table)
-        if feat.api == 'venus':
-            assert(not self.venus)
-            self.venus = feat
-        else:
-            self.features.append(feat)
+        self.features.append(feat)
 
     def _parse_extensions(self, extensions_elem):
         for extension_elem in extensions_elem.iterfind('extension'):
@@ -791,19 +787,21 @@ class VkApi:
         return 'VK_MAKE_VERSION(%s)' % complete_ver
 
     def _post_parse_init(self):
-        self.vn_xml_version = self._get_xml_version(
-                self.type_table['VN_HEADER_VERSION'],
-                self.type_table['VN_HEADER_VERSION_COMPLETE'])
-
         self.vk_xml_version = self._get_xml_version(
                 self.type_table['VK_HEADER_VERSION'],
                 self.type_table['VK_HEADER_VERSION_COMPLETE'])
 
+        for ext in self.extensions:
+            if ext.name == 'VK_EXT_command_serialization':
+                self.vk_ext_command_serialization = ext
+            elif ext.name == 'VK_MESA_venus_protocol':
+                self.vk_mesa_venus_protocol = ext
+
         max_val = 0
-        vn_command_type_enums = self.type_table['VnCommandType'].enums.values
-        for val in vn_command_type_enums.values():
+        command_type_enums = self.type_table['VkCommandTypeEXT'].enums.values
+        for val in command_type_enums.values():
             max_val = max(max_val, int(val))
-        self.max_vn_command_type_value = max_val
+        self.max_vk_command_type_value = max_val
 
     def _validate(self):
         for ty in self.type_table.values():

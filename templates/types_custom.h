@@ -28,6 +28,36 @@ vn_decode_size_t(struct vn_cs *cs, size_t *val)
     vn_decode_uint64_t(cs, &tmp);
     *val = tmp;
 }
+
+% if GEN.is_driver:
+static inline size_t
+vn_sizeof_size_t_array(const size_t *val, uint32_t count)
+{
+    return vn_sizeof_size_t(val) * count;
+}
+
+% endif
+static inline void
+vn_encode_size_t_array(struct vn_cs *cs, const size_t *val, uint32_t count)
+{
+    if (sizeof(size_t) == sizeof(uint64_t)) {
+        vn_encode_uint64_t_array(cs, (const uint64_t *)val, count);
+    } else {
+        for (uint32_t i = 0; i < count; i++)
+            vn_encode_size_t(cs, &val[i]);
+    }
+}
+
+static inline void
+vn_decode_size_t_array(struct vn_cs *cs, size_t *val, uint32_t count)
+{
+    if (sizeof(size_t) == sizeof(uint64_t)) {
+        vn_decode_uint64_t_array(cs, (uint64_t *)val, count);
+    } else {
+        for (uint32_t i = 0; i < count; i++)
+            vn_decode_size_t(cs, &val[i]);
+    }
+}
 </%def>
 
 <%def name="vn_custom_data()">\

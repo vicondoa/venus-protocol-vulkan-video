@@ -19,6 +19,12 @@ typedef enum ${ty.name} {
 typedef VkFlags ${ty.name};
 </%def>
 
+<%def name="define_struct(ty)">\
+typedef struct ${ty.name} {
+    ${ty.c_func_params(';\n    ')};
+} ${ty.name};
+</%def>
+
 <%def name="define_command(ty)">\
 struct vn_command_${ty.name} {
     ${ty.c_func_params(';\n    ')};
@@ -29,17 +35,11 @@ struct vn_command_${ty.name} {
 };
 </%def>
 
-<%def name="define_info(wire_format_ver, vn_xml_ver, vk_xml_ver, exts)">\
+<%def name="define_info(wire_format_ver, vk_xml_ver, exts)">\
 static inline uint32_t
 vn_info_wire_format_version(void)
 {
     return ${wire_format_ver};
-}
-
-static inline uint32_t
-vn_info_vn_xml_version(void)
-{
-    return ${vn_xml_ver};
 }
 
 static inline uint32_t

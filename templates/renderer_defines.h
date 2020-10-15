@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-<%namespace file="/common.h" import="define_typedef, define_enum, define_bitmask, define_command"/>\
+<%namespace file="/common.h" import="define_typedef, define_enum, define_bitmask, define_struct, define_command"/>\
 \
 #ifndef VN_PROTOCOL_RENDERER_DEFINES_H
 #define VN_PROTOCOL_RENDERER_DEFINES_H
@@ -25,6 +25,10 @@ ${define_enum(ty)}
 \
 % for ty in BITMASK_TYPES:
 ${define_bitmask(ty)}
+% endfor
+\
+% for ty in STRUCT_TYPES:
+${define_struct(ty)}
 % endfor
 \
 % for ty in COMMAND_TYPES:

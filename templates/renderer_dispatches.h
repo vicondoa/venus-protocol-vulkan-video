@@ -4,7 +4,7 @@
  */
 
 <%def name="dispatch_command(ty)">\
-static inline void vn_dispatch_${ty.name}(struct vn_dispatch_context *ctx, VnCommandFlags flags)
+static inline void vn_dispatch_${ty.name}(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
 {
     struct vn_command_${ty.name} args;
 
@@ -30,7 +30,7 @@ static inline void vn_dispatch_${ty.name}(struct vn_dispatch_context *ctx, VnCom
     }
 % endif
 
-    if (!vn_cs_has_error(ctx->cs) && (flags & VN_COMMAND_GENERATE_REPLY_BIT))
+    if (!vn_cs_has_error(ctx->cs) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
        vn_encode_${ty.name}_reply(ctx->cs, &args);
 
     vn_cs_reset_temp_pool(ctx->cs);
@@ -45,7 +45,7 @@ static inline void vn_dispatch_${ty.name}(struct vn_dispatch_context *ctx, VnCom
 
 #include "vn_protocol_renderer_commands.h"
 
-static inline const char *vn_dispatch_command_name(VnCommandType type)
+static inline const char *vn_dispatch_command_name(VkCommandTypeEXT type)
 {
     switch (type) {
 % for ty in COMMAND_TYPES:
@@ -76,7 +76,7 @@ static inline void vn_dispatch_debug_log(struct vn_dispatch_context *ctx, const 
 ${dispatch_command(ty)}
 % endfor
 \
-static void (*const vn_dispatch_table[${COMMAND_TABLE_SIZE}])(struct vn_dispatch_context *ctx, VnCommandFlags flags) = {
+static void (*const vn_dispatch_table[${COMMAND_TABLE_SIZE}])(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags) = {
 % for ty in COMMAND_TYPES:
     [${ty.attrs['c_type']}] = vn_dispatch_${ty.name},
 % endfor
@@ -84,10 +84,10 @@ static void (*const vn_dispatch_table[${COMMAND_TABLE_SIZE}])(struct vn_dispatch
 
 static inline void vn_dispatch_command(struct vn_dispatch_context *ctx)
 {
-    VnCommandType cmd_type;
-    VnCommandFlags cmd_flags;
+    VkCommandTypeEXT cmd_type;
+    VkCommandFlagsEXT cmd_flags;
 
-    vn_decode_VnCommandType(ctx->cs, &cmd_type);
+    vn_decode_VkCommandTypeEXT(ctx->cs, &cmd_type);
     vn_decode_VkFlags(ctx->cs, &cmd_flags);
 
     if (cmd_type < ${COMMAND_TABLE_SIZE} && vn_dispatch_table[cmd_type])

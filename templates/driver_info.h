@@ -10,6 +10,6 @@
 
 #include "vn_protocol_driver_defines.h"
 
-${define_info(WIRE_FORMAT_VERSION, VN_XML_VERSION, VK_XML_VERSION, EXTENSIONS)}
+${define_info(WIRE_FORMAT_VERSION, VK_XML_VERSION, EXTENSIONS)}
 \
 #endif /* VN_PROTOCOL_DRIVER_INFO_H */

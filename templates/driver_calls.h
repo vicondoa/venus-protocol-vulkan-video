@@ -6,9 +6,10 @@
 <%def name="call_command(ty)">\
 static inline ${ty.c_func_ret()} vn_call_${ty.name}(struct vn_instance *vn_instance, ${ty.c_func_params()})
 {
+    const size_t seek_size = vn_sizeof_vkSeekReplyCommandStreamMESA(0);
     const size_t cmd_size = vn_sizeof_${ty.name}(${ty.c_func_args()});
     const size_t reply_size = vn_sizeof_${ty.name}_reply(${ty.c_func_args()});
-    const VnCommandFlags cmd_flags = VN_COMMAND_GENERATE_REPLY_BIT;
+    const VkCommandFlagsEXT cmd_flags = VK_COMMAND_GENERATE_REPLY_BIT_EXT;
 
     struct vn_cs *cs = vn_instance_lock_cs(vn_instance);
 
@@ -26,10 +27,10 @@ static inline ${ty.c_func_ret()} vn_call_${ty.name}(struct vn_instance *vn_insta
     }
 
     /* TODO too many commands... */
-    vn_cs_out_begin_reply_stream(cs);
-    if (vn_cs_reserve_out(cs, cmd_size))
+    if (vn_cs_reserve_out(cs, seek_size + cmd_size)) {
+        vn_encode_vkSeekReplyCommandStreamMESA(cs, 0, reply_offset);
         vn_encode_${ty.name}(cs, cmd_flags, ${ty.c_func_args()});
-    vn_cs_out_end_reply_stream(cs, reply_bo->res_id, reply_offset, reply_size);
+    }
 
    if (vn_cs_has_error(cs)) {
       vn_cs_reset(cs);
@@ -73,7 +74,7 @@ static inline ${ty.c_func_ret()} vn_call_${ty.name}(struct vn_instance *vn_insta
 static inline void vn_async_${ty.name}(struct vn_instance *vn_instance, ${ty.c_func_params()})
 {
     const size_t cmd_size = vn_sizeof_${ty.name}(${ty.c_func_args()});
-    const VnCommandFlags cmd_flags = 0;
+    const VkCommandFlagsEXT cmd_flags = 0;
 
     struct vn_cs *cs = vn_instance_lock_cs(vn_instance);
     if (vn_cs_reserve_out(cs, cmd_size))

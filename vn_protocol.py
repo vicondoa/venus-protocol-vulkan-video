@@ -15,7 +15,8 @@ from vkxml import VkApi, VkType, VkVariable
 VN_PROTOCOL_DIR = Path(__file__).resolve().parent
 VN_PROTOCOL_XMLS = [
     VN_PROTOCOL_DIR.joinpath('xmls/vk.xml'),
-    VN_PROTOCOL_DIR.joinpath('xmls/vn.xml'),
+    VN_PROTOCOL_DIR.joinpath('xmls/VK_EXT_command_serialization.xml'),
+    VN_PROTOCOL_DIR.joinpath('xmls/VK_MESA_venus_protocol.xml'),
 ]
 
 # this is bumped whenever a backward-incompatible change is made
@@ -23,6 +24,9 @@ VN_WIRE_FORMAT_VERSION = 0
 
 # list of supported extensions
 VK_XML_EXTENSION_LIST = [
+    # Venus extensions
+    'VK_EXT_command_serialization',
+    'VK_MESA_venus_protocol',
     # promoted to VK_VERSION_1_1
     'VK_KHR_16bit_storage',
     'VK_KHR_bind_memory2',
@@ -107,16 +111,16 @@ class Gen:
         self._init_supported_types()
 
         # validate VnCommandType
-        vn_command_type_ty = self.api.type_table['VnCommandType']
+        command_type_ty = self.api.type_table['VkCommandTypeEXT']
         enum_value_count = 0
         for cmd in self.supported_types[VkType.COMMAND]:
-            key = 'VN_COMMAND_TYPE_' + cmd.name
-            assert(key in vn_command_type_ty.enums.values)
+            key = 'VK_COMMAND_TYPE_' + cmd.name + '_EXT'
+            assert(key in command_type_ty.enums.values)
             for alias in cmd.aliases:
-                key = 'VN_COMMAND_TYPE_' + alias
-                assert(key in vn_command_type_ty.enums.values)
+                key = 'VK_COMMAND_TYPE_' + alias + '_EXT'
+                assert(key in command_type_ty.enums.values)
             enum_value_count += 1 + len(cmd.aliases)
-        assert(enum_value_count == len(vn_command_type_ty.enums.values))
+        assert(enum_value_count == len(command_type_ty.enums.values))
 
     def _set_type_needs(self, ty):
         for var in ty.variables:
@@ -153,7 +157,7 @@ class Gen:
     def _fixup_api(self):
         for ty in self.api.type_table.values():
             if ty.category == ty.COMMAND:
-                ty.attrs['c_type'] = 'VN_COMMAND_TYPE_' + ty.name
+                ty.attrs['c_type'] = 'VK_COMMAND_TYPE_' + ty.name + '_EXT'
 
                 if ty.ret:
                     ty.ret.attrs['var_out'] = True
@@ -179,7 +183,6 @@ class Gen:
     def _get_supported_types(self):
         # collect types from features and extensions
         types = []
-        types.extend(self.api.venus.types)
         for feat in self.api.features:
             types.extend(feat.types)
         for ext in self.api.extensions:
@@ -843,17 +846,26 @@ class GenDefines:
         self.template = template
 
     def generate(self):
-        # venus only
         typedef_types = []
         enum_types = []
         bitmask_types = []
-        for ty in self.gen.api.venus.types:
-            if ty.category == ty.BASETYPE and ty.typedef:
-                typedef_types.append(ty)
-            elif ty.category == ty.ENUM and ty.enums.values:
-                enum_types.append(ty)
-            elif ty.category == ty.BITMASK:
-                bitmask_types.append(ty)
+        struct_types = []
+
+        # venus only
+        exts = [
+            self.gen.api.vk_ext_command_serialization,
+            self.gen.api.vk_mesa_venus_protocol,
+        ]
+        for ext in exts:
+            for ty in ext.types:
+                if ty.category == ty.BASETYPE and ty.typedef:
+                    typedef_types.append(ty)
+                elif ty.category == ty.ENUM and ty.enums.values:
+                    enum_types.append(ty)
+                elif ty.category == ty.BITMASK:
+                    bitmask_types.append(ty)
+                elif ty.category == ty.STRUCT:
+                    struct_types.append(ty)
 
         command_types = self.gen.supported_types[VkType.COMMAND]
 
@@ -861,6 +873,7 @@ class GenDefines:
                 TYPEDEF_TYPES=typedef_types,
                 ENUM_TYPES=enum_types,
                 BITMASK_TYPES=bitmask_types,
+                STRUCT_TYPES=struct_types,
                 COMMAND_TYPES=command_types)
 
 class GenInfo:
@@ -877,7 +890,6 @@ class GenInfo:
 
         return self.template.render(
                 WIRE_FORMAT_VERSION=VN_WIRE_FORMAT_VERSION,
-                VN_XML_VERSION=self.gen.api.vn_xml_version,
                 VK_XML_VERSION=self.gen.api.vk_xml_version,
                 EXTENSIONS=exts)
 
@@ -986,7 +998,7 @@ class GenCommands:
 
         return self.template.render(
                 GEN=self.gen,
-                COMMAND_TABLE_SIZE=self.gen.api.max_vn_command_type_value + 1,
+                COMMAND_TABLE_SIZE=self.gen.api.max_vk_command_type_value + 1,
                 COMMAND_TYPES=types,
                 COMMAND_SKIPPED=skipped)
 

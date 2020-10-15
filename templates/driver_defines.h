@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-<%namespace file="/common.h" import="define_typedef, define_enum, define_bitmask"/>\
+<%namespace file="/common.h" import="define_typedef, define_enum, define_bitmask, define_struct"/>\
 \
 #ifndef VN_PROTOCOL_DRIVER_DEFINES_H
 #define VN_PROTOCOL_DRIVER_DEFINES_H
@@ -24,6 +24,10 @@ ${define_enum(ty)}
 \
 % for ty in BITMASK_TYPES:
 ${define_bitmask(ty)}
+% endfor
+\
+% for ty in STRUCT_TYPES:
+${define_struct(ty)}
 % endfor
 \
 #endif /* VN_PROTOCOL_DRIVER_DEFINES_H */

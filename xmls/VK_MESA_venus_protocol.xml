@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<registry>
+    <comment>
+Copyright 2020 Google LLC
+
+SPDX-License-Identifier: Apache-2.0 OR MIT
+    </comment>
+
+    <comment>
+This file, VK_MESA_venus_protocol.xml, provides definitions for
+VK_MESA_venus_protocol. These definitions are used by Venus driver and
+renderer, and are not exposed to applications.
+    </comment>
+
+    <types>
+        <type requires="VkCommandStreamExecutionFlagBitsMESA" category="bitmask">typedef <type>VkFlags</type> <name>VkCommandStreamExecutionFlagsMESA</name>;</type>
+
+        <type name="VkCommandStreamExecutionFlagBitsMESA" category="enum"/>
+
+        <type category="struct" name="VkCommandStreamDescriptionMESA">
+            <member><type>uint32_t</type>                         <name>resourceId</name></member>
+            <member><type>size_t</type>                           <name>offset</name></member>
+            <member><type>size_t</type>                           <name>size</name></member>
+        </type>
+        <type category="struct" name="VkCommandStreamDependencyMESA">
+            <member><type>uint32_t</type>                         <name>srcCommandStream</name></member>
+            <member><type>uint32_t</type>                         <name>dstCommandStream</name></member>
+        </type>
+    </types>
+
+    <enums name="VkCommandStreamExecutionFlagBits" type="bitmask">
+    </enums>
+
+    <commands>
+        <command>
+            <proto><type>void</type> <name>vkSetReplyCommandStreamMESA</name></proto>
+            <param>const <type>VkCommandStreamDescriptionMESA</type>* <name>pStream</name></param>
+        </command>
+
+        <command>
+            <proto><type>void</type> <name>vkSeekReplyCommandStreamMESA</name></proto>
+            <param><type>size_t</type> <name>position</name></param>
+        </command>
+
+        <command>
+            <proto><type>void</type> <name>vkExecuteCommandStreamsMESA</name></proto>
+            <param><type>uint32_t</type> <name>streamCount</name></param>
+            <param len="streamCount">const <type>VkCommandStreamDescriptionMESA</type>* <name>pStreams</name></param>
+            <param len="streamCount" optional="true">const <type>size_t</type>* <name>pReplyPositions</name></param>
+            <param optional="true"><type>uint32_t</type> <name>dependencyCount</name></param>
+            <param len="dependencyCount">const <type>VkCommandStreamDependencyMESA</type>* <name>pDependencies</name></param>
+            <param optional="true"><type>VkCommandStreamExecutionFlagsMESA</type> <name>flags</name></param>
+        </command>
+    </commands>
+
+    <extensions>
+        <extension name="VK_MESA_venus_protocol" number="901" type="instance" author="MESA" contact="Chia-I Wu @olvaffe" supported="disabled">
+            <require>
+                <enum value="1"                                             name="VK_MESA_VENUS_PROTOCOL_SPEC_VERSION"/>
+                <enum value="&quot;VK_MESA_venus_protocol&quot;"            name="VK_MESA_VENUS_PROTOCOL_EXTENSION_NAME"/>
+                <type name="VkCommandStreamExecutionFlagBitsMESA"/>
+                <type name="VkCommandStreamExecutionFlagsMESA"/>
+                <type name="VkCommandStreamDescriptionMESA"/>
+                <type name="VkCommandStreamDependencyMESA"/>
+                <command name="vkSetReplyCommandStreamMESA"/>
+                <command name="vkSeekReplyCommandStreamMESA"/>
+                <command name="vkExecuteCommandStreamsMESA"/>
+            </require>
+        </extension>
+    </extensions>
+</registry>

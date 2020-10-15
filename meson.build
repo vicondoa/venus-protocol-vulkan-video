@@ -22,7 +22,8 @@ vn_script_files = files(
 
 vn_xml_files = files(
   'xmls/vk.xml',
-  'xmls/vn.xml',
+  'xmls/VK_EXT_command_serialization.xml',
+  'xmls/VK_MESA_venus_protocol.xml',
 )
 
 vn_template_common_files = files(
