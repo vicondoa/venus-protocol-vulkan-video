@@ -1,14 +1,16 @@
+#!/usr/bin/env python3
+
 # Copyright 2020 Google LLC
 # SPDX-License-Identifier: MIT
 
 from pathlib import Path
+import sys
+
+VN_PROTOCOL_DIR = Path(__file__).resolve().parent.parent
+sys.path.append(str(VN_PROTOCOL_DIR))
 
 from vkxml import VkApi
-from vn_protocol import VK_XML_EXTENSION_LIST
-
-VN_PROTOCOL_DIR = Path(__file__).parent.resolve()
-VK_XML = VN_PROTOCOL_DIR.joinpath('xml/vk.xml')
-VN_XML = VN_PROTOCOL_DIR.joinpath('xml/vn.xml')
+from vn_protocol import VK_XML_EXTENSION_LIST, VK_XML, VN_XML
 
 def get_supported_commands(api):
     commands = []

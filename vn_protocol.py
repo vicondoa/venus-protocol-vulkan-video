@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 # Copyright 2020 Google LLC
 # SPDX-License-Identifier: MIT
 
@@ -70,7 +72,7 @@ VK_XML_EXTENSION_LIST = [
     'VK_EXT_transform_feedback',
 ]
 
-VN_PROTOCOL_DIR = Path(__file__).parent.resolve()
+VN_PROTOCOL_DIR = Path(__file__).resolve().parent
 VK_XML = VN_PROTOCOL_DIR.joinpath('xmls/vk.xml')
 VN_XML = VN_PROTOCOL_DIR.joinpath('xmls/vn.xml')
 
