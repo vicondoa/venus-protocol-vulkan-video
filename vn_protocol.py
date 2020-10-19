@@ -12,6 +12,12 @@ from mako.template import Template
 
 from vkxml import VkApi, VkType, VkVariable
 
+VN_PROTOCOL_DIR = Path(__file__).resolve().parent
+VN_PROTOCOL_XMLS = [
+    VN_PROTOCOL_DIR.joinpath('xmls/vk.xml'),
+    VN_PROTOCOL_DIR.joinpath('xmls/vn.xml'),
+]
+
 # this is bumped whenever a backward-incompatible change is made
 VN_WIRE_FORMAT_VERSION = 0
 
@@ -71,10 +77,6 @@ VK_XML_EXTENSION_LIST = [
     # EXT extensions
     'VK_EXT_transform_feedback',
 ]
-
-VN_PROTOCOL_DIR = Path(__file__).resolve().parent
-VK_XML = VN_PROTOCOL_DIR.joinpath('xmls/vk.xml')
-VN_XML = VN_PROTOCOL_DIR.joinpath('xmls/vn.xml')
 
 class Gen:
     TEMPLATE_DIR = VN_PROTOCOL_DIR.joinpath('templates')
@@ -997,9 +999,7 @@ def main():
     args = get_args()
 
     api = VkApi()
-    api.parse_xml(VK_XML)
-    api.parse_xml(VN_XML)
-    api.validate()
+    api.parse_xmls(VN_PROTOCOL_XMLS)
 
     gen = Gen(not args.renderer, api)
 

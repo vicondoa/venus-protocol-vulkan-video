@@ -719,7 +719,12 @@ class VkApi:
         self.vk_xml_version = None
         self.max_vn_command_type_value = None
 
-    def parse_xml(self, xml):
+    def parse_xmls(self, xmls):
+        for xml in xmls:
+            self._parse_xml(xml)
+        self._validate()
+
+    def _parse_xml(self, xml):
         tree = ET.parse(xml)
         root = tree.getroot()
         for child in root:
@@ -737,24 +742,6 @@ class VkApi:
                 self._parse_feature(child)
             elif child.tag == 'extensions':
                 self._parse_extensions(child)
-
-    def validate(self):
-        self.vn_xml_version = self._get_xml_version(
-                self.type_table['VN_HEADER_VERSION'],
-                self.type_table['VN_HEADER_VERSION_COMPLETE'])
-
-        self.vk_xml_version = self._get_xml_version(
-                self.type_table['VK_HEADER_VERSION'],
-                self.type_table['VK_HEADER_VERSION_COMPLETE'])
-
-        max_val = 0
-        vn_command_type_enums = self.type_table['VnCommandType'].enums.values
-        for val in vn_command_type_enums.values():
-            max_val = max(max_val, int(val))
-        self.max_vn_command_type_value = max_val
-
-        for ty in self.type_table.values():
-            ty.validate()
 
     def _parse_platforms(self, platforms_elem):
         for plat_elem in platforms_elem.iterfind('platform'):
@@ -800,6 +787,24 @@ class VkApi:
         complete_ver = complete_ver.replace(ver_ty.name, ver)
 
         return 'VK_MAKE_VERSION(%s)' % complete_ver
+
+    def _validate(self):
+        self.vn_xml_version = self._get_xml_version(
+                self.type_table['VN_HEADER_VERSION'],
+                self.type_table['VN_HEADER_VERSION_COMPLETE'])
+
+        self.vk_xml_version = self._get_xml_version(
+                self.type_table['VK_HEADER_VERSION'],
+                self.type_table['VK_HEADER_VERSION_COMPLETE'])
+
+        max_val = 0
+        vn_command_type_enums = self.type_table['VnCommandType'].enums.values
+        for val in vn_command_type_enums.values():
+            max_val = max(max_val, int(val))
+        self.max_vn_command_type_value = max_val
+
+        for ty in self.type_table.values():
+            ty.validate()
 
 def test():
     C_DECLS = [

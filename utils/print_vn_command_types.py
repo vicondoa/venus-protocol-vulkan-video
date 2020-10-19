@@ -10,7 +10,7 @@ VN_PROTOCOL_DIR = Path(__file__).resolve().parent.parent
 sys.path.append(str(VN_PROTOCOL_DIR))
 
 from vkxml import VkApi
-from vn_protocol import VK_XML_EXTENSION_LIST, VK_XML, VN_XML
+from vn_protocol import VN_PROTOCOL_XMLS, VK_XML_EXTENSION_LIST
 
 def get_supported_commands(api):
     commands = []
@@ -32,9 +32,7 @@ def get_supported_commands(api):
 
 def main():
     api = VkApi()
-    api.parse_xml(VK_XML)
-    api.parse_xml(VN_XML)
-    api.validate()
+    api.parse_xmls(VN_PROTOCOL_XMLS)
 
     vn_command_type_ty = api.type_table['VnCommandType']
     next_id = api.max_vn_command_type_value + 1
