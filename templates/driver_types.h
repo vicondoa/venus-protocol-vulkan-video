@@ -25,8 +25,10 @@ ${scalar.vn_decode_scalar_array(ty)}
 %   endif
 % endfor
 \
-${custom.vn_sizeof_custom_types()}
-${custom.vn_custom_types()}
+${custom.vn_custom_size_t()}
+${custom.vn_custom_data()}
+${custom.vn_custom_end_of_chain()}
+${custom.vn_custom_array_size()}
 \
 % for ty in SCALAR_TYPES:
 /* ${types.vn_type_descriptive_name(ty)} */

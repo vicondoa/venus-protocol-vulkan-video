@@ -3,41 +3,17 @@
  * SPDX-License-Identifier: MIT
  */
 
-<%def name="vn_sizeof_custom_types()">\
+<%def name="vn_custom_size_t()">\
+/* size_t */
+
+% if GEN.is_driver:
 static inline size_t
 vn_sizeof_size_t(const size_t *val)
 {
     return vn_sizeof_uint64_t(&(uint64_t){ *val });
 }
 
-static inline size_t
-vn_sizeof_data_array(const void *val, size_t size)
-{
-    return (size + 3) & ~3;
-}
-
-static inline size_t
-vn_sizeof_array_size(uint64_t size)
-{
-    return vn_sizeof_uint64_t(&size);
-}
-
-static inline size_t
-vn_sizeof_simple_pointer(const void *val)
-{
-    return vn_sizeof_array_size(val ? 1 : 0);
-}
-
-static inline size_t
-vn_sizeof_end_of_chain(void)
-{
-    return vn_sizeof_VkStructureType(&(VkStructureType){ VK_STRUCTURE_TYPE_MAX_ENUM });
-}
-</%def>
-
-<%def name="vn_custom_types()">\
-/* size_t */
-
+% endif
 static inline void
 vn_encode_size_t(struct vn_cs *cs, const size_t *val)
 {
@@ -52,9 +28,19 @@ vn_decode_size_t(struct vn_cs *cs, size_t *val)
     vn_decode_uint64_t(cs, &tmp);
     *val = tmp;
 }
+</%def>
 
+<%def name="vn_custom_data()">\
 /* opaque data */
 
+% if GEN.is_driver:
+static inline size_t
+vn_sizeof_data_array(const void *val, size_t size)
+{
+    return (size + 3) & ~3;
+}
+
+% endif
 static inline void
 vn_encode_data_array(struct vn_cs *cs, const void *val, size_t size)
 {
@@ -66,9 +52,46 @@ vn_decode_data_array(struct vn_cs *cs, void *val, size_t size)
 {
     vn_decode(cs, (size + 3) & ~3, val, size);
 }
+</%def>
 
-/* array size */
+<%def name="vn_custom_end_of_chain()">\
+/* end of chain */
 
+% if GEN.is_driver:
+static inline size_t
+vn_sizeof_end_of_chain(void)
+{
+    return vn_sizeof_VkStructureType(&(VkStructureType){ VK_STRUCTURE_TYPE_MAX_ENUM });
+}
+
+% endif
+static inline void
+vn_encode_end_of_chain(struct vn_cs *cs)
+{
+    vn_encode_VkStructureType(cs, &(VkStructureType){ VK_STRUCTURE_TYPE_MAX_ENUM });
+}
+
+static inline void
+vn_decode_end_of_chain(struct vn_cs *cs)
+{
+    VkStructureType tmp;
+    vn_decode_VkStructureType(cs, &tmp);
+    if (tmp != VK_STRUCTURE_TYPE_MAX_ENUM)
+        vn_cs_set_error(cs);
+}
+</%def>
+
+<%def name="vn_custom_array_size()">\
+/* array size (uint64_t) */
+
+% if GEN.is_driver:
+static inline size_t
+vn_sizeof_array_size(uint64_t size)
+{
+    return vn_sizeof_uint64_t(&size);
+}
+
+% endif
 static inline void
 vn_encode_array_size(struct vn_cs *cs, uint64_t size)
 {
@@ -97,6 +120,14 @@ vn_peek_array_size(struct vn_cs *cs)
 
 /* non-array pointer */
 
+% if GEN.is_driver:
+static inline size_t
+vn_sizeof_simple_pointer(const void *val)
+{
+    return vn_sizeof_array_size(val ? 1 : 0);
+}
+
+% endif
 static inline bool
 vn_encode_simple_pointer(struct vn_cs *cs, const void *val)
 {
@@ -108,22 +139,5 @@ static inline bool
 vn_decode_simple_pointer(struct vn_cs *cs)
 {
     return vn_decode_array_size(cs, 1);
-}
-
-/* pNext chain */
-
-static inline void
-vn_encode_end_of_chain(struct vn_cs *cs)
-{
-    vn_encode_VkStructureType(cs, &(VkStructureType){ VK_STRUCTURE_TYPE_MAX_ENUM });
-}
-
-static inline void
-vn_decode_end_of_chain(struct vn_cs *cs)
-{
-    VkStructureType tmp;
-    vn_decode_VkStructureType(cs, &tmp);
-    if (tmp != VK_STRUCTURE_TYPE_MAX_ENUM)
-        vn_cs_set_error(cs);
 }
 </%def>
