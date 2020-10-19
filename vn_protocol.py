@@ -71,8 +71,8 @@ VK_XML_EXTENSION_LIST = [
 ]
 
 VN_PROTOCOL_DIR = Path(__file__).parent.resolve()
-VK_XML = VN_PROTOCOL_DIR.joinpath('xml/vk.xml')
-VN_XML = VN_PROTOCOL_DIR.joinpath('xml/vn.xml')
+VK_XML = VN_PROTOCOL_DIR.joinpath('xmls/vk.xml')
+VN_XML = VN_PROTOCOL_DIR.joinpath('xmls/vn.xml')
 
 class Gen:
     TEMPLATE_DIR = VN_PROTOCOL_DIR.joinpath('templates')

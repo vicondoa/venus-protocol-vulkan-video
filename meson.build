@@ -21,8 +21,8 @@ vn_script_files = files(
 )
 
 vn_xml_files = files(
-  'xml/vk.xml',
-  'xml/vn.xml',
+  'xmls/vk.xml',
+  'xmls/vn.xml',
 )
 
 vn_template_common_files = files(
