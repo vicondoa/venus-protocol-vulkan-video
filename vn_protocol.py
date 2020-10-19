@@ -848,7 +848,7 @@ class GenDefines:
         for ty in self.gen.api.venus.types:
             if ty.category == ty.BASETYPE and ty.typedef:
                 typedef_types.append(ty)
-            elif ty.category == ty.ENUM:
+            elif ty.category == ty.ENUM and ty.enums.values:
                 enum_types.append(ty)
             elif ty.category == ty.BITMASK:
                 bitmask_types.append(ty)

@@ -257,6 +257,7 @@
             <type name="VnResourceId"/>
             <type name="VnCommandType"/>
             <type name="VnCommandFlags"/>
+            <type name="VnCommandFlagBits"/>
             <command name="vnExecuteCommandStream"/>
             <command name="vnBeginReplyStream"/>
             <command name="vnEndReplyStream"/>
