@@ -891,7 +891,8 @@ class GenTypes:
             if ty.name in self.gen.PRIMITIVE_TYPES:
                 if ty.name in ['uint64_t', 'int32_t']:
                     early_scalar_types.append(ty)
-                scalar_types.append(ty)
+                else:
+                    scalar_types.append(ty)
         for ty in self.gen.supported_types[VkType.BASETYPE]:
             if ty.typedef and self.gen.is_serializable(ty.typedef):
                 scalar_types.append(ty)
@@ -899,7 +900,8 @@ class GenTypes:
             if ty.enums.values:
                 if ty.name == 'VkStructureType':
                     early_scalar_types.append(ty)
-                scalar_types.append(ty)
+                else:
+                    scalar_types.append(ty)
 
         return self.template.render(
                 GEN=self.gen,

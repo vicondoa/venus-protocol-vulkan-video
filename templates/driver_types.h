@@ -18,6 +18,11 @@
 ${types.vn_sizeof_type(ty)}
 ${types.vn_encode_type(ty)}
 ${types.vn_decode_type(ty)}
+%   if 'need_array' in ty.attrs:
+${scalar.vn_sizeof_scalar_array(ty)}
+${scalar.vn_encode_scalar_array(ty)}
+${scalar.vn_decode_scalar_array(ty)}
+%   endif
 % endfor
 \
 ${custom.vn_sizeof_custom_types()}
@@ -26,11 +31,9 @@ ${custom.vn_custom_types()}
 % for ty in SCALAR_TYPES:
 /* ${types.vn_type_descriptive_name(ty)} */
 
-%   if ty not in EARLY_SCALAR_TYPES:
 ${types.vn_sizeof_type(ty)}
 ${types.vn_encode_type(ty)}
 ${types.vn_decode_type(ty)}
-%   endif
 %   if 'need_array' in ty.attrs:
 ${scalar.vn_sizeof_scalar_array(ty)}
 ${scalar.vn_encode_scalar_array(ty)}
