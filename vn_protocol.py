@@ -72,8 +72,6 @@ VK_XML_EXTENSION_LIST = [
     'VK_EXT_scalar_block_layout',
     'VK_EXT_separate_stencil_usage',
     'VK_EXT_shader_viewport_index_layer',
-    # KHR extensions
-    'VK_KHR_shader_non_semantic_info',
     # EXT extensions
     'VK_EXT_transform_feedback',
 ]
