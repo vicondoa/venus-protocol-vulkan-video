@@ -722,6 +722,8 @@ class VkApi:
     def parse_xmls(self, xmls):
         for xml in xmls:
             self._parse_xml(xml)
+
+        self._post_parse_init()
         self._validate()
 
     def _parse_xml(self, xml):
@@ -788,7 +790,7 @@ class VkApi:
 
         return 'VK_MAKE_VERSION(%s)' % complete_ver
 
-    def _validate(self):
+    def _post_parse_init(self):
         self.vn_xml_version = self._get_xml_version(
                 self.type_table['VN_HEADER_VERSION'],
                 self.type_table['VN_HEADER_VERSION_COMPLETE'])
@@ -803,6 +805,7 @@ class VkApi:
             max_val = max(max_val, int(val))
         self.max_vn_command_type_value = max_val
 
+    def _validate(self):
         for ty in self.type_table.values():
             ty.validate()
 
