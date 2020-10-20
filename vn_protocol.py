@@ -108,11 +108,15 @@ class Gen:
 
         # validate VnCommandType
         vn_command_type_ty = self.api.type_table['VnCommandType']
+        enum_value_count = 0
         for cmd in self.supported_types[VkType.COMMAND]:
             key = 'VN_COMMAND_TYPE_' + cmd.name
             assert(key in vn_command_type_ty.enums.values)
-        assert(len(self.supported_types[VkType.COMMAND]) ==
-                len(vn_command_type_ty.enums.values))
+            for alias in cmd.aliases:
+                key = 'VN_COMMAND_TYPE_' + alias
+                assert(key in vn_command_type_ty.enums.values)
+            enum_value_count += 1 + len(cmd.aliases)
+        assert(enum_value_count == len(vn_command_type_ty.enums.values))
 
     def _set_type_needs(self, ty):
         for var in ty.variables:

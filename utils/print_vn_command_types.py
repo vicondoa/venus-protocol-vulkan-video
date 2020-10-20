@@ -12,46 +12,106 @@ sys.path.append(str(VN_PROTOCOL_DIR))
 from vkxml import VkApi
 from vn_protocol import VN_PROTOCOL_XMLS, VK_XML_EXTENSION_LIST
 
-def get_supported_commands(api):
+class Command:
+    def __init__(self, ty):
+        self.ty = ty
+        self.name = self._enum_name(ty.name)
+        self.id = None
+
+        self.other_names = []
+        for alias in ty.aliases:
+            self.other_names.append(self._enum_name(alias))
+
+    def assign_id(self, known_ids, next_id):
+        # assign from XML first
+        for name in [self.name] + self.other_names:
+            if name in known_ids:
+                self.id = known_ids[name]
+                break
+
+        # assign a new id
+        if not self.id:
+            self.id = str(next_id)
+            next_id += 1
+
+        return next_id
+
+    @staticmethod
+    def _enum_name(name):
+        return 'VN_COMMAND_TYPE_%s' % name
+
+class Group:
+    def __init__(self, name, commands):
+        self.name = name
+        self.commands = commands
+
+    def assign_ids(self, known_ids, next_id):
+        for cmd in self.commands:
+            next_id = cmd.assign_id(known_ids, next_id)
+        return next_id
+
+def get_commands(api):
+    all_commands = set()
+    groups = []
+
     commands = []
     for ty in api.venus.types:
-        if ty.category == ty.COMMAND and ty not in commands:
-            commands.append(ty)
+        if ty.category == ty.COMMAND and ty not in all_commands:
+            commands.append(Command(ty))
+            all_commands.add(ty)
+    groups.append(Group('venus', commands))
+
     for feat in api.features:
+        commands = []
         for ty in feat.types:
-            if ty.category == ty.COMMAND and ty not in commands:
-                commands.append(ty)
+            if ty.category == ty.COMMAND and ty not in all_commands:
+                commands.append(Command(ty))
+                all_commands.add(ty)
+        groups.append(Group(feat.name, commands))
+
     for ext in api.extensions:
         if ext.name not in VK_XML_EXTENSION_LIST:
             continue
-        for ty in ext.types:
-            if ty.category == ty.COMMAND and ty not in commands:
-                commands.append(ty)
 
-    return commands
+        commands = []
+        for ty in ext.types:
+            if ty.category == ty.COMMAND and ty not in all_commands:
+                commands.append(Command(ty))
+                all_commands.add(ty)
+        if commands:
+            groups.append(Group(ext.name, commands))
+
+    return groups
+
+def print_commands(name, groups):
+    print('    <enums name="%s" type="enum">' % name)
+
+    for group in groups:
+        if group != groups[0]:
+            print()
+        print('        <comment>%s</comment>' % group.name)
+        for cmd in group.commands:
+            spaces = ' ' * (6 - len(cmd.id))
+            print('        <enum value="%s"%sname="%s"/>' % (cmd.id, spaces, cmd.name))
+            for alias in cmd.other_names:
+                spaces = ' ' * (9 + len(cmd.id) * 2)
+                print('        <enum%sname="%s" alias="%s"/>' % (spaces, alias, cmd.name))
+
+    print('    </enums>')
 
 def main():
     api = VkApi()
     api.parse_xmls(VN_PROTOCOL_XMLS)
 
-    vn_command_type_ty = api.type_table['VnCommandType']
+    groups = get_commands(api)
+
+    # assign ids to commands
+    command_type_ty = api.type_table['VnCommandType']
     next_id = api.max_vn_command_type_value + 1
-    commands = get_supported_commands(api)
+    for group in groups:
+        next_id = group.assign_ids(command_type_ty.enums.values, next_id)
 
-    enums = []
-    for cmd in commands:
-        key = 'VN_COMMAND_TYPE_%s' % cmd.name
-        if key in vn_command_type_ty.enums.values:
-            val = vn_command_type_ty.enums.values[key]
-        else:
-            val = next_id
-            next_id += 1
-        enums.append((key, val))
-
-    print('    <enums name="%s" type="enum">' % vn_command_type_ty.name)
-    for key, val in enums:
-        print('        <enum value="%s" name="%s"/>' % (val, key))
-    print('    </enums>')
+    print_commands(command_type_ty.name, groups)
 
 if __name__ == '__main__':
     main()
