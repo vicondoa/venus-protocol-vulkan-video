@@ -17,7 +17,7 @@ def get_supported_commands(api):
     for ty in api.venus.types:
         if ty.category == ty.COMMAND and ty not in commands:
             commands.append(ty)
-    for feat in api.vulkan:
+    for feat in api.features:
         for ty in feat.types:
             if ty.category == ty.COMMAND and ty not in commands:
                 commands.append(ty)

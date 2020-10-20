@@ -712,7 +712,7 @@ class VkApi:
         self.tags = []
         self.type_table = {}
         self.venus = None
-        self.vulkan = []
+        self.features = []
         self.extensions = []
 
         self.vn_xml_version = None
@@ -770,7 +770,7 @@ class VkApi:
             assert(not self.venus)
             self.venus = feat
         else:
-            self.vulkan.append(feat)
+            self.features.append(feat)
 
     def _parse_extensions(self, extensions_elem):
         for extension_elem in extensions_elem.iterfind('extension'):

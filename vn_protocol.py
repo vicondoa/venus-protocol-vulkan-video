@@ -178,7 +178,7 @@ class Gen:
         # collect types from features and extensions
         types = []
         types.extend(self.api.venus.types)
-        for feat in self.api.vulkan:
+        for feat in self.api.features:
             types.extend(feat.types)
         for ext in self.api.extensions:
             if ext.name not in VK_XML_EXTENSION_LIST:
