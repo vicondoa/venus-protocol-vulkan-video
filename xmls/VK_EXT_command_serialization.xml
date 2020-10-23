@@ -268,7 +268,7 @@ virtualization or remoting, and are not exposed to applications.
         <extension name="VK_EXT_command_serialization" number="900" type="instance" author="EXT" contact="Chia-I Wu @olvaffe" supported="disabled">
             <require>
                 <enum value="1"                                             name="VK_EXT_COMMAND_SERIALIZATION_SPEC_VERSION"/>
-                <enum value="&quot;VK_EXT_command_serialization&quot;"     name="VK_EXT_COMMAND_SERIALIZATION_EXTENSION_NAME"/>
+                <enum value="&quot;VK_EXT_command_serialization&quot;"      name="VK_EXT_COMMAND_SERIALIZATION_EXTENSION_NAME"/>
                 <type name="VkCommandTypeEXT"/>
                 <type name="VkCommandFlagsEXT"/>
                 <type name="VkCommandFlagBitsEXT"/>
