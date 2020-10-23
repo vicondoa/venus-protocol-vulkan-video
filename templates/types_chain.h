@@ -17,7 +17,7 @@ vn_sizeof_${ty.name}_pnext${variant}(const void *val)
     size_t size = 0;
 
     while (pnext) {
-        switch (pnext->sType) {
+        switch ((int32_t)pnext->sType) {
 %   for next_ty in next_types:
         case ${next_ty.s_type}:
             size += vn_sizeof_simple_pointer(pnext);
@@ -54,7 +54,7 @@ vn_encode_${ty.name}_pnext${variant}(struct vn_cs *cs, const void *val)
     const VkBaseInStructure *pnext = val;
 
     while (pnext) {
-        switch (pnext->sType) {
+        switch ((int32_t)pnext->sType) {
 %   for next_ty in next_types:
         case ${next_ty.s_type}:
             vn_encode_simple_pointer(cs, pnext);
@@ -101,7 +101,7 @@ vn_decode_${ty.name}_pnext(struct vn_cs *cs, const void *val)
             break;
     }
 
-    switch (pnext->sType) {
+    switch ((int32_t)pnext->sType) {
 %   for next_ty in next_types:
     case ${next_ty.s_type}:
         vn_decode_${ty.name}_pnext(cs, pnext->pNext);
@@ -138,7 +138,7 @@ vn_decode_${ty.name}_pnext${variant}_temp(struct vn_cs *cs)
         return NULL;
 
     vn_decode_VkStructureType(cs, &stype);
-    switch (stype) {
+    switch ((int32_t)stype) {
 %   for next_ty in next_types:
     case ${next_ty.s_type}:
         pnext = vn_cs_alloc_temp(cs, sizeof(${next_ty.name}));
@@ -239,7 +239,7 @@ ${struct.vn_replace_struct_handle_body(ty, '_self')}\
     next_types, skipped_types = GEN.get_chain(ty)
 %>
     do {
-        switch (pnext->sType) {
+        switch ((int32_t)pnext->sType) {
 % for next_ty in [ty] + next_types:
         case ${next_ty.s_type}:
             vn_replace_${next_ty.name}_handle_self((${next_ty.name} *)pnext);

@@ -560,6 +560,7 @@ class VkEnums:
     def __init__(self):
         self.bitmask = False
         self.values = {}
+        self.vk_xml_values = None
 
     def init(self, bitmask, values):
         self.bitmask = bitmask
@@ -723,6 +724,9 @@ class VkApi:
         self._parse_xml(vk_xml)
 
         self.vk_xml_extension_count = len(self.extensions)
+        for ty in self.type_table.values():
+            if ty.category == ty.ENUM:
+                ty.enums.vk_xml_values = set(ty.enums.values.keys())
 
         for xml in xmls:
             self._parse_xml(xml)

@@ -7,9 +7,18 @@
 typedef ${ty.typedef.name} ${ty.name};
 </%def>
 
+<%def name="define_extended_enum(ty)">\
+/* ${ty.name} */
+% for key, val in ty.enums.values.items():
+%   if key not in ty.enums.vk_xml_values:
+#define ${key} ((${ty.name})${val})
+%   endif
+% endfor
+</%def>
+
 <%def name="define_enum(ty)">\
 typedef enum ${ty.name} {
-% for (key, val) in ty.enums.values.items():
+% for key, val in ty.enums.values.items():
     ${key} = ${val},
 % endfor
 } ${ty.name};

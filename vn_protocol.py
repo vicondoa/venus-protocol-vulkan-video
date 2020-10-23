@@ -847,9 +847,15 @@ class GenDefines:
 
     def generate(self):
         typedef_types = []
+        enum_extends = []
         enum_types = []
         bitmask_types = []
         struct_types = []
+
+        for ty in self.gen.api.type_table.values():
+            if ty.category == ty.ENUM and ty.enums.vk_xml_values:
+                if len(ty.enums.values) != len(ty.enums.vk_xml_values):
+                    enum_extends.append(ty)
 
         exts = self.gen.api.extensions[self.gen.api.vk_xml_extension_count:]
         for ext in exts:
@@ -867,6 +873,7 @@ class GenDefines:
 
         return self.template.render(
                 TYPEDEF_TYPES=typedef_types,
+                ENUM_EXTENDS=enum_extends,
                 ENUM_TYPES=enum_types,
                 BITMASK_TYPES=bitmask_types,
                 STRUCT_TYPES=struct_types,

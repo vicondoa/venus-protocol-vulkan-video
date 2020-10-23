@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-<%namespace file="/common.h" import="define_typedef, define_enum, define_bitmask, define_struct, define_command"/>\
+<%namespace file="/common.h" import="define_typedef, define_extended_enum, define_enum, define_bitmask, define_struct, define_command"/>\
 \
 #ifndef VN_PROTOCOL_RENDERER_DEFINES_H
 #define VN_PROTOCOL_RENDERER_DEFINES_H
@@ -17,6 +17,10 @@
 
 % for ty in TYPEDEF_TYPES:
 ${define_typedef(ty)}
+% endfor
+\
+% for ty in ENUM_EXTENDS:
+${define_extended_enum(ty)}
 % endfor
 \
 % for ty in ENUM_TYPES:
