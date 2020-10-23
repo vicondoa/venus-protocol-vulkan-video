@@ -240,7 +240,7 @@ class Gen:
             elif ty.name in ['char', 'size_t']:
                 return True
             elif ty.name == 'void':
-                return var.is_data()
+                return var.is_blob()
             return False
         elif ty.category in [ty.HANDLE, ty.ENUM, ty.BITMASK]:
             return True
@@ -304,8 +304,8 @@ class Gen:
             self.func_stmt = None
 
         def _init_func_stem(self):
-            if self.var.is_data() or self.var.ty.base.name == 'char':
-                self.func_stem = 'data'
+            if self.var.is_blob() or self.var.ty.base.name == 'char':
+                self.func_stem = 'blob'
             elif self.var.ty.base.category == VkType.BITMASK:
                 self.func_stem = 'VkFlags'
             else:
@@ -398,7 +398,7 @@ class Gen:
 
             alloc_stmts = []
             for level, count in enumerate(alloc_counts):
-                if self.var.is_data():
+                if self.var.is_blob():
                     size = count
                 else:
                     size = 'sizeof(*%s) * %s' % (self._var_name(level), count)

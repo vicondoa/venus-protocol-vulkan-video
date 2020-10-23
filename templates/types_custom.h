@@ -60,25 +60,25 @@ vn_decode_size_t_array(struct vn_cs *cs, size_t *val, uint32_t count)
 }
 </%def>
 
-<%def name="vn_custom_data()">\
-/* opaque data */
+<%def name="vn_custom_blob()">\
+/* opaque blob */
 
 % if GEN.is_driver:
 static inline size_t
-vn_sizeof_data_array(const void *val, size_t size)
+vn_sizeof_blob_array(const void *val, size_t size)
 {
     return (size + 3) & ~3;
 }
 
 % endif
 static inline void
-vn_encode_data_array(struct vn_cs *cs, const void *val, size_t size)
+vn_encode_blob_array(struct vn_cs *cs, const void *val, size_t size)
 {
     vn_encode(cs, (size + 3) & ~3, val, size);
 }
 
 static inline void
-vn_decode_data_array(struct vn_cs *cs, void *val, size_t size)
+vn_decode_blob_array(struct vn_cs *cs, void *val, size_t size)
 {
     vn_decode(cs, (size + 3) & ~3, val, size);
 }

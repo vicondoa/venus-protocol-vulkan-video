@@ -108,7 +108,7 @@ class VkVariable:
                 'optional' in self.attrs and \
                 self.attrs['optional'][0] == 'true'
 
-    def is_data(self):
+    def is_blob(self):
         return self.ty.indirection_depth() == 1 and \
                not self.ty.is_array() and \
                self.ty.base.name == 'void' and  \
