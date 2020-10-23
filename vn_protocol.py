@@ -851,11 +851,7 @@ class GenDefines:
         bitmask_types = []
         struct_types = []
 
-        # venus only
-        exts = [
-            self.gen.api.vk_ext_command_serialization,
-            self.gen.api.vk_mesa_venus_protocol,
-        ]
+        exts = self.gen.api.extensions[self.gen.api.vk_xml_extension_count:]
         for ext in exts:
             for ty in ext.types:
                 if ty.category == ty.BASETYPE and ty.typedef:

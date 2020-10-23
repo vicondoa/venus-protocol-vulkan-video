@@ -713,13 +713,17 @@ class VkApi:
         self.type_table = {}
         self.features = []
         self.extensions = []
+        self.vk_xml_extension_count = 0
 
         self.vk_xml_version = None
-        self.vk_ext_command_serialization = None
-        self.vk_mesa_venus_protocol = None
         self.max_vk_command_type_value = None
 
     def parse_xmls(self, xmls):
+        vk_xml = xmls.pop(0)
+        self._parse_xml(vk_xml)
+
+        self.vk_xml_extension_count = len(self.extensions)
+
         for xml in xmls:
             self._parse_xml(xml)
 
@@ -790,12 +794,6 @@ class VkApi:
         self.vk_xml_version = self._get_xml_version(
                 self.type_table['VK_HEADER_VERSION'],
                 self.type_table['VK_HEADER_VERSION_COMPLETE'])
-
-        for ext in self.extensions:
-            if ext.name == 'VK_EXT_command_serialization':
-                self.vk_ext_command_serialization = ext
-            elif ext.name == 'VK_MESA_venus_protocol':
-                self.vk_mesa_venus_protocol = ext
 
         max_val = 0
         command_type_enums = self.type_table['VkCommandTypeEXT'].enums.values
