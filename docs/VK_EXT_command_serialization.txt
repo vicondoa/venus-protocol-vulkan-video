@@ -1,11 +1,11 @@
 VK_EXT_command_serialization
 ============================
 
-VK_EXT_command_serialization defines the wire format for Vulkan command
-serialization.
+VK_EXT_command_serialization defines the serialization of Vulkan commands.
 
-A command stream is a sequence of serialized Vulkan commands.  When a command
-stream is parsed and executed, a reply stream can optionally be generated.
+Vulkan commands can be serialized into command streams.  Command streams are
+normally shared with another process for parsing and execution, and can
+optionally cause reply streams to be generated.
 
 ## Command Streams
 
@@ -17,17 +17,17 @@ A command in a command stream has a variable length:
 | 1   | `VkCommandFlagsEXT`               |
 | 2-N | command parameters                |
 
-After `VkCommandTypeEXT` and `VkCommandFlagsEXT`, command parameters are
-serialized in order.
+After `VkCommandTypeEXT` and `VkCommandFlagsEXT`, the parameters of the
+corresponding Vulkan command are serialized in order.
 
 When `VK_COMMAND_GENERATE_REPLY_BIT_EXT` is set in `VkCommandFlagsEXT`, a
 command reply is generated to the reply stream.
 
-When a command parameter is a non-const pointer/array, the value pointed to is
-assumed to be uninitialized except for
+When a command parameter is a non-const pointer/array, the value(s) pointed to
+is assumed to be uninitialized except for
 
- - `sType`
- - `pNext`
+ - `sType` of a struct
+ - `pNext` of a struct
  - object handles
  - `uint32_t` indicating the size of another command parameter
 
