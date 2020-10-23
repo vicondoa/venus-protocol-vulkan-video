@@ -30,6 +30,7 @@
 %     if ty.category == ty.UNION:
 ${union.vn_encode_union_tag(ty)}
 %     elif ty.s_type:
+${chain.vn_encode_chain_pnext(ty)}
 ${chain.vn_encode_chain_self(ty)}
 %     endif
 ${types.vn_encode_type(ty)}
@@ -37,6 +38,7 @@ ${types.vn_encode_type(ty)}
 \
 %   if 'need_decode' in ty.attrs:
 %     if ty.s_type:
+${chain.vn_decode_chain_pnext_temp(ty)}
 ${chain.vn_decode_chain_self(ty, '_temp')}
 %     endif
 ${types.vn_decode_type_temp(ty)}
@@ -44,6 +46,7 @@ ${types.vn_decode_type_temp(ty)}
 \
 %   if 'need_partial' in ty.attrs and ty.category == ty.STRUCT:
 %     if ty.s_type:
+${chain.vn_decode_chain_pnext_temp(ty, '_partial')}
 ${chain.vn_decode_chain_self(ty, '_partial_temp')}
 %     endif
 ${types.vn_decode_type_partial_temp(ty)}

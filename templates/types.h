@@ -100,7 +100,7 @@ ${union.vn_decode_union_body(ty, '_temp')}\
 % elif ty.category == ty.STRUCT and not ty.s_type:
 ${struct.vn_decode_struct_body(ty, '_temp')}\
 % elif ty.category == ty.STRUCT and ty.s_type:
-${chain.vn_decode_chain_temp_body(ty)}\
+${chain.vn_decode_chain_body(ty, '_temp')}\
 % else:
 <% assert(False) %>
 % endif
@@ -160,7 +160,7 @@ ${handle.vn_decode_handle_body(ty, '_temp')}\
 % elif ty.category == ty.STRUCT and not ty.s_type:
 ${struct.vn_decode_struct_body(ty, '_partial_temp')}\
 % elif ty.category == ty.STRUCT and ty.s_type:
-${chain.vn_decode_chain_temp_body(ty, '_partial')}\
+${chain.vn_decode_chain_body(ty, '_partial_temp')}\
 % else:
 <% assert(False) %>
 % endif
