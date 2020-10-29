@@ -110,15 +110,17 @@ class Gen:
         self.supported_types = {}
         self._init_supported_types()
 
-        # validate VnCommandType
+        # validate VkCommandTypeEXT
         command_type_ty = self.api.type_table['VkCommandTypeEXT']
         enum_value_count = 0
         for cmd in self.supported_types[VkType.COMMAND]:
             key = 'VK_COMMAND_TYPE_' + cmd.name + '_EXT'
-            assert(key in command_type_ty.enums.values)
+            if key not in command_type_ty.enums.values:
+                raise KeyError('%s not defined for %s' % (key, command_type_ty.name))
             for alias in cmd.aliases:
                 key = 'VK_COMMAND_TYPE_' + alias + '_EXT'
-                assert(key in command_type_ty.enums.values)
+                if key not in command_type_ty.enums.values:
+                    raise KeyError('%s not defined for %s' % (key, command_type_ty.name))
             enum_value_count += 1 + len(cmd.aliases)
         assert(enum_value_count == len(command_type_ty.enums.values))
 
