@@ -254,6 +254,9 @@ virtualization or remoting, and are not exposed to applications.
         <enum value="185"   name="VK_COMMAND_TYPE_vkCmdEndQueryIndexedEXT_EXT"/>
         <enum value="186"   name="VK_COMMAND_TYPE_vkCmdDrawIndirectByteCountEXT_EXT"/>
 
+        <comment>VK_EXT_image_drm_format_modifier</comment>
+        <enum value="187"   name="VK_COMMAND_TYPE_vkGetImageDrmFormatModifierPropertiesEXT_EXT"/>
+
         <comment>VK_MESA_venus_protocol</comment>
         <enum value="178"   name="VK_COMMAND_TYPE_vkSetReplyCommandStreamMESA_EXT"/>
         <enum value="179"   name="VK_COMMAND_TYPE_vkSeekReplyCommandStreamMESA_EXT"/>

@@ -77,6 +77,7 @@ VK_XML_EXTENSION_LIST = [
     'VK_EXT_separate_stencil_usage',
     'VK_EXT_shader_viewport_index_layer',
     # EXT extensions
+    'VK_EXT_image_drm_format_modifier',
     'VK_EXT_transform_feedback',
 ]
 
