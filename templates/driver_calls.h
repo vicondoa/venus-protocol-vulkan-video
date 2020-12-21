@@ -6,63 +6,42 @@
 <%def name="call_command(ty)">\
 static inline ${ty.c_func_ret()} vn_call_${ty.name}(struct vn_instance *vn_instance, ${ty.c_func_params()})
 {
-    const size_t seek_size = vn_sizeof_vkSeekReplyCommandStreamMESA(0);
     const size_t cmd_size = vn_sizeof_${ty.name}(${ty.c_func_args()});
     const size_t reply_size = vn_sizeof_${ty.name}_reply(${ty.c_func_args()});
     const VkCommandFlagsEXT cmd_flags = VK_COMMAND_GENERATE_REPLY_BIT_EXT;
-
-    struct vn_cs *cs = vn_instance_lock_cs(vn_instance);
-
-    size_t reply_offset;
+    bool submitted = false;
+    struct vn_renderer_bo *reply_bo;
     void *reply_ptr;
-    struct vn_renderer_bo *reply_bo = vn_instance_alloc_cs_reply_locked(
-            vn_instance, reply_size, &reply_offset, &reply_ptr);
-    if (!reply_bo) {
-       vn_instance_unlock_cs(vn_instance);
-%   if ty.ret:
-      return VK_ERROR_OUT_OF_HOST_MEMORY;
-%   else:
-      return;
-%   endif
+    uint64_t reply_sync_val;
+
+    /* encode and submit */
+    struct vn_cs *instance_cs = vn_instance_lock_cs(vn_instance);
+    reply_bo = vn_instance_get_cs_reply_bo_locked(vn_instance, reply_size, &reply_ptr);
+    if (likely(reply_bo && vn_cs_reserve_out(instance_cs, cmd_size))) {
+        vn_encode_${ty.name}(instance_cs, cmd_flags, ${ty.c_func_args()});
+        submitted = vn_instance_submit_cs_locked(vn_instance, reply_bo, &reply_sync_val);
     }
-
-    /* TODO too many commands... */
-    if (vn_cs_reserve_out(cs, seek_size + cmd_size)) {
-        vn_encode_vkSeekReplyCommandStreamMESA(cs, 0, reply_offset);
-        vn_encode_${ty.name}(cs, cmd_flags, ${ty.c_func_args()});
-    }
-
-   if (vn_cs_has_error(cs)) {
-      vn_cs_reset(cs);
-      vn_cs_set_error(cs);
-      vn_instance_unlock_cs(vn_instance);
-      vn_instance_free_cs_reply(vn_instance, reply_bo);
-
-%   if ty.ret:
-      return VK_ERROR_OUT_OF_HOST_MEMORY;
-%   else:
-      return;
-%   endif
-   }
-
-    vn_cs_end_out(cs);
-
-    /* TODO replace wait_cpu by vn_renderer_sync to wait without lock */
-    vn_renderer_submit(vn_instance->renderer, cs, &reply_bo, 1, true);
-
-    /* TODO use a local cs to decode without lock */
-    vn_cs_set_in_data(cs, reply_ptr, reply_size);
-
-%   if ty.ret:
-    const ${ty.ret.to_c()} = vn_decode_${ty.name}_reply(cs, ${ty.c_func_args()});
-%   else:
-    vn_decode_${ty.name}_reply(cs, ${ty.c_func_args()});
-%   endif
-
-    vn_cs_reset(cs);
-
     vn_instance_unlock_cs(vn_instance);
-    vn_instance_free_cs_reply(vn_instance, reply_bo);
+
+    /* decode reply */
+%   if ty.ret:
+    ${ty.ret.to_c()} = VK_ERROR_OUT_OF_HOST_MEMORY;
+%   endif
+    if (likely(submitted)) {
+        struct vn_cs parser; /* TODO separate in/out support */
+        vn_cs_init(&parser, NULL, VK_SYSTEM_ALLOCATION_SCOPE_COMMAND, 0);
+        vn_cs_set_in_data(&parser, reply_ptr, reply_size);
+
+        vn_instance_wait_cs_reply(vn_instance, reply_sync_val);
+%   if ty.ret:
+        ${ty.ret.name} = vn_decode_${ty.name}_reply(&parser, ${ty.c_func_args()});
+%   else:
+        vn_decode_${ty.name}_reply(&parser, ${ty.c_func_args()});
+%   endif
+        vn_instance_free_cs_reply_bo(vn_instance, reply_bo);
+    } else if (reply_bo) {
+        vn_instance_free_cs_reply_bo(vn_instance, reply_bo);
+    }
 %   if ty.ret:
 
     return ${ty.ret.name};
@@ -86,9 +65,8 @@ static inline void vn_async_${ty.name}(struct vn_instance *vn_instance, ${ty.c_f
 #ifndef VN_PROTOCOL_DRIVER_CALLS_H
 #define VN_PROTOCOL_DRIVER_CALLS_H
 
-#include "vn_device.h"
 #include "vn_protocol_driver_commands.h"
-#include "vn_renderer.h"
+#include "vn_device.h"
 
 % for ty in COMMAND_TYPES:
 ${call_command(ty)}
