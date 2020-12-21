@@ -95,28 +95,4 @@ ${call_command(ty)}
 ${async_command(ty)}
 % endfor
 \
-static inline void
-vn_async_flush(struct vn_instance *instance)
-{
-    struct vn_cs *cs = vn_instance_lock_cs(instance);
-
-    if (!vn_cs_has_out(cs)) {
-        vn_instance_unlock_cs(instance);
-        return;
-    }
-
-    if (vn_cs_has_error(cs)) {
-        vn_cs_reset(cs);
-        vn_cs_set_error(cs);
-        vn_instance_unlock_cs(instance);
-        return;
-    }
-
-    vn_cs_end_out(cs);
-    vn_renderer_submit(instance->renderer, cs, NULL, 0, false);
-    vn_cs_reset(cs);
-
-    vn_instance_unlock_cs(instance);
-}
-
 #endif /* VN_PROTOCOL_DRIVER_CALLS_H */
