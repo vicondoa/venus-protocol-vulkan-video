@@ -54,7 +54,7 @@ renderer, and are not exposed to applications.
     </commands>
 
     <extensions>
-        <extension name="VK_MESA_venus_protocol" number="901" type="instance" author="MESA" contact="Chia-I Wu @olvaffe" supported="disabled">
+        <extension name="VK_MESA_venus_protocol" number="385" type="instance" author="MESA" contact="Chia-I Wu @olvaffe1" supported="vulkan">
             <require>
                 <enum value="1"                                             name="VK_MESA_VENUS_PROTOCOL_SPEC_VERSION"/>
                 <enum value="&quot;VK_MESA_venus_protocol&quot;"            name="VK_MESA_VENUS_PROTOCOL_EXTENSION_NAME"/>
