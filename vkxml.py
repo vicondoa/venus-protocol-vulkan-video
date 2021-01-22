@@ -690,6 +690,9 @@ class VkExtension:
                     ext.version = int(enum_elem.attrib['value'])
                     break
 
+            if ext.supported != 'vulkan':
+                continue
+
             require_types = VkFeature.parse_require(
                     require_elem, type_table, number)
 
