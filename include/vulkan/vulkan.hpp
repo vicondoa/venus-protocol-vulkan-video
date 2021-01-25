@@ -94,7 +94,7 @@ extern "C" __declspec( dllimport ) FARPROC __stdcall GetProcAddress( HINSTANCE h
 #endif
 
 
-static_assert( VK_HEADER_VERSION ==  167 , "Wrong VK_HEADER_VERSION!" );
+static_assert( VK_HEADER_VERSION ==  168 , "Wrong VK_HEADER_VERSION!" );
 
 // 32-bit vulkan is not typesafe for handles, so don't allow copy constructors on this platform by default.
 // To enable this feature on 32-bit platforms please define VULKAN_HPP_TYPESAFE_CONVERSION
@@ -1023,31 +1023,51 @@ namespace VULKAN_HPP_NAMESPACE
     }
 
     template <typename ClassType, size_t Which = 0>
-    void relink() VULKAN_HPP_NOEXCEPT
+    typename std::enable_if<
+      std::is_same<ClassType, typename std::tuple_element<0, std::tuple<ChainElements...>>::type>::value &&
+        ( Which == 0 ),
+      bool>::type
+      isLinked() const VULKAN_HPP_NOEXCEPT
+    {
+      return true;
+    }
+
+    template <typename ClassType, size_t Which = 0>
+    typename std::enable_if<
+      !std::is_same<ClassType, typename std::tuple_element<0, std::tuple<ChainElements...>>::type>::value ||
+        ( Which != 0 ),
+      bool>::type
+      isLinked() const VULKAN_HPP_NOEXCEPT
+    {
+      static_assert( IsPartOfStructureChain<ClassType, ChainElements...>::valid,
+                     "Can't unlink Structure that's not part of this StructureChain!" );
+      return isLinked( reinterpret_cast<VkBaseInStructure const *>( &get<ClassType, Which>() ) );
+    }
+
+    template <typename ClassType, size_t Which = 0>
+    typename std::enable_if<
+      !std::is_same<ClassType, typename std::tuple_element<0, std::tuple<ChainElements...>>::type>::value ||
+        ( Which != 0 ),
+      void>::type relink() VULKAN_HPP_NOEXCEPT
     {
       static_assert( IsPartOfStructureChain<ClassType, ChainElements...>::valid,
                      "Can't relink Structure that's not part of this StructureChain!" );
-      static_assert(
-        !std::is_same<ClassType, typename std::tuple_element<0, std::tuple<ChainElements...>>::type>::value || (Which != 0),
-        "It's not allowed to have the first element unlinked!" );
-
       auto pNext = reinterpret_cast<VkBaseInStructure *>( &get<ClassType, Which>() );
       VULKAN_HPP_ASSERT( !isLinked( pNext ) );
-      auto & headElement = std::get<0>( static_cast<std::tuple<ChainElements...>&>( *this ) );
-      pNext->pNext       = reinterpret_cast<VkBaseInStructure const*>(headElement.pNext);
+      auto & headElement = std::get<0>( static_cast<std::tuple<ChainElements...> &>( *this ) );
+      pNext->pNext       = reinterpret_cast<VkBaseInStructure const *>( headElement.pNext );
       headElement.pNext  = pNext;
     }
 
     template <typename ClassType, size_t Which = 0>
-    void unlink() VULKAN_HPP_NOEXCEPT
+    typename std::enable_if<
+      !std::is_same<ClassType, typename std::tuple_element<0, std::tuple<ChainElements...>>::type>::value ||
+        ( Which != 0 ),
+      void>::type unlink() VULKAN_HPP_NOEXCEPT
     {
       static_assert( IsPartOfStructureChain<ClassType, ChainElements...>::valid,
                      "Can't unlink Structure that's not part of this StructureChain!" );
-      static_assert(
-        !std::is_same<ClassType, typename std::tuple_element<0, std::tuple<ChainElements...>>::type>::value || (Which != 0),
-        "It's not allowed to unlink the first element!" );
-
-      unlink<sizeof...( ChainElements ) - 1>( reinterpret_cast<VkBaseOutStructure const *>( &get<ClassType, Which>() ) );
+      unlink( reinterpret_cast<VkBaseOutStructure const *>( &get<ClassType, Which>() ) );
     }
 
   private:
@@ -1082,9 +1102,10 @@ namespace VULKAN_HPP_NAMESPACE
                              Types...> : std::integral_constant<int, Index>
     {};
 
-    bool isLinked( VkBaseInStructure const * pNext )
+    bool isLinked( VkBaseInStructure const * pNext ) const VULKAN_HPP_NOEXCEPT
     {
-      VkBaseInStructure const * elementPtr = reinterpret_cast<VkBaseInStructure const*>(&std::get<0>( static_cast<std::tuple<ChainElements...>&>( *this ) ) );
+      VkBaseInStructure const * elementPtr = reinterpret_cast<VkBaseInStructure const *>(
+        &std::get<0>( static_cast<std::tuple<ChainElements...> const &>( *this ) ) );
       while ( elementPtr )
       {
         if ( elementPtr->pNext == pNext )
@@ -1108,27 +1129,17 @@ namespace VULKAN_HPP_NAMESPACE
     typename std::enable_if<Index == 0, void>::type link() VULKAN_HPP_NOEXCEPT
     {}
 
-    template <size_t Index>
-    typename std::enable_if<Index != 0, void>::type unlink( VkBaseOutStructure const * pNext ) VULKAN_HPP_NOEXCEPT
+    void unlink( VkBaseOutStructure const * pNext ) VULKAN_HPP_NOEXCEPT
     {
-      auto & element = std::get<Index>( static_cast<std::tuple<ChainElements...>&>( *this ) );
-      if ( element.pNext == pNext )
+      VkBaseOutStructure * elementPtr = reinterpret_cast<VkBaseOutStructure *>(
+        &std::get<0>( static_cast<std::tuple<ChainElements...> &>( *this ) ) );
+      while ( elementPtr && ( elementPtr->pNext != pNext ) )
       {
-        element.pNext = pNext->pNext;
+        elementPtr = elementPtr->pNext;
       }
-      else
+      if ( elementPtr )
       {
-        unlink<Index - 1>( pNext );
-      }
-    }
-
-    template <size_t Index>
-    typename std::enable_if<Index == 0, void>::type unlink( VkBaseOutStructure const * pNext ) VULKAN_HPP_NOEXCEPT
-    {
-      auto & element = std::get<0>( static_cast<std::tuple<ChainElements...>&>( *this ) );
-      if ( element.pNext == pNext )
-      {
-        element.pNext = pNext->pNext;
+        elementPtr->pNext = pNext->pNext;
       }
       else
       {
@@ -8695,6 +8706,7 @@ namespace VULKAN_HPP_NAMESPACE
     ePhysicalDevicePipelineCreationCacheControlFeaturesEXT = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PIPELINE_CREATION_CACHE_CONTROL_FEATURES_EXT,
     ePhysicalDeviceDiagnosticsConfigFeaturesNV = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DIAGNOSTICS_CONFIG_FEATURES_NV,
     eDeviceDiagnosticsConfigCreateInfoNV = VK_STRUCTURE_TYPE_DEVICE_DIAGNOSTICS_CONFIG_CREATE_INFO_NV,
+    ePhysicalDeviceZeroInitializeWorkgroupMemoryFeaturesKHR = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ZERO_INITIALIZE_WORKGROUP_MEMORY_FEATURES_KHR,
     ePhysicalDeviceFragmentShadingRateEnumsPropertiesNV = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_ENUMS_PROPERTIES_NV,
     ePhysicalDeviceFragmentShadingRateEnumsFeaturesNV = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_ENUMS_FEATURES_NV,
     ePipelineFragmentShadingRateEnumStateCreateInfoNV = VK_STRUCTURE_TYPE_PIPELINE_FRAGMENT_SHADING_RATE_ENUM_STATE_CREATE_INFO_NV,
@@ -8702,6 +8714,7 @@ namespace VULKAN_HPP_NAMESPACE
     ePhysicalDeviceFragmentDensityMap2PropertiesEXT = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_DENSITY_MAP_2_PROPERTIES_EXT,
     eCopyCommandTransformInfoQCOM = VK_STRUCTURE_TYPE_COPY_COMMAND_TRANSFORM_INFO_QCOM,
     ePhysicalDeviceImageRobustnessFeaturesEXT = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_ROBUSTNESS_FEATURES_EXT,
+    ePhysicalDeviceWorkgroupMemoryExplicitLayoutFeaturesKHR = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_WORKGROUP_MEMORY_EXPLICIT_LAYOUT_FEATURES_KHR,
     eCopyBufferInfo2KHR = VK_STRUCTURE_TYPE_COPY_BUFFER_INFO_2_KHR,
     eCopyImageInfo2KHR = VK_STRUCTURE_TYPE_COPY_IMAGE_INFO_2_KHR,
     eCopyBufferToImageInfo2KHR = VK_STRUCTURE_TYPE_COPY_BUFFER_TO_IMAGE_INFO_2_KHR,
@@ -9287,6 +9300,7 @@ namespace VULKAN_HPP_NAMESPACE
       case StructureType::ePhysicalDevicePipelineCreationCacheControlFeaturesEXT : return "PhysicalDevicePipelineCreationCacheControlFeaturesEXT";
       case StructureType::ePhysicalDeviceDiagnosticsConfigFeaturesNV : return "PhysicalDeviceDiagnosticsConfigFeaturesNV";
       case StructureType::eDeviceDiagnosticsConfigCreateInfoNV : return "DeviceDiagnosticsConfigCreateInfoNV";
+      case StructureType::ePhysicalDeviceZeroInitializeWorkgroupMemoryFeaturesKHR : return "PhysicalDeviceZeroInitializeWorkgroupMemoryFeaturesKHR";
       case StructureType::ePhysicalDeviceFragmentShadingRateEnumsPropertiesNV : return "PhysicalDeviceFragmentShadingRateEnumsPropertiesNV";
       case StructureType::ePhysicalDeviceFragmentShadingRateEnumsFeaturesNV : return "PhysicalDeviceFragmentShadingRateEnumsFeaturesNV";
       case StructureType::ePipelineFragmentShadingRateEnumStateCreateInfoNV : return "PipelineFragmentShadingRateEnumStateCreateInfoNV";
@@ -9294,6 +9308,7 @@ namespace VULKAN_HPP_NAMESPACE
       case StructureType::ePhysicalDeviceFragmentDensityMap2PropertiesEXT : return "PhysicalDeviceFragmentDensityMap2PropertiesEXT";
       case StructureType::eCopyCommandTransformInfoQCOM : return "CopyCommandTransformInfoQCOM";
       case StructureType::ePhysicalDeviceImageRobustnessFeaturesEXT : return "PhysicalDeviceImageRobustnessFeaturesEXT";
+      case StructureType::ePhysicalDeviceWorkgroupMemoryExplicitLayoutFeaturesKHR : return "PhysicalDeviceWorkgroupMemoryExplicitLayoutFeaturesKHR";
       case StructureType::eCopyBufferInfo2KHR : return "CopyBufferInfo2KHR";
       case StructureType::eCopyImageInfo2KHR : return "CopyImageInfo2KHR";
       case StructureType::eCopyBufferToImageInfo2KHR : return "CopyBufferToImageInfo2KHR";
@@ -71377,6 +71392,112 @@ namespace VULKAN_HPP_NAMESPACE
   };
   using PhysicalDeviceVulkanMemoryModelFeaturesKHR = PhysicalDeviceVulkanMemoryModelFeatures;
 
+  struct PhysicalDeviceWorkgroupMemoryExplicitLayoutFeaturesKHR
+  {
+    static const bool allowDuplicate = false;
+    static VULKAN_HPP_CONST_OR_CONSTEXPR StructureType structureType = StructureType::ePhysicalDeviceWorkgroupMemoryExplicitLayoutFeaturesKHR;
+
+#if !defined( VULKAN_HPP_NO_STRUCT_CONSTRUCTORS )
+    VULKAN_HPP_CONSTEXPR PhysicalDeviceWorkgroupMemoryExplicitLayoutFeaturesKHR(VULKAN_HPP_NAMESPACE::Bool32 workgroupMemoryExplicitLayout_ = {}, VULKAN_HPP_NAMESPACE::Bool32 workgroupMemoryExplicitLayoutScalarBlockLayout_ = {}, VULKAN_HPP_NAMESPACE::Bool32 workgroupMemoryExplicitLayout8BitAccess_ = {}, VULKAN_HPP_NAMESPACE::Bool32 workgroupMemoryExplicitLayout16BitAccess_ = {}) VULKAN_HPP_NOEXCEPT
+    : workgroupMemoryExplicitLayout( workgroupMemoryExplicitLayout_ ), workgroupMemoryExplicitLayoutScalarBlockLayout( workgroupMemoryExplicitLayoutScalarBlockLayout_ ), workgroupMemoryExplicitLayout8BitAccess( workgroupMemoryExplicitLayout8BitAccess_ ), workgroupMemoryExplicitLayout16BitAccess( workgroupMemoryExplicitLayout16BitAccess_ )
+    {}
+
+    VULKAN_HPP_CONSTEXPR PhysicalDeviceWorkgroupMemoryExplicitLayoutFeaturesKHR( PhysicalDeviceWorkgroupMemoryExplicitLayoutFeaturesKHR const & rhs ) VULKAN_HPP_NOEXCEPT = default;
+
+    PhysicalDeviceWorkgroupMemoryExplicitLayoutFeaturesKHR( VkPhysicalDeviceWorkgroupMemoryExplicitLayoutFeaturesKHR const & rhs ) VULKAN_HPP_NOEXCEPT
+      : PhysicalDeviceWorkgroupMemoryExplicitLayoutFeaturesKHR( *reinterpret_cast<PhysicalDeviceWorkgroupMemoryExplicitLayoutFeaturesKHR const *>( &rhs ) )
+    {}
+#endif // !defined( VULKAN_HPP_NO_STRUCT_CONSTRUCTORS )
+
+    VULKAN_HPP_CONSTEXPR_14 PhysicalDeviceWorkgroupMemoryExplicitLayoutFeaturesKHR & operator=( PhysicalDeviceWorkgroupMemoryExplicitLayoutFeaturesKHR const & rhs ) VULKAN_HPP_NOEXCEPT = default;
+
+    PhysicalDeviceWorkgroupMemoryExplicitLayoutFeaturesKHR & operator=( VkPhysicalDeviceWorkgroupMemoryExplicitLayoutFeaturesKHR const & rhs ) VULKAN_HPP_NOEXCEPT
+    {
+      *this = *reinterpret_cast<VULKAN_HPP_NAMESPACE::PhysicalDeviceWorkgroupMemoryExplicitLayoutFeaturesKHR const *>( &rhs );
+      return *this;
+    }
+
+    PhysicalDeviceWorkgroupMemoryExplicitLayoutFeaturesKHR & setPNext( void* pNext_ ) VULKAN_HPP_NOEXCEPT
+    {
+      pNext = pNext_;
+      return *this;
+    }
+
+    PhysicalDeviceWorkgroupMemoryExplicitLayoutFeaturesKHR & setWorkgroupMemoryExplicitLayout( VULKAN_HPP_NAMESPACE::Bool32 workgroupMemoryExplicitLayout_ ) VULKAN_HPP_NOEXCEPT
+    {
+      workgroupMemoryExplicitLayout = workgroupMemoryExplicitLayout_;
+      return *this;
+    }
+
+    PhysicalDeviceWorkgroupMemoryExplicitLayoutFeaturesKHR & setWorkgroupMemoryExplicitLayoutScalarBlockLayout( VULKAN_HPP_NAMESPACE::Bool32 workgroupMemoryExplicitLayoutScalarBlockLayout_ ) VULKAN_HPP_NOEXCEPT
+    {
+      workgroupMemoryExplicitLayoutScalarBlockLayout = workgroupMemoryExplicitLayoutScalarBlockLayout_;
+      return *this;
+    }
+
+    PhysicalDeviceWorkgroupMemoryExplicitLayoutFeaturesKHR & setWorkgroupMemoryExplicitLayout8BitAccess( VULKAN_HPP_NAMESPACE::Bool32 workgroupMemoryExplicitLayout8BitAccess_ ) VULKAN_HPP_NOEXCEPT
+    {
+      workgroupMemoryExplicitLayout8BitAccess = workgroupMemoryExplicitLayout8BitAccess_;
+      return *this;
+    }
+
+    PhysicalDeviceWorkgroupMemoryExplicitLayoutFeaturesKHR & setWorkgroupMemoryExplicitLayout16BitAccess( VULKAN_HPP_NAMESPACE::Bool32 workgroupMemoryExplicitLayout16BitAccess_ ) VULKAN_HPP_NOEXCEPT
+    {
+      workgroupMemoryExplicitLayout16BitAccess = workgroupMemoryExplicitLayout16BitAccess_;
+      return *this;
+    }
+
+
+    operator VkPhysicalDeviceWorkgroupMemoryExplicitLayoutFeaturesKHR const&() const VULKAN_HPP_NOEXCEPT
+    {
+      return *reinterpret_cast<const VkPhysicalDeviceWorkgroupMemoryExplicitLayoutFeaturesKHR*>( this );
+    }
+
+    operator VkPhysicalDeviceWorkgroupMemoryExplicitLayoutFeaturesKHR &() VULKAN_HPP_NOEXCEPT
+    {
+      return *reinterpret_cast<VkPhysicalDeviceWorkgroupMemoryExplicitLayoutFeaturesKHR*>( this );
+    }
+
+
+#if defined(VULKAN_HPP_HAS_SPACESHIP_OPERATOR)
+    auto operator<=>( PhysicalDeviceWorkgroupMemoryExplicitLayoutFeaturesKHR const& ) const = default;
+#else
+    bool operator==( PhysicalDeviceWorkgroupMemoryExplicitLayoutFeaturesKHR const& rhs ) const VULKAN_HPP_NOEXCEPT
+    {
+      return ( sType == rhs.sType )
+          && ( pNext == rhs.pNext )
+          && ( workgroupMemoryExplicitLayout == rhs.workgroupMemoryExplicitLayout )
+          && ( workgroupMemoryExplicitLayoutScalarBlockLayout == rhs.workgroupMemoryExplicitLayoutScalarBlockLayout )
+          && ( workgroupMemoryExplicitLayout8BitAccess == rhs.workgroupMemoryExplicitLayout8BitAccess )
+          && ( workgroupMemoryExplicitLayout16BitAccess == rhs.workgroupMemoryExplicitLayout16BitAccess );
+    }
+
+    bool operator!=( PhysicalDeviceWorkgroupMemoryExplicitLayoutFeaturesKHR const& rhs ) const VULKAN_HPP_NOEXCEPT
+    {
+      return !operator==( rhs );
+    }
+#endif
+
+
+
+  public:
+    VULKAN_HPP_NAMESPACE::StructureType sType = StructureType::ePhysicalDeviceWorkgroupMemoryExplicitLayoutFeaturesKHR;
+    void* pNext = {};
+    VULKAN_HPP_NAMESPACE::Bool32 workgroupMemoryExplicitLayout = {};
+    VULKAN_HPP_NAMESPACE::Bool32 workgroupMemoryExplicitLayoutScalarBlockLayout = {};
+    VULKAN_HPP_NAMESPACE::Bool32 workgroupMemoryExplicitLayout8BitAccess = {};
+    VULKAN_HPP_NAMESPACE::Bool32 workgroupMemoryExplicitLayout16BitAccess = {};
+
+  };
+  static_assert( sizeof( PhysicalDeviceWorkgroupMemoryExplicitLayoutFeaturesKHR ) == sizeof( VkPhysicalDeviceWorkgroupMemoryExplicitLayoutFeaturesKHR ), "struct and wrapper have different size!" );
+  static_assert( std::is_standard_layout<PhysicalDeviceWorkgroupMemoryExplicitLayoutFeaturesKHR>::value, "struct wrapper is not a standard layout!" );
+
+  template <>
+  struct CppType<StructureType, StructureType::ePhysicalDeviceWorkgroupMemoryExplicitLayoutFeaturesKHR>
+  {
+    using Type = PhysicalDeviceWorkgroupMemoryExplicitLayoutFeaturesKHR;
+  };
+
   struct PhysicalDeviceYcbcrImageArraysFeaturesEXT
   {
     static const bool allowDuplicate = false;
@@ -71457,6 +71578,88 @@ namespace VULKAN_HPP_NAMESPACE
   struct CppType<StructureType, StructureType::ePhysicalDeviceYcbcrImageArraysFeaturesEXT>
   {
     using Type = PhysicalDeviceYcbcrImageArraysFeaturesEXT;
+  };
+
+  struct PhysicalDeviceZeroInitializeWorkgroupMemoryFeaturesKHR
+  {
+    static const bool allowDuplicate = false;
+    static VULKAN_HPP_CONST_OR_CONSTEXPR StructureType structureType = StructureType::ePhysicalDeviceZeroInitializeWorkgroupMemoryFeaturesKHR;
+
+#if !defined( VULKAN_HPP_NO_STRUCT_CONSTRUCTORS )
+    VULKAN_HPP_CONSTEXPR PhysicalDeviceZeroInitializeWorkgroupMemoryFeaturesKHR(VULKAN_HPP_NAMESPACE::Bool32 shaderZeroInitializeWorkgroupMemory_ = {}) VULKAN_HPP_NOEXCEPT
+    : shaderZeroInitializeWorkgroupMemory( shaderZeroInitializeWorkgroupMemory_ )
+    {}
+
+    VULKAN_HPP_CONSTEXPR PhysicalDeviceZeroInitializeWorkgroupMemoryFeaturesKHR( PhysicalDeviceZeroInitializeWorkgroupMemoryFeaturesKHR const & rhs ) VULKAN_HPP_NOEXCEPT = default;
+
+    PhysicalDeviceZeroInitializeWorkgroupMemoryFeaturesKHR( VkPhysicalDeviceZeroInitializeWorkgroupMemoryFeaturesKHR const & rhs ) VULKAN_HPP_NOEXCEPT
+      : PhysicalDeviceZeroInitializeWorkgroupMemoryFeaturesKHR( *reinterpret_cast<PhysicalDeviceZeroInitializeWorkgroupMemoryFeaturesKHR const *>( &rhs ) )
+    {}
+#endif // !defined( VULKAN_HPP_NO_STRUCT_CONSTRUCTORS )
+
+    VULKAN_HPP_CONSTEXPR_14 PhysicalDeviceZeroInitializeWorkgroupMemoryFeaturesKHR & operator=( PhysicalDeviceZeroInitializeWorkgroupMemoryFeaturesKHR const & rhs ) VULKAN_HPP_NOEXCEPT = default;
+
+    PhysicalDeviceZeroInitializeWorkgroupMemoryFeaturesKHR & operator=( VkPhysicalDeviceZeroInitializeWorkgroupMemoryFeaturesKHR const & rhs ) VULKAN_HPP_NOEXCEPT
+    {
+      *this = *reinterpret_cast<VULKAN_HPP_NAMESPACE::PhysicalDeviceZeroInitializeWorkgroupMemoryFeaturesKHR const *>( &rhs );
+      return *this;
+    }
+
+    PhysicalDeviceZeroInitializeWorkgroupMemoryFeaturesKHR & setPNext( void* pNext_ ) VULKAN_HPP_NOEXCEPT
+    {
+      pNext = pNext_;
+      return *this;
+    }
+
+    PhysicalDeviceZeroInitializeWorkgroupMemoryFeaturesKHR & setShaderZeroInitializeWorkgroupMemory( VULKAN_HPP_NAMESPACE::Bool32 shaderZeroInitializeWorkgroupMemory_ ) VULKAN_HPP_NOEXCEPT
+    {
+      shaderZeroInitializeWorkgroupMemory = shaderZeroInitializeWorkgroupMemory_;
+      return *this;
+    }
+
+
+    operator VkPhysicalDeviceZeroInitializeWorkgroupMemoryFeaturesKHR const&() const VULKAN_HPP_NOEXCEPT
+    {
+      return *reinterpret_cast<const VkPhysicalDeviceZeroInitializeWorkgroupMemoryFeaturesKHR*>( this );
+    }
+
+    operator VkPhysicalDeviceZeroInitializeWorkgroupMemoryFeaturesKHR &() VULKAN_HPP_NOEXCEPT
+    {
+      return *reinterpret_cast<VkPhysicalDeviceZeroInitializeWorkgroupMemoryFeaturesKHR*>( this );
+    }
+
+
+#if defined(VULKAN_HPP_HAS_SPACESHIP_OPERATOR)
+    auto operator<=>( PhysicalDeviceZeroInitializeWorkgroupMemoryFeaturesKHR const& ) const = default;
+#else
+    bool operator==( PhysicalDeviceZeroInitializeWorkgroupMemoryFeaturesKHR const& rhs ) const VULKAN_HPP_NOEXCEPT
+    {
+      return ( sType == rhs.sType )
+          && ( pNext == rhs.pNext )
+          && ( shaderZeroInitializeWorkgroupMemory == rhs.shaderZeroInitializeWorkgroupMemory );
+    }
+
+    bool operator!=( PhysicalDeviceZeroInitializeWorkgroupMemoryFeaturesKHR const& rhs ) const VULKAN_HPP_NOEXCEPT
+    {
+      return !operator==( rhs );
+    }
+#endif
+
+
+
+  public:
+    VULKAN_HPP_NAMESPACE::StructureType sType = StructureType::ePhysicalDeviceZeroInitializeWorkgroupMemoryFeaturesKHR;
+    void* pNext = {};
+    VULKAN_HPP_NAMESPACE::Bool32 shaderZeroInitializeWorkgroupMemory = {};
+
+  };
+  static_assert( sizeof( PhysicalDeviceZeroInitializeWorkgroupMemoryFeaturesKHR ) == sizeof( VkPhysicalDeviceZeroInitializeWorkgroupMemoryFeaturesKHR ), "struct and wrapper have different size!" );
+  static_assert( std::is_standard_layout<PhysicalDeviceZeroInitializeWorkgroupMemoryFeaturesKHR>::value, "struct wrapper is not a standard layout!" );
+
+  template <>
+  struct CppType<StructureType, StructureType::ePhysicalDeviceZeroInitializeWorkgroupMemoryFeaturesKHR>
+  {
+    using Type = PhysicalDeviceZeroInitializeWorkgroupMemoryFeaturesKHR;
   };
 
   struct PipelineColorBlendAdvancedStateCreateInfoEXT
@@ -89821,8 +90024,12 @@ namespace VULKAN_HPP_NAMESPACE
   template <> struct StructExtends<PhysicalDeviceVulkan12Properties, PhysicalDeviceProperties2>{ enum { value = true }; };
   template <> struct StructExtends<PhysicalDeviceVulkanMemoryModelFeatures, PhysicalDeviceFeatures2>{ enum { value = true }; };
   template <> struct StructExtends<PhysicalDeviceVulkanMemoryModelFeatures, DeviceCreateInfo>{ enum { value = true }; };
+  template <> struct StructExtends<PhysicalDeviceWorkgroupMemoryExplicitLayoutFeaturesKHR, PhysicalDeviceFeatures2>{ enum { value = true }; };
+  template <> struct StructExtends<PhysicalDeviceWorkgroupMemoryExplicitLayoutFeaturesKHR, DeviceCreateInfo>{ enum { value = true }; };
   template <> struct StructExtends<PhysicalDeviceYcbcrImageArraysFeaturesEXT, PhysicalDeviceFeatures2>{ enum { value = true }; };
   template <> struct StructExtends<PhysicalDeviceYcbcrImageArraysFeaturesEXT, DeviceCreateInfo>{ enum { value = true }; };
+  template <> struct StructExtends<PhysicalDeviceZeroInitializeWorkgroupMemoryFeaturesKHR, PhysicalDeviceFeatures2>{ enum { value = true }; };
+  template <> struct StructExtends<PhysicalDeviceZeroInitializeWorkgroupMemoryFeaturesKHR, DeviceCreateInfo>{ enum { value = true }; };
   template <> struct StructExtends<PipelineColorBlendAdvancedStateCreateInfoEXT, PipelineColorBlendStateCreateInfo>{ enum { value = true }; };
   template <> struct StructExtends<PipelineCompilerControlCreateInfoAMD, GraphicsPipelineCreateInfo>{ enum { value = true }; };
   template <> struct StructExtends<PipelineCompilerControlCreateInfoAMD, ComputePipelineCreateInfo>{ enum { value = true }; };
