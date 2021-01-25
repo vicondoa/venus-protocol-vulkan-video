@@ -58,6 +58,8 @@ static inline void vn_async_${ty.name}(struct vn_instance *vn_instance, ${ty.c_f
     struct vn_cs *cs = vn_instance_lock_cs(vn_instance);
     if (vn_cs_reserve_out(cs, cmd_size))
         vn_encode_${ty.name}(cs, cmd_flags, ${ty.c_func_args()});
+    if (vn_cs_get_out_len(cs) > vn_instance->cs_implicit_flush_threshold)
+        vn_instance_submit_cs_locked(vn_instance, NULL, NULL);
     vn_instance_unlock_cs(vn_instance);
 }
 </%def>\
