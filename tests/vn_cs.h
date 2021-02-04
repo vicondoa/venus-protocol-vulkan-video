@@ -70,13 +70,24 @@ vn_cs_end_out(struct vn_cs *cs)
 }
 
 static inline vn_cs_object_id
-vn_cs_handle_load_id(const void *vk_handle, bool is_dev)
+vn_cs_object_load_id(const void *obj_handle)
 {
     return 0;
 }
 
 static inline void
-vn_cs_handle_store_id(void *vk_handle, vn_cs_object_id id, bool is_dev)
+vn_cs_object_store_id(void *obj_handle, vn_cs_object_id id)
+{
+}
+
+static inline vn_cs_object_id
+vn_cs_device_load_id(const VkDevice *dev_handle)
+{
+    return 0;
+}
+
+static inline void
+vn_cs_device_store_id(VkDevice *dev_handle, vn_cs_object_id id)
 {
 }
 

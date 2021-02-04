@@ -33,8 +33,10 @@ vn_decode_${ty.name}_lookup(struct vn_cs *cs, ${ty.name} *val)
 </%def>
 
 <%def name="vn_encode_handle_body(ty)">\
-% if GEN.is_driver:
-    const uint64_t id = vn_cs_handle_load_id((const void *)val, ${is_handle_VkDevice(ty)});
+% if GEN.is_driver and ty.name == 'VkDevice':
+    const uint64_t id = vn_cs_device_load_id(val);
+% elif GEN.is_driver:
+    const uint64_t id = vn_cs_object_load_id((const void *)val);
 % else:
     const bool in_place = ${is_handle_in_place(ty)};
     const uint64_t id = vn_cs_handle_load_id((const void *)val, in_place);
@@ -45,8 +47,10 @@ vn_decode_${ty.name}_lookup(struct vn_cs *cs, ${ty.name} *val)
 <%def name="vn_decode_handle_body(ty, variant='')">\
     uint64_t id;
     vn_decode_uint64_t(cs, &id);
-% if GEN.is_driver:
-    vn_cs_handle_store_id((void *)val, id, ${is_handle_VkDevice(ty)});
+% if GEN.is_driver and ty.name == 'VkDevice':
+    vn_cs_device_store_id(val, id);
+% elif GEN.is_driver:
+    vn_cs_object_store_id((void *)val, id);
 % else:
     const bool in_place = ${is_handle_in_place(ty)};
 %   if '_temp' in variant:
