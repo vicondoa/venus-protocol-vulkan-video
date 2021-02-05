@@ -10,7 +10,7 @@ ${"true" if ty.name == 'VkDevice' else "false"}\
 
 <%def name="is_handle_in_place(ty)">\
 <% assert(not GEN.is_driver) %>\
-sizeof(*val) >= sizeof(vn_cs_object_id)\
+sizeof(*val) >= sizeof(vn_object_id)\
 </%def>
 
 <%def name="vn_decode_handle_lookup(ty)">\
@@ -55,7 +55,7 @@ vn_decode_${ty.name}_lookup(struct vn_cs *cs, ${ty.name} *val)
     const bool in_place = ${is_handle_in_place(ty)};
 %   if '_temp' in variant:
     if (!in_place) {
-        *val = vn_cs_alloc_temp(cs, sizeof(vn_cs_object_id));
+        *val = vn_cs_alloc_temp(cs, sizeof(vn_object_id));
         if (!val)
             return;
     }

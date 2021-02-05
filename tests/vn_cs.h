@@ -10,7 +10,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-typedef uint64_t vn_cs_object_id;
+typedef uint64_t vn_object_id;
 
 struct vn_cs;
 
@@ -69,25 +69,25 @@ vn_cs_end_out(struct vn_cs *cs)
 {
 }
 
-static inline vn_cs_object_id
+static inline vn_object_id
 vn_cs_object_load_id(const void *obj_handle)
 {
     return 0;
 }
 
 static inline void
-vn_cs_object_store_id(void *obj_handle, vn_cs_object_id id)
+vn_cs_object_store_id(void *obj_handle, vn_object_id id)
 {
 }
 
-static inline vn_cs_object_id
+static inline vn_object_id
 vn_cs_device_load_id(const VkDevice *dev_handle)
 {
     return 0;
 }
 
 static inline void
-vn_cs_device_store_id(VkDevice *dev_handle, vn_cs_object_id id)
+vn_cs_device_store_id(VkDevice *dev_handle, vn_object_id id)
 {
 }
 
