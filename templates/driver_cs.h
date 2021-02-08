@@ -14,15 +14,18 @@
  *   struct vn_cs
  *   vn_cs_reset
  *   vn_cs_set_error
- *   vn_cs_set_in_data
- *   vn_cs_in
- *   vn_cs_in_peek
  *   vn_cs_has_out
  *   vn_cs_reserve_out
  *   vn_cs_out
  *   vn_cs_out_begin_reply_stream
  *   vn_cs_out_end_reply_stream
  *   vn_cs_end_out
+ *
+ *   struct vn_cs_decoder
+ *   vn_cs_decoder_set_fatal
+ *   vn_cs_decoder_read
+ *   vn_cs_decoder_peek
+ *
  *   vn_cs_object_load_id
  *   vn_cs_object_store_id
  *   vn_cs_device_load_id
@@ -39,10 +42,10 @@ vn_encode(struct vn_cs *cs, size_t size, const void *data, size_t data_size)
 }
 
 static inline void
-vn_decode(struct vn_cs *cs, size_t size, void *data, size_t data_size)
+vn_decode(struct vn_cs_decoder *dec, size_t size, void *data, size_t data_size)
 {
    assert(size % 4 == 0);
-   vn_cs_in(cs, size, data, data_size);
+   vn_cs_decoder_read(dec, size, data, data_size);
 }
 
 #endif /* VN_PROTOCOL_DRIVER_CS_H */

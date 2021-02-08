@@ -13,6 +13,7 @@
 typedef uint64_t vn_object_id;
 
 struct vn_cs;
+struct vn_cs_decoder;
 
 static inline void
 vn_cs_reset(struct vn_cs *cs)
@@ -21,16 +22,6 @@ vn_cs_reset(struct vn_cs *cs)
 
 static inline void
 vn_cs_set_error(struct vn_cs *cs)
-{
-}
-
-static inline void
-vn_cs_in(struct vn_cs *cs, size_t size, void *val, size_t val_size)
-{
-}
-
-static inline void
-vn_cs_in_peek(struct vn_cs *cs, void *val, size_t val_size)
 {
 }
 
@@ -66,6 +57,21 @@ vn_cs_out_end_reply_stream(struct vn_cs *cs,
 
 static inline void
 vn_cs_end_out(struct vn_cs *cs)
+{
+}
+
+static inline void
+vn_cs_decoder_set_fatal(struct vn_cs_decoder *dec)
+{
+}
+
+static inline void
+vn_cs_decoder_read(struct vn_cs_decoder *dec, size_t size, void *val, size_t val_size)
+{
+}
+
+static inline void
+vn_cs_decoder_peek(struct vn_cs_decoder *dec, void *val, size_t val_size)
 {
 }
 

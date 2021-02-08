@@ -69,7 +69,7 @@ ${chain.vn_encode_chain_body(ty)}\
 
 <%def name="vn_decode_type(ty)">\
 static inline void
-vn_decode_${ty.name}(struct vn_cs *cs, ${ty.name} *val)
+vn_decode_${ty.name}(struct vn_cs_decoder *dec, ${ty.name} *val)
 {
 % if ty.category in [ty.DEFAULT, ty.BASETYPE, ty.ENUM]:
 ${scalar.vn_decode_scalar_body(ty)}\
@@ -89,7 +89,7 @@ ${chain.vn_decode_chain_body(ty)}\
 
 <%def name="vn_decode_type_temp(ty)">\
 static inline void
-vn_decode_${ty.name}_temp(struct vn_cs *cs, ${ty.name} *val)
+vn_decode_${ty.name}_temp(struct vn_cs_decoder *dec, ${ty.name} *val)
 {
 % if ty.category in [ty.DEFAULT, ty.BASETYPE, ty.ENUM]:
 ${scalar.vn_decode_scalar_body(ty)}\
@@ -149,7 +149,7 @@ ${chain.vn_encode_chain_body(ty, '_partial')}\
 
 <%def name="vn_decode_type_partial_temp(ty)">\
 static inline void
-vn_decode_${ty.name}_partial_temp(struct vn_cs *cs, ${ty.name} *val)
+vn_decode_${ty.name}_partial_temp(struct vn_cs_decoder *dec, ${ty.name} *val)
 {
 % if ty.category in [ty.DEFAULT, ty.BASETYPE, ty.ENUM]:
 ${scalar.vn_decode_scalar_body(ty)}\

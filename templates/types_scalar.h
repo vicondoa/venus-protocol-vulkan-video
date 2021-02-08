@@ -52,21 +52,21 @@ vn_encode_${ty.name}_array(struct vn_cs *cs, const ${ty.name} *val, uint32_t cou
 
 <%def name="vn_decode_scalar_array(ty)">\
 static inline void
-vn_decode_${ty.name}_array(struct vn_cs *cs, ${ty.name} *val, uint32_t count)
+vn_decode_${ty.name}_array(struct vn_cs_decoder *dec, ${ty.name} *val, uint32_t count)
 {
 % if ty.category == ty.DEFAULT:
 <% ty_size = GEN.PRIMITIVE_TYPES[ty.name] %>\
     const size_t size = sizeof(*val) * count;
     assert(size >= count);
 %   if ty_size >= 4:
-    vn_decode(cs, size, val, size);
+    vn_decode(dec, size, val, size);
 %   else:
-    vn_decode(cs, (size + 3) & ~3, val, size);
+    vn_decode(dec, (size + 3) & ~3, val, size);
 %   endif
 % elif ty.category == ty.BASETYPE:
-    vn_decode_${ty.typedef.name}_array(cs, val, count);
+    vn_decode_${ty.typedef.name}_array(dec, val, count);
 % elif ty.category == ty.ENUM:
-    vn_decode_int32_t_array(cs, (int32_t *)val, count);
+    vn_decode_int32_t_array(dec, (int32_t *)val, count);
 % else:
 <% assert(False) %>
 % endif
@@ -105,13 +105,13 @@ vn_decode_${ty.name}_array(struct vn_cs *cs, ${ty.name} *val, uint32_t count)
 % if ty.category == ty.DEFAULT:
 <% ty_size = GEN.PRIMITIVE_TYPES[ty.name] %>\
 %   if ty_size >= 4:
-    vn_decode(cs, ${ty_size}, val, sizeof(*val));
+    vn_decode(dec, ${ty_size}, val, sizeof(*val));
 %   else:
-    vn_decode(cs, 4, val, sizeof(*val));
+    vn_decode(dec, 4, val, sizeof(*val));
 %   endif
 % elif ty.category == ty.BASETYPE:
-    vn_decode_${ty.typedef.name}(cs, val);
+    vn_decode_${ty.typedef.name}(dec, val);
 % elif ty.category == ty.ENUM:
-    vn_decode_int32_t(cs, (int32_t *)val);
+    vn_decode_int32_t(dec, (int32_t *)val);
 % endif
 </%def>

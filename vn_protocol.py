@@ -394,7 +394,7 @@ class Gen:
             if not alloc_counts:
                 var_name = self._var_name()
                 deref = self._var_deref()
-                stmt = '%s = vn_cs_alloc_temp(cs, sizeof(%s%s))' % (
+                stmt = '%s = vn_cs_alloc_temp(dec, sizeof(%s%s))' % (
                         var_name, deref, var_name)
                 self.func_alloc_stmt = stmt
                 return
@@ -406,7 +406,7 @@ class Gen:
                 else:
                     size = 'sizeof(*%s) * %s' % (self._var_name(level), count)
 
-                stmt = '%s = vn_cs_alloc_temp(cs, %s)' % (
+                stmt = '%s = vn_cs_alloc_temp(dec, %s)' % (
                         self._var_name(level, level > 0), size)
                 alloc_stmts.append(stmt)
 
@@ -587,14 +587,14 @@ class Gen:
 
         code = ''
         if info.var.ty.is_pointer() and info.will_handle_array_size():
-            code += 'if (vn_peek_array_size(cs)) {\n    '
+            code += 'if (vn_peek_array_size(dec)) {\n    '
             code += '    %s\n    ' % info.code(2).strip()
             code += '} else {\n    '
-            code += '    vn_decode_array_size(cs, 0);\n    '
+            code += '    vn_decode_array_size(dec, 0);\n    '
             code += '    %s = NULL;\n    ' % info._var_name()
             code += '}'
         elif info.var.ty.is_pointer():
-            code += 'if (vn_decode_simple_pointer(cs)) {\n    '
+            code += 'if (vn_decode_simple_pointer(dec)) {\n    '
             code += '    %s\n    ' % info.code(2).strip()
             code += '} else {\n    '
             code += '    %s = NULL;\n    ' % info._var_name()
@@ -707,11 +707,11 @@ class Gen:
             if var.is_string():
                 assert(info.array_size.startswith('strlen'))
                 info.func_array_size_stmt = \
-                        'const size_t string_size = vn_decode_array_size(cs, UINT64_MAX)'
+                        'const size_t string_size = vn_decode_array_size(dec, UINT64_MAX)'
                 info.array_size = 'string_size'
             else:
                 info.func_array_size_stmt = \
-                        'const size_t array_size = vn_decode_array_size(cs, %s)' % info.array_size
+                        'const size_t array_size = vn_decode_array_size(dec, %s)' % info.array_size
                 info.array_size = 'array_size'
 
         if alloc_storage and var.ty.is_pointer():
@@ -719,7 +719,7 @@ class Gen:
 
         # decode array sizes
         for loop_count in info.loop_counts:
-            stmt = 'vn_decode_array_size(cs, %s)' % loop_count
+            stmt = 'vn_decode_array_size(dec, %s)' % loop_count
             info.loop_extra_stmts.append(stmt)
 
         # nothing to decode
@@ -741,7 +741,7 @@ class Gen:
             elif alloc_storage and var.ty.base.dispatchable:
                 func_name += '_temp'
 
-        info.func_stmt = '%s(cs, %s)' % (func_name, info.func_args(True))
+        info.func_stmt = '%s(dec, %s)' % (func_name, info.func_args(True))
 
         return info
 

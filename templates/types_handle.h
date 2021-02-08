@@ -16,14 +16,14 @@ sizeof(*val) >= sizeof(vn_object_id)\
 <%def name="vn_decode_handle_lookup(ty)">\
 <% assert(not GEN.is_driver) %>\
 static inline void
-vn_decode_${ty.name}_lookup(struct vn_cs *cs, ${ty.name} *val)
+vn_decode_${ty.name}_lookup(struct vn_cs_decoder *dec, ${ty.name} *val)
 {
     uint64_t id;
-    vn_decode_uint64_t(cs, &id);
+    vn_decode_uint64_t(dec, &id);
 % if ty.dispatchable:
-    *val = (${ty.name})vn_cs_lookup_object(cs, id);
+    *val = (${ty.name})vn_cs_lookup_object(dec, id);
 % else:
-    *val = (${ty.name})(uintptr_t)vn_cs_lookup_object(cs, id);
+    *val = (${ty.name})(uintptr_t)vn_cs_lookup_object(dec, id);
 % endif
 }
 </%def>
@@ -46,7 +46,7 @@ vn_decode_${ty.name}_lookup(struct vn_cs *cs, ${ty.name} *val)
 
 <%def name="vn_decode_handle_body(ty, variant='')">\
     uint64_t id;
-    vn_decode_uint64_t(cs, &id);
+    vn_decode_uint64_t(dec, &id);
 % if GEN.is_driver and ty.name == 'VkDevice':
     vn_cs_device_store_id(val, id);
 % elif GEN.is_driver:
@@ -55,7 +55,7 @@ vn_decode_${ty.name}_lookup(struct vn_cs *cs, ${ty.name} *val)
     const bool in_place = ${is_handle_in_place(ty)};
 %   if '_temp' in variant:
     if (!in_place) {
-        *val = vn_cs_alloc_temp(cs, sizeof(vn_object_id));
+        *val = vn_cs_alloc_temp(dec, sizeof(vn_object_id));
         if (!val)
             return;
     }

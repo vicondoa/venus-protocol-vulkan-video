@@ -22,10 +22,10 @@ vn_encode_size_t(struct vn_cs *cs, const size_t *val)
 }
 
 static inline void
-vn_decode_size_t(struct vn_cs *cs, size_t *val)
+vn_decode_size_t(struct vn_cs_decoder *dec, size_t *val)
 {
     uint64_t tmp;
-    vn_decode_uint64_t(cs, &tmp);
+    vn_decode_uint64_t(dec, &tmp);
     *val = tmp;
 }
 
@@ -49,13 +49,13 @@ vn_encode_size_t_array(struct vn_cs *cs, const size_t *val, uint32_t count)
 }
 
 static inline void
-vn_decode_size_t_array(struct vn_cs *cs, size_t *val, uint32_t count)
+vn_decode_size_t_array(struct vn_cs_decoder *dec, size_t *val, uint32_t count)
 {
     if (sizeof(size_t) == sizeof(uint64_t)) {
-        vn_decode_uint64_t_array(cs, (uint64_t *)val, count);
+        vn_decode_uint64_t_array(dec, (uint64_t *)val, count);
     } else {
         for (uint32_t i = 0; i < count; i++)
-            vn_decode_size_t(cs, &val[i]);
+            vn_decode_size_t(dec, &val[i]);
     }
 }
 </%def>
@@ -78,9 +78,9 @@ vn_encode_blob_array(struct vn_cs *cs, const void *val, size_t size)
 }
 
 static inline void
-vn_decode_blob_array(struct vn_cs *cs, void *val, size_t size)
+vn_decode_blob_array(struct vn_cs_decoder *dec, void *val, size_t size)
 {
-    vn_decode(cs, (size + 3) & ~3, val, size);
+    vn_decode(dec, (size + 3) & ~3, val, size);
 }
 </%def>
 
@@ -102,22 +102,22 @@ vn_encode_array_size(struct vn_cs *cs, uint64_t size)
 }
 
 static inline uint64_t
-vn_decode_array_size(struct vn_cs *cs, uint64_t max_size)
+vn_decode_array_size(struct vn_cs_decoder *dec, uint64_t max_size)
 {
     uint64_t size;
-    vn_decode_uint64_t(cs, &size);
+    vn_decode_uint64_t(dec, &size);
     if (size > max_size) {
-        vn_cs_set_error(cs);
+        vn_cs_decoder_set_fatal(dec);
         size = 0;
     }
     return size;
 }
 
 static inline uint64_t
-vn_peek_array_size(struct vn_cs *cs)
+vn_peek_array_size(struct vn_cs_decoder *dec)
 {
     uint64_t size;
-    vn_cs_in_peek(cs, &size, sizeof(size));
+    vn_cs_decoder_peek(dec, &size, sizeof(size));
     return size;
 }
 
@@ -139,8 +139,8 @@ vn_encode_simple_pointer(struct vn_cs *cs, const void *val)
 }
 
 static inline bool
-vn_decode_simple_pointer(struct vn_cs *cs)
+vn_decode_simple_pointer(struct vn_cs_decoder *dec)
 {
-    return vn_decode_array_size(cs, 1);
+    return vn_decode_array_size(dec, 1);
 }
 </%def>

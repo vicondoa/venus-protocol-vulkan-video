@@ -33,7 +33,7 @@ static inline void vn_encode_${ty.name}(struct vn_cs *cs, VkCommandFlagsEXT cmd_
 </%def>
 
 <%def name="vn_decode_command_args_temp(ty)">\
-static inline void vn_decode_${ty.name}_args_temp(struct vn_cs *cs, struct vn_command_${ty.name} *args)
+static inline void vn_decode_${ty.name}_args_temp(struct vn_cs_decoder *dec, struct vn_command_${ty.name} *args)
 {
 % for var in ty.variables:
     ${GEN.decode_command_arg(ty, var, 'args->')}
@@ -74,10 +74,10 @@ static inline void vn_encode_${ty.name}_reply(struct vn_cs *cs, const struct vn_
 </%def>
 
 <%def name="vn_decode_command_reply(ty)">\
-static inline ${ty.c_func_ret()} vn_decode_${ty.name}_reply(struct vn_cs *cs, ${ty.c_func_params()})
+static inline ${ty.c_func_ret()} vn_decode_${ty.name}_reply(struct vn_cs_decoder *dec, ${ty.c_func_params()})
 {
     VkCommandTypeEXT command_type;
-    vn_decode_VkCommandTypeEXT(cs, &command_type);
+    vn_decode_VkCommandTypeEXT(dec, &command_type);
     assert(command_type == ${ty.attrs['c_type']});
 
 % if ty.ret:

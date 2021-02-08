@@ -28,15 +28,14 @@ static inline ${ty.c_func_ret()} vn_call_${ty.name}(struct vn_instance *vn_insta
     ${ty.ret.to_c()} = VK_ERROR_OUT_OF_HOST_MEMORY;
 %   endif
     if (likely(submitted)) {
-        struct vn_cs parser; /* TODO separate in/out support */
-        vn_cs_init(&parser, NULL, VK_SYSTEM_ALLOCATION_SCOPE_COMMAND, 0);
-        vn_cs_set_in_data(&parser, reply_ptr, reply_size);
+        struct vn_cs_decoder dec;
+        vn_cs_decoder_init(&dec, reply_ptr, reply_size);
 
         vn_instance_wait_cs_reply(vn_instance, reply_sync_val);
 %   if ty.ret:
-        ${ty.ret.name} = vn_decode_${ty.name}_reply(&parser, ${ty.c_func_args()});
+        ${ty.ret.name} = vn_decode_${ty.name}_reply(&dec, ${ty.c_func_args()});
 %   else:
-        vn_decode_${ty.name}_reply(&parser, ${ty.c_func_args()});
+        vn_decode_${ty.name}_reply(&dec, ${ty.c_func_args()});
 %   endif
         vn_instance_free_cs_reply_bo(vn_instance, reply_bo);
     } else if (reply_bo) {

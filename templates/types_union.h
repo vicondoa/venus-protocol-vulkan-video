@@ -52,7 +52,7 @@ vn_encode_${ty.name}_tag(struct vn_cs *cs, const ${ty.name} *val, uint32_t tag)
 
 <%def name="vn_decode_union_body(ty, variant='')">\
     uint32_t tag;
-    vn_decode_uint32_t(cs, &tag);
+    vn_decode_uint32_t(dec, &tag);
     switch (tag) {
 % for (i, var) in enumerate(ty.variables):
     case ${i}:
@@ -60,7 +60,7 @@ vn_encode_${ty.name}_tag(struct vn_cs *cs, const ${ty.name} *val, uint32_t tag)
         break;
 % endfor
     default:
-        vn_cs_set_error(cs);
+        vn_cs_set_error(dec);
         break;
     }
 </%def>
