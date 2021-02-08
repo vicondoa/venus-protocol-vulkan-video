@@ -45,7 +45,7 @@ vn_sizeof_${ty.name}_pnext${variant}(const void *val)
 
 <%def name="vn_encode_chain_pnext(ty, variant='')">\
 static inline void
-vn_encode_${ty.name}_pnext${variant}(struct vn_cs *cs, const void *val)
+vn_encode_${ty.name}_pnext${variant}(struct vn_cs_encoder *enc, const void *val)
 {
 <%
     next_types, skipped_types = GEN.get_chain(ty)
@@ -57,10 +57,10 @@ vn_encode_${ty.name}_pnext${variant}(struct vn_cs *cs, const void *val)
         switch ((int32_t)pnext->sType) {
 %   for next_ty in next_types:
         case ${next_ty.s_type}:
-            vn_encode_simple_pointer(cs, pnext);
-            vn_encode_VkStructureType(cs, &pnext->sType);
-            vn_encode_${ty.name}_pnext${variant}(cs, pnext->pNext);
-            vn_encode_${next_ty.name}_self${variant}(cs, (const ${next_ty.name} *)pnext);
+            vn_encode_simple_pointer(enc, pnext);
+            vn_encode_VkStructureType(enc, &pnext->sType);
+            vn_encode_${ty.name}_pnext${variant}(enc, pnext->pNext);
+            vn_encode_${next_ty.name}_self${variant}(enc, (const ${next_ty.name} *)pnext);
             return;
 %   endfor
 %   for skipped_ty in skipped_types:
@@ -76,7 +76,7 @@ vn_encode_${ty.name}_pnext${variant}(struct vn_cs *cs, const void *val)
 % else:
     /* no known/supported struct */
 % endif
-    vn_encode_simple_pointer(cs, NULL);
+    vn_encode_simple_pointer(enc, NULL);
 }
 </%def>
 
@@ -179,7 +179,7 @@ ${struct.vn_sizeof_struct_body(ty, '_self' + variant)}\
 
 <%def name="vn_encode_chain_self(ty, variant='')">\
 static inline void
-vn_encode_${ty.name}_self${variant}(struct vn_cs *cs, const ${ty.name} *val)
+vn_encode_${ty.name}_self${variant}(struct vn_cs_encoder *enc, const ${ty.name} *val)
 {
 ${struct.vn_encode_struct_body(ty, '_self' + variant)}\
 }
@@ -213,9 +213,9 @@ ${struct.vn_replace_struct_handle_body(ty, '_self')}\
 
 <%def name="vn_encode_chain_body(ty, variant='')">\
     assert(val->sType == ${ty.s_type});
-    vn_encode_VkStructureType(cs, &(VkStructureType){ ${ty.s_type} });
-    vn_encode_${ty.name}_pnext${variant}(cs, val->pNext);
-    vn_encode_${ty.name}_self${variant}(cs, val);
+    vn_encode_VkStructureType(enc, &(VkStructureType){ ${ty.s_type} });
+    vn_encode_${ty.name}_pnext${variant}(enc, val->pNext);
+    vn_encode_${ty.name}_self${variant}(enc, val);
 </%def>
 
 <%def name="vn_decode_chain_body(ty, variant='')">\

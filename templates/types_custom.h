@@ -15,10 +15,10 @@ vn_sizeof_size_t(const size_t *val)
 
 % endif
 static inline void
-vn_encode_size_t(struct vn_cs *cs, const size_t *val)
+vn_encode_size_t(struct vn_cs_encoder *enc, const size_t *val)
 {
     const uint64_t tmp = *val;
-    vn_encode_uint64_t(cs, &tmp);
+    vn_encode_uint64_t(enc, &tmp);
 }
 
 static inline void
@@ -38,13 +38,13 @@ vn_sizeof_size_t_array(const size_t *val, uint32_t count)
 
 % endif
 static inline void
-vn_encode_size_t_array(struct vn_cs *cs, const size_t *val, uint32_t count)
+vn_encode_size_t_array(struct vn_cs_encoder *enc, const size_t *val, uint32_t count)
 {
     if (sizeof(size_t) == sizeof(uint64_t)) {
-        vn_encode_uint64_t_array(cs, (const uint64_t *)val, count);
+        vn_encode_uint64_t_array(enc, (const uint64_t *)val, count);
     } else {
         for (uint32_t i = 0; i < count; i++)
-            vn_encode_size_t(cs, &val[i]);
+            vn_encode_size_t(enc, &val[i]);
     }
 }
 
@@ -72,9 +72,9 @@ vn_sizeof_blob_array(const void *val, size_t size)
 
 % endif
 static inline void
-vn_encode_blob_array(struct vn_cs *cs, const void *val, size_t size)
+vn_encode_blob_array(struct vn_cs_encoder *enc, const void *val, size_t size)
 {
-    vn_encode(cs, (size + 3) & ~3, val, size);
+    vn_encode(enc, (size + 3) & ~3, val, size);
 }
 
 static inline void
@@ -96,9 +96,9 @@ vn_sizeof_array_size(uint64_t size)
 
 % endif
 static inline void
-vn_encode_array_size(struct vn_cs *cs, uint64_t size)
+vn_encode_array_size(struct vn_cs_encoder *enc, uint64_t size)
 {
-    vn_encode_uint64_t(cs, &size);
+    vn_encode_uint64_t(enc, &size);
 }
 
 static inline uint64_t
@@ -132,9 +132,9 @@ vn_sizeof_simple_pointer(const void *val)
 
 % endif
 static inline bool
-vn_encode_simple_pointer(struct vn_cs *cs, const void *val)
+vn_encode_simple_pointer(struct vn_cs_encoder *enc, const void *val)
 {
-    vn_encode_array_size(cs, val ? 1 : 0);
+    vn_encode_array_size(enc, val ? 1 : 0);
     return val;
 }
 

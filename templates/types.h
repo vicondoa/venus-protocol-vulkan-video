@@ -49,7 +49,7 @@ ${chain.vn_sizeof_chain_body(ty)}\
 
 <%def name="vn_encode_type(ty)">\
 static inline void
-vn_encode_${ty.name}(struct vn_cs *cs, const ${ty.name} *val)
+vn_encode_${ty.name}(struct vn_cs_encoder *enc, const ${ty.name} *val)
 {
 % if ty.category in [ty.DEFAULT, ty.BASETYPE, ty.ENUM]:
 ${scalar.vn_encode_scalar_body(ty)}\
@@ -129,7 +129,7 @@ ${chain.vn_sizeof_chain_body(ty, '_partial')}\
 
 <%def name="vn_encode_type_partial(ty)">\
 static inline void
-vn_encode_${ty.name}_partial(struct vn_cs *cs, const ${ty.name} *val)
+vn_encode_${ty.name}_partial(struct vn_cs_encoder *enc, const ${ty.name} *val)
 {
 % if ty.category in [ty.DEFAULT, ty.BASETYPE, ty.ENUM]:
 ${scalar.vn_encode_scalar_body(ty)}\

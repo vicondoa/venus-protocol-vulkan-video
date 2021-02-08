@@ -11,7 +11,7 @@
 /*
  * These types/functions are expected
  *
- *   struct vn_cs
+ *   struct vn_cs_encoder
  *   vn_cs_reset
  *   vn_cs_set_error
  *   vn_cs_has_out
@@ -34,11 +34,11 @@
 #include "vn_cs.h"
 
 static inline void
-vn_encode(struct vn_cs *cs, size_t size, const void *data, size_t data_size)
+vn_encode(struct vn_cs_encoder *enc, size_t size, const void *data, size_t data_size)
 {
    assert(size % 4 == 0);
    /* TODO check if the generated code is optimal */
-   vn_cs_out(cs, size, data, data_size);
+   vn_cs_out(enc, size, data, data_size);
 }
 
 static inline void

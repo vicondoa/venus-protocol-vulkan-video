@@ -44,7 +44,8 @@ struct vn_dispatch_context {
     void (*debug_log)(struct vn_dispatch_context *ctx, const char *msg);
 
     union {
-	struct vn_cs *cs;
+        void *parser;
+        struct vn_cs_encoder *encoder;
         struct vn_cs_decoder *decoder;
     };
 

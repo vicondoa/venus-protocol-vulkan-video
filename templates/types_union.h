@@ -24,9 +24,9 @@ vn_sizeof_${ty.name}_tag(const ${ty.name} *val, uint32_t tag)
 
 <%def name="vn_encode_union_tag(ty)">\
 static inline void
-vn_encode_${ty.name}_tag(struct vn_cs *cs, const ${ty.name} *val, uint32_t tag)
+vn_encode_${ty.name}_tag(struct vn_cs_encoder *enc, const ${ty.name} *val, uint32_t tag)
 {
-    vn_encode_uint32_t(cs, &tag);
+    vn_encode_uint32_t(enc, &tag);
     switch (tag) {
 % for (i, var) in enumerate(ty.variables):
     case ${i}:
@@ -47,7 +47,7 @@ vn_encode_${ty.name}_tag(struct vn_cs *cs, const ${ty.name} *val, uint32_t tag)
 
 <%def name="vn_encode_union_body(ty)">\
 <% tag = GEN.UNION_DEFAULT_TAGS[ty.name] %>\
-    vn_encode_${ty.name}_tag(cs, val, ${tag}); /* union with default tag */
+    vn_encode_${ty.name}_tag(enc, val, ${tag}); /* union with default tag */
 </%def>
 
 <%def name="vn_decode_union_body(ty, variant='')">\

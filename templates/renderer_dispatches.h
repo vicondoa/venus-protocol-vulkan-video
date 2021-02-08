@@ -31,7 +31,7 @@ static inline void vn_dispatch_${ty.name}(struct vn_dispatch_context *ctx, VkCom
 % endif
 
     if (!vn_cs_has_error(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
-       vn_encode_${ty.name}_reply(ctx->cs, &args);
+       vn_encode_${ty.name}_reply(ctx->encoder, &args);
 
     vn_cs_reset_temp_pool(ctx->decoder);
 }

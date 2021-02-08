@@ -41,7 +41,7 @@ vn_decode_${ty.name}_lookup(struct vn_cs_decoder *dec, ${ty.name} *val)
     const bool in_place = ${is_handle_in_place(ty)};
     const uint64_t id = vn_cs_handle_load_id((const void *)val, in_place);
 % endif
-    vn_encode_uint64_t(cs, &id);
+    vn_encode_uint64_t(enc, &id);
 </%def>
 
 <%def name="vn_decode_handle_body(ty, variant='')">\

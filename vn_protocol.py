@@ -554,10 +554,10 @@ class Gen:
     def _encode_variable(self, info):
         if info.validity == info.INVALID:
             if info.will_handle_array_size() and not info.var.ty.is_array():
-                return 'vn_encode_array_size(cs, %s ? %s : 0); /* out */' % (
+                return 'vn_encode_array_size(enc, %s ? %s : 0); /* out */' % (
                         info._var_name(), info.array_size)
             elif info.var.ty.is_pointer():
-                return 'vn_encode_simple_pointer(cs, %s); /* out */' % info._var_name()
+                return 'vn_encode_simple_pointer(enc, %s); /* out */' % info._var_name()
             else:
                 return '/* skip %s */' % info._var_name()
 
@@ -566,14 +566,14 @@ class Gen:
             code += 'if (%s) {\n    ' % info._var_name()
             code += '    %s\n    ' % info.code(2).strip()
             code += '} else {\n    '
-            code += '    vn_encode_array_size(cs, 0);\n    '
+            code += '    vn_encode_array_size(enc, 0);\n    '
             code += '}'
         elif info.var.ty.is_pointer() and info.need_bracket():
-            code += 'if (vn_encode_simple_pointer(cs, %s)) {\n    ' % info._var_name()
+            code += 'if (vn_encode_simple_pointer(enc, %s)) {\n    ' % info._var_name()
             code += '    %s\n    ' % info.code(2).strip()
             code += '}'
         elif info.var.ty.is_pointer():
-            code += 'if (vn_encode_simple_pointer(cs, %s))\n    ' % info._var_name()
+            code += 'if (vn_encode_simple_pointer(enc, %s))\n    ' % info._var_name()
             code += '    %s' % info.code(2).strip()
         else:
             code += info.code(1).strip()
@@ -677,11 +677,11 @@ class Gen:
 
         # encode array sizes
         for loop_count in info.loop_counts:
-            stmt = 'vn_encode_array_size(cs, %s)' % loop_count
+            stmt = 'vn_encode_array_size(enc, %s)' % loop_count
             info.loop_extra_stmts.append(stmt)
         if info.array_size:
             info.func_extra_stmt = \
-                    'vn_encode_array_size(cs, %s)' % info.array_size
+                    'vn_encode_array_size(enc, %s)' % info.array_size
 
         # nothing to encode
         if validity == info.INVALID:
@@ -691,7 +691,7 @@ class Gen:
         if validity == info.PARTIAL and var.ty.base.category == ty.STRUCT:
             func_name += '_partial'
 
-        info.func_stmt = '%s(cs, %s)' % (func_name, info.func_args(False))
+        info.func_stmt = '%s(enc, %s)' % (func_name, info.func_args(False))
 
         return info
 

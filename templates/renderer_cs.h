@@ -11,7 +11,7 @@
 /*
  * These types/functions are expected
  *
- *   struct vn_cs
+ *   struct vn_cs_encoder
  *   vn_cs_out
  *
  *   struct vn_cs_decoder
@@ -31,15 +31,15 @@
  */
 #include "vkr_parser.h"
 
-struct vn_cs;
+struct vn_cs_encoder;
 struct vn_cs_decoder;
 
 typedef vkr_parser_object_id vn_object_id;
 
 static inline void
-vn_cs_out(struct vn_cs *cs, size_t size, const void *val, size_t val_size)
+vn_cs_out(struct vn_cs_encoder *enc, size_t size, const void *val, size_t val_size)
 {
-   struct vkr_parser *parser = (struct vkr_parser *)cs;
+   struct vkr_parser *parser = (struct vkr_parser *)enc;
    vkr_parser_reply(parser, size, val, val_size);
 }
 
@@ -120,12 +120,12 @@ vn_cs_handle_store_id(void *vk_handle, vn_object_id id, bool in_place)
 }
 
 static inline void
-vn_encode(struct vn_cs *cs, size_t size, const void *data, size_t data_size)
+vn_encode(struct vn_cs_encoder *enc, size_t size, const void *data, size_t data_size)
 {
    assert(size % 4 == 0);
    /* no vn_cs_reserve_out; vn_cs_out must do size check */
    /* TODO check if the generated code is optimal */
-   vn_cs_out(cs, size, data, data_size);
+   vn_cs_out(enc, size, data, data_size);
 }
 
 static inline void
