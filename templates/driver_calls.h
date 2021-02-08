@@ -17,7 +17,7 @@ static inline ${ty.c_func_ret()} vn_call_${ty.name}(struct vn_instance *vn_insta
     /* encode and submit */
     struct vn_cs_encoder *enc = vn_instance_lock_cs(vn_instance);
     reply_bo = vn_instance_get_cs_reply_bo_locked(vn_instance, reply_size, &reply_ptr);
-    if (likely(reply_bo && vn_cs_reserve_out(enc, cmd_size))) {
+    if (likely(reply_bo && vn_cs_encoder_reserve(enc, cmd_size))) {
         vn_encode_${ty.name}(enc, cmd_flags, ${ty.c_func_args()});
         submitted = vn_instance_submit_cs_locked(vn_instance, reply_bo, &reply_sync_val);
     }
@@ -55,7 +55,7 @@ static inline void vn_async_${ty.name}(struct vn_instance *vn_instance, ${ty.c_f
     const VkCommandFlagsEXT cmd_flags = 0;
 
     struct vn_cs_encoder *enc = vn_instance_lock_cs(vn_instance);
-    if (vn_cs_reserve_out(enc, cmd_size))
+    if (vn_cs_encoder_reserve(enc, cmd_size))
         vn_encode_${ty.name}(enc, cmd_flags, ${ty.c_func_args()});
 % if ty.name in ['vkCreateGraphicsPipelines', 'vkCreateComputePipelines']:
 
@@ -71,7 +71,7 @@ static inline void vn_async_${ty.name}(struct vn_instance *vn_instance, ${ty.c_f
     }
 
 % endif
-    if (vn_cs_get_out_len(enc) > vn_instance->cs_implicit_flush_threshold)
+    if (vn_cs_encoder_get_len(enc) > vn_instance->cs_implicit_flush_threshold)
         vn_instance_submit_cs_locked(vn_instance, NULL, NULL);
     vn_instance_unlock_cs(vn_instance);
 % if ty.name in ['vkCreateGraphicsPipelines', 'vkCreateComputePipelines']:

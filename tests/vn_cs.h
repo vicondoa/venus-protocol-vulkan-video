@@ -15,48 +15,20 @@ typedef uint64_t vn_object_id;
 struct vn_cs_encoder;
 struct vn_cs_decoder;
 
-static inline void
-vn_cs_reset(struct vn_cs_encoder *cs)
+static inline size_t
+vn_cs_encoder_get_len(const struct vn_cs_encoder *enc)
 {
-}
-
-static inline void
-vn_cs_set_error(struct vn_cs_encoder *cs)
-{
+    return 0;
 }
 
 static inline bool
-vn_cs_has_out(const struct vn_cs_encoder *cs)
-{
-    return true;
-}
-
-static inline bool
-vn_cs_reserve_out(struct vn_cs_encoder *cs, size_t size)
+vn_cs_encoder_reserve(struct vn_cs_encoder *cs, size_t size)
 {
     return true;
 }
 
 static inline void
-vn_cs_out(struct vn_cs_encoder *cs, size_t size, const void *val, size_t val_size)
-{
-}
-
-static inline void
-vn_cs_out_begin_reply_stream(struct vn_cs_encoder *cs)
-{
-}
-
-static inline void
-vn_cs_out_end_reply_stream(struct vn_cs_encoder *cs,
-                           uint32_t res_id,
-                           size_t offset,
-                           size_t size)
-{
-}
-
-static inline void
-vn_cs_end_out(struct vn_cs_encoder *cs)
+vn_cs_encoder_write(struct vn_cs_encoder *cs, size_t size, const void *val, size_t val_size)
 {
 }
 

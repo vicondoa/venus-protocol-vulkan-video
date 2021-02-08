@@ -12,14 +12,9 @@
  * These types/functions are expected
  *
  *   struct vn_cs_encoder
- *   vn_cs_reset
- *   vn_cs_set_error
- *   vn_cs_has_out
- *   vn_cs_reserve_out
- *   vn_cs_out
- *   vn_cs_out_begin_reply_stream
- *   vn_cs_out_end_reply_stream
- *   vn_cs_end_out
+ *   vn_cs_encoder_get_len
+ *   vn_cs_encoder_reserve
+ *   vn_cs_encoder_write
  *
  *   struct vn_cs_decoder
  *   vn_cs_decoder_set_fatal
@@ -38,7 +33,7 @@ vn_encode(struct vn_cs_encoder *enc, size_t size, const void *data, size_t data_
 {
    assert(size % 4 == 0);
    /* TODO check if the generated code is optimal */
-   vn_cs_out(enc, size, data, data_size);
+   vn_cs_encoder_write(enc, size, data, data_size);
 }
 
 static inline void
