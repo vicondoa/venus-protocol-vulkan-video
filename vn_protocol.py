@@ -394,7 +394,7 @@ class Gen:
             if not alloc_counts:
                 var_name = self._var_name()
                 deref = self._var_deref()
-                stmt = '%s = vn_cs_alloc_temp(dec, sizeof(%s%s))' % (
+                stmt = '%s = vn_cs_decoder_alloc_temp(dec, sizeof(%s%s))' % (
                         var_name, deref, var_name)
                 self.func_alloc_stmt = stmt
                 return
@@ -406,7 +406,7 @@ class Gen:
                 else:
                     size = 'sizeof(*%s) * %s' % (self._var_name(level), count)
 
-                stmt = '%s = vn_cs_alloc_temp(dec, %s)' % (
+                stmt = '%s = vn_cs_decoder_alloc_temp(dec, %s)' % (
                         self._var_name(level, level > 0), size)
                 alloc_stmts.append(stmt)
 

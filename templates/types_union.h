@@ -60,7 +60,7 @@ vn_encode_${ty.name}_tag(struct vn_cs_encoder *enc, const ${ty.name} *val, uint3
         break;
 % endfor
     default:
-        vn_cs_set_error(dec);
+        vn_cs_decoder_set_fatal(dec);
         break;
     }
 </%def>

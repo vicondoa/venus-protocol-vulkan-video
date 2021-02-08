@@ -16,11 +16,10 @@
  *
  *   struct vn_cs_decoder
  *   vn_cs_decoder_set_fatal
- *   vn_cs_set_error
- *   vn_cs_has_error
- *   vn_cs_lookup_object
- *   vn_cs_reset_temp_pool
- *   vn_cs_alloc_temp
+ *   vn_cs_decoder_get_fatal
+ *   vn_cs_decoder_lookup_object
+ *   vn_cs_decoder_reset_temp_pool
+ *   vn_cs_decoder_alloc_temp
  *   vn_cs_decoder_read
  *   vn_cs_decoder_peek
  *
@@ -50,36 +49,29 @@ vn_cs_decoder_set_fatal(struct vn_cs_decoder *dec)
    vkr_parser_set_error(parser);
 }
 
-static inline void
-vn_cs_set_error(struct vn_cs_decoder *dec)
-{
-   struct vkr_parser *parser = (struct vkr_parser *)dec;
-   vkr_parser_set_error(parser);
-}
-
 static inline bool
-vn_cs_has_error(const struct vn_cs_decoder *dec)
+vn_cs_decoder_get_fatal(const struct vn_cs_decoder *dec)
 {
    struct vkr_parser *parser = (struct vkr_parser *)dec;
    return vkr_parser_has_error(parser);
 }
 
 static inline void *
-vn_cs_lookup_object(struct vn_cs_decoder *dec, vn_object_id id)
+vn_cs_decoder_lookup_object(struct vn_cs_decoder *dec, vn_object_id id)
 {
    struct vkr_parser *parser = (struct vkr_parser *)dec;
    return vkr_parser_lookup_object(parser, id);
 }
 
 static inline void
-vn_cs_reset_temp_pool(struct vn_cs_decoder *dec)
+vn_cs_decoder_reset_temp_pool(struct vn_cs_decoder *dec)
 {
    struct vkr_parser *parser = (struct vkr_parser *)dec;
    vkr_parser_reset_temp_pool(parser);
 }
 
 static inline void *
-vn_cs_alloc_temp(struct vn_cs_decoder *dec, size_t size)
+vn_cs_decoder_alloc_temp(struct vn_cs_decoder *dec, size_t size)
 {
    struct vkr_parser *parser = (struct vkr_parser *)dec;
    return vkr_parser_alloc_temp(parser, size);

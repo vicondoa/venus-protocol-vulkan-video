@@ -141,7 +141,7 @@ vn_decode_${ty.name}_pnext${variant}_temp(struct vn_cs_decoder *dec)
     switch ((int32_t)stype) {
 %   for next_ty in next_types:
     case ${next_ty.s_type}:
-        pnext = vn_cs_alloc_temp(dec, sizeof(${next_ty.name}));
+        pnext = vn_cs_decoder_alloc_temp(dec, sizeof(${next_ty.name}));
         if (pnext) {
             pnext->sType = stype;
             pnext->pNext = vn_decode_${ty.name}_pnext${variant}_temp(dec);
@@ -155,7 +155,7 @@ vn_decode_${ty.name}_pnext${variant}_temp(struct vn_cs_decoder *dec)
     default:
         /* unexpected struct */
         pnext = NULL;
-        vn_cs_set_error(dec);
+        vn_cs_decoder_set_fatal(dec);
         break;
     }
 
@@ -163,7 +163,7 @@ vn_decode_${ty.name}_pnext${variant}_temp(struct vn_cs_decoder *dec)
 % else:
     /* no known/supported struct */
     if (vn_decode_simple_pointer(dec))
-        vn_cs_set_error(dec);
+        vn_cs_decoder_set_fatal(dec);
     return NULL;
 % endif
 }
