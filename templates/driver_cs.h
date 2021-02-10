@@ -21,10 +21,8 @@
  *   vn_cs_decoder_read
  *   vn_cs_decoder_peek
  *
- *   vn_cs_object_load_id
- *   vn_cs_object_store_id
- *   vn_cs_device_load_id
- *   vn_cs_device_store_id
+ *   vn_cs_handle_load_id
+ *   vn_cs_handle_store_id
  */
 #include "vn_cs.h"
 

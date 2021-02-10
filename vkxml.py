@@ -737,6 +737,17 @@ class VkApi:
         self._post_parse_init()
         self._validate()
 
+    def upper_name(self, name):
+        suffix = ''
+        for tag in self.tags:
+            if name.endswith(tag):
+                name = name.removesuffix(tag)
+                suffix = '_' + tag
+                break
+
+        underscore = "".join([c if c.islower() else '_' + c for c in name])
+        return underscore.lstrip('_').upper() + suffix
+
     def _parse_xml(self, xml):
         tree = ET.parse(xml)
         root = tree.getroot()

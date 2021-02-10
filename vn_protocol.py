@@ -180,6 +180,9 @@ class Gen:
                         if v and 'var_out' in v.attrs:
                             v.attrs['var_in'] = var
                             v.attrs['var_out'] = var
+            elif ty.category == ty.HANDLE:
+                objtype = 'VK_OBJECT_TYPE_' + self.api.upper_name(ty.name[2:])
+                ty.attrs['c_objtype'] = objtype
 
             self._set_type_needs(ty)
 
