@@ -48,13 +48,13 @@ vn_cs_decoder_peek(struct vn_cs_decoder *dec, void *val, size_t val_size)
 }
 
 static inline vn_object_id
-vn_cs_handle_load_id(const void *handle, VkObjectType type)
+vn_cs_handle_load_id(const void **handle, VkObjectType type)
 {
     return 0;
 }
 
 static inline void
-vn_cs_handle_store_id(void *handle, vn_object_id id, VkObjectType type)
+vn_cs_handle_store_id(void **handle, vn_object_id id, VkObjectType type)
 {
 }
 
