@@ -43,11 +43,8 @@ struct vn_dispatch_context {
     void *data;
     void (*debug_log)(struct vn_dispatch_context *ctx, const char *msg);
 
-    union {
-        void *parser;
-        struct vn_cs_encoder *encoder;
-        struct vn_cs_decoder *decoder;
-    };
+    struct vn_cs_encoder *encoder;
+    struct vn_cs_decoder *decoder;
 
 % for ty in COMMAND_TYPES:
     void (*dispatch_${ty.name})(struct vn_dispatch_context *ctx, struct vn_command_${ty.name} *args);

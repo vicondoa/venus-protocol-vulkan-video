@@ -19,49 +19,6 @@ struct vkr_object {
 struct vkr_parser;
 
 static inline void
-vkr_parser_set_error(struct vkr_parser *parser)
-{
-}
-
-static inline bool
-vkr_parser_has_error(const struct vkr_parser *parser)
-{
-    return false;
-}
-
-static inline struct vkr_object *
-vkr_parser_lookup_object(struct vkr_parser *parser, vkr_object_id id)
-{
-    return NULL;
-}
-
-static inline void
-vkr_parser_reset_temp_pool(struct vkr_parser *parser)
-{
-}
-
-static inline void *
-vkr_parser_alloc_temp(struct vkr_parser *parser, size_t size)
-{
-    return NULL;
-}
-
-static inline void
-vkr_parser_peek(struct vkr_parser *parser,
-                void *val,
-                size_t val_size)
-{
-}
-
-static inline void
-vkr_parser_read(struct vkr_parser *parser,
-                size_t size,
-                void *val,
-                size_t val_size)
-{
-}
-
-static inline void
 vkr_parser_reply(struct vkr_parser *parser,
                  size_t size,
                  const void *val,

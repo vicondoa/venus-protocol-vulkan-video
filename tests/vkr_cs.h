@@ -1,0 +1,61 @@
+/*
+ * Copyright 2021 Google LLC
+ * SPDX-License-Identifier: MIT
+ */
+
+#ifndef VKR_CS_H
+#define VKR_CS_H
+
+#include <stdbool.h>
+#include <stdint.h>
+#include <stdlib.h>
+
+#include "vkr_parser.h"
+
+struct vkr_cs_decoder;
+
+static inline void
+vkr_cs_decoder_set_fatal(const struct vkr_cs_decoder *dec)
+{
+}
+
+static inline bool
+vkr_cs_decoder_get_fatal(const struct vkr_cs_decoder *dec)
+{
+   return false;
+}
+
+static inline void
+vkr_cs_decoder_read(struct vkr_cs_decoder *dec,
+                    size_t size,
+                    void *val,
+                    size_t val_size)
+{
+}
+
+static inline void
+vkr_cs_decoder_peek(const struct vkr_cs_decoder *dec,
+                    void *val,
+                    size_t val_size)
+{
+}
+
+static inline struct vkr_object *
+vkr_cs_decoder_lookup_object(const struct vkr_cs_decoder *dec,
+                             vkr_object_id id)
+{
+    return NULL;
+}
+
+static inline void
+vkr_cs_decoder_reset_temp_pool(struct vkr_cs_decoder *dec)
+{
+}
+
+static inline void *
+vkr_cs_decoder_alloc_temp(struct vkr_cs_decoder *dec, size_t size)
+{
+    return NULL;
+}
+
+#endif /* VKR_CS_H */
