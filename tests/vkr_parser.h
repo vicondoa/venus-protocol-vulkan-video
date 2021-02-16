@@ -12,7 +12,7 @@
 
 typedef uint64_t vkr_object_id;
 
-struct vkr_parser_object {
+struct vkr_object {
     uint64_t handle;
 };
 
@@ -29,7 +29,7 @@ vkr_parser_has_error(const struct vkr_parser *parser)
     return false;
 }
 
-static inline struct vkr_parser_object *
+static inline struct vkr_object *
 vkr_parser_lookup_object(struct vkr_parser *parser, vkr_object_id id)
 {
     return NULL;
