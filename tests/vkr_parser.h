@@ -10,7 +10,7 @@
 #include "stdint.h"
 #include "stdlib.h"
 
-typedef uint64_t vkr_parser_object_id;
+typedef uint64_t vkr_object_id;
 
 struct vkr_parser_object {
     uint64_t handle;
@@ -30,7 +30,7 @@ vkr_parser_has_error(const struct vkr_parser *parser)
 }
 
 static inline struct vkr_parser_object *
-vkr_parser_lookup_object(struct vkr_parser *parser, vkr_parser_object_id id)
+vkr_parser_lookup_object(struct vkr_parser *parser, vkr_object_id id)
 {
     return NULL;
 }
@@ -70,11 +70,11 @@ vkr_parser_reply(struct vkr_parser *parser,
 }
 
 static inline void
-vkr_parser_handle_store_id(void *vk_handle, vkr_parser_object_id id, bool in_place)
+vkr_parser_handle_store_id(void *vk_handle, vkr_object_id id, bool in_place)
 {
 }
 
-static inline vkr_parser_object_id
+static inline vkr_object_id
 vkr_parser_handle_load_id(const void *vk_handle, bool in_place)
 {
     return 0;
