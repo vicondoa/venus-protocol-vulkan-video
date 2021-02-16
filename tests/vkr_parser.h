@@ -16,16 +16,6 @@ struct vkr_object {
     uint64_t handle;
 };
 
-struct vkr_parser;
-
-static inline void
-vkr_parser_reply(struct vkr_parser *parser,
-                 size_t size,
-                 const void *val,
-                 size_t val_size)
-{
-}
-
 static inline void
 vkr_parser_handle_store_id(void *vk_handle, vkr_object_id id, bool in_place)
 {

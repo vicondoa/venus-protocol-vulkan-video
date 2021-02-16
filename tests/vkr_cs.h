@@ -12,7 +12,16 @@
 
 #include "vkr_parser.h"
 
+struct vkr_cs_encoder;
 struct vkr_cs_decoder;
+
+static inline void
+vkr_cs_encoder_write(struct vkr_cs_encoder *enc,
+                     size_t size,
+                     const void *val,
+                     size_t val_size)
+{
+}
 
 static inline void
 vkr_cs_decoder_set_fatal(const struct vkr_cs_decoder *dec)
