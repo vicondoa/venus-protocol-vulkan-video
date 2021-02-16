@@ -741,7 +741,7 @@ class VkApi:
         suffix = ''
         for tag in self.tags:
             if name.endswith(tag):
-                name = name.removesuffix(tag)
+                name = name[:-len(tag)]
                 suffix = '_' + tag
                 break
 
