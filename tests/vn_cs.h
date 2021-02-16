@@ -10,6 +10,8 @@
 #include <stdint.h>
 #include <stdlib.h>
 
+#include <vulkan/vulkan.h>
+
 typedef uint64_t vn_object_id;
 
 struct vn_cs_encoder;

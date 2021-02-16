@@ -3,11 +3,6 @@
  * SPDX-License-Identifier: MIT
  */
 
-<%def name="is_handle_in_place(ty)">\
-<% assert(not GEN.is_driver) %>\
-sizeof(*val) >= sizeof(vn_object_id)\
-</%def>
-
 <%def name="vn_decode_handle_lookup(ty)">\
 <% assert(not GEN.is_driver) %>\
 static inline void
@@ -28,38 +23,24 @@ vn_decode_${ty.name}_lookup(struct vn_cs_decoder *dec, ${ty.name} *val)
 </%def>
 
 <%def name="vn_encode_handle_body(ty)">\
-% if GEN.is_driver:
     const uint64_t id = vn_cs_handle_load_id((const void **)val, ${ty.attrs['c_objtype']});
-% else:
-    const bool in_place = ${is_handle_in_place(ty)};
-    const uint64_t id = vn_cs_handle_load_id((const void *)val, in_place);
-% endif
     vn_encode_uint64_t(enc, &id);
 </%def>
 
 <%def name="vn_decode_handle_body(ty, variant='')">\
     uint64_t id;
     vn_decode_uint64_t(dec, &id);
-% if GEN.is_driver:
-    vn_cs_handle_store_id((void **)val, id, ${ty.attrs['c_objtype']});
-% else:
-    const bool in_place = ${is_handle_in_place(ty)};
-%   if '_temp' in variant:
-    if (!in_place) {
+% if '_temp' in variant:
+    if (vn_cs_handle_indirect_id(${ty.attrs['c_objtype']})) {
         *val = vn_cs_decoder_alloc_temp(dec, sizeof(vn_object_id));
         if (!val)
             return;
     }
-%   endif
-    vn_cs_handle_store_id((void *)val, id, in_place);
 % endif
+    vn_cs_handle_store_id((void **)val, id, ${ty.attrs['c_objtype']});
 </%def>
 
 <%def name="vn_replace_handle_handle_body(ty)">\
 <% assert(not GEN.is_driver) %>\
-% if ty.dispatchable:
-    *val = (${ty.name})(uintptr_t)vn_cs_get_object_handle(val);
-% else:
-    *val = (${ty.name})vn_cs_get_object_handle(val);
-% endif
+    *val = (${ty.name})(uintptr_t)vn_cs_get_object_handle((const void **)val, ${ty.attrs['c_objtype']});
 </%def>

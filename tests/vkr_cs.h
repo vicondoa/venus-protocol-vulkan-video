@@ -10,10 +10,16 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-#include "vkr_parser.h"
+#include <vulkan/vulkan.h>
 
 struct vkr_cs_encoder;
 struct vkr_cs_decoder;
+
+typedef uint64_t vkr_object_id;
+
+struct vkr_object {
+    uint64_t handle;
+};
 
 static inline void
 vkr_cs_encoder_write(struct vkr_cs_encoder *enc,
@@ -65,6 +71,25 @@ static inline void *
 vkr_cs_decoder_alloc_temp(struct vkr_cs_decoder *dec, size_t size)
 {
     return NULL;
+}
+
+static inline bool
+vkr_cs_handle_indirect_id(VkObjectType type)
+{
+    return true;
+}
+
+static inline vkr_object_id
+vkr_cs_handle_load_id(const void **handle, VkObjectType type)
+{
+    return 0;
+}
+
+static inline void
+vkr_cs_handle_store_id(void **handle,
+                       vkr_object_id id,
+                       VkObjectType type)
+{
 }
 
 #endif /* VKR_CS_H */
