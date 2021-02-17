@@ -42,5 +42,9 @@ vn_decode_${ty.name}_lookup(struct vn_cs_decoder *dec, ${ty.name} *val)
 
 <%def name="vn_replace_handle_handle_body(ty)">\
 <% assert(not GEN.is_driver) %>\
+% if ty.dispatchable:
     *val = (${ty.name})(uintptr_t)vn_cs_get_object_handle((const void **)val, ${ty.attrs['c_objtype']});
+% else:
+    *val = (${ty.name})vn_cs_get_object_handle((const void **)val, ${ty.attrs['c_objtype']});
+% endif
 </%def>
