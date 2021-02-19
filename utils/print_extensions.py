@@ -49,15 +49,14 @@ def main():
 
         print(key)
         for ext in exts[key]:
-            line = '    Extension(\'%s\', ' % ext.name
-            ver = str(ext.version)
-            pad = 59 - (len(line) + len(ver))
+            line = '      .%s = true, ' % ext.name
+            pad = 59 - len(line)
             if pad > 0:
                 line += ' ' * pad
-            line += ver
-            line += ', False),'
+            line += '/* specVersion ' + str(ext.version)
             if ext.platform:
-                line += ' # %s' % ext.platform
+                line += ', %s' % ext.platform
+            line += ' */'
 
             print(line)
 
