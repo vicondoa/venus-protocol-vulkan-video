@@ -261,6 +261,9 @@ virtualization or remoting, and are not exposed to applications.
         <enum value="178"   name="VK_COMMAND_TYPE_vkSetReplyCommandStreamMESA_EXT"/>
         <enum value="179"   name="VK_COMMAND_TYPE_vkSeekReplyCommandStreamMESA_EXT"/>
         <enum value="180"   name="VK_COMMAND_TYPE_vkExecuteCommandStreamsMESA_EXT"/>
+        <enum value="188"   name="VK_COMMAND_TYPE_vkCreateRingMESA_EXT"/>
+        <enum value="189"   name="VK_COMMAND_TYPE_vkDestroyRingMESA_EXT"/>
+        <enum value="190"   name="VK_COMMAND_TYPE_vkNotifyRingMESA_EXT"/>
     </enums>
 
     <enums name="VkCommandFlagBitsEXT" type="bitmask">

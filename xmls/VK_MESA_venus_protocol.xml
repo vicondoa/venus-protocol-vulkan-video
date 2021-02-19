@@ -14,8 +14,12 @@ renderer, and are not exposed to applications.
 
     <types>
         <type requires="VkCommandStreamExecutionFlagBitsMESA" category="bitmask">typedef <type>VkFlags</type> <name>VkCommandStreamExecutionFlagsMESA</name>;</type>
+        <type requires="VkRingCreateFlagBitsMESA" category="bitmask">typedef <type>VkFlags</type> <name>VkRingCreateFlagsMESA</name>;</type>
+        <type requires="VkRingNotifyFlagBitsMESA" category="bitmask">typedef <type>VkFlags</type> <name>VkRingNotifyFlagsMESA</name>;</type>
 
         <type name="VkCommandStreamExecutionFlagBitsMESA" category="enum"/>
+        <type name="VkRingCreateFlagBitsMESA" category="enum"/>
+        <type name="VkRingNotifyFlagBitsMESA" category="enum"/>
 
         <type category="struct" name="VkCommandStreamDescriptionMESA">
             <member><type>uint32_t</type>                         <name>resourceId</name></member>
@@ -26,9 +30,30 @@ renderer, and are not exposed to applications.
             <member><type>uint32_t</type>                         <name>srcCommandStream</name></member>
             <member><type>uint32_t</type>                         <name>dstCommandStream</name></member>
         </type>
+
+        <type category="struct" name="VkRingCreateInfoMESA">
+            <member values="VK_STRUCTURE_TYPE_RING_CREATE_INFO_MESA"><type>VkStructureType</type> <name>sType</name></member>
+            <member optional="true">const <type>void</type>*      <name>pNext</name></member>
+            <member optional="true"><type>VkRingCreateFlagsMESA</type> <name>flags</name></member>
+            <member><type>uint32_t</type>                         <name>resourceId</name></member>
+            <member><type>size_t</type>                           <name>offset</name></member>
+            <member><type>size_t</type>                           <name>size</name></member>
+            <member><type>uint64_t</type>                         <name>idleTimeout</name></member>
+            <member><type>size_t</type>                           <name>headOffset</name></member>
+            <member><type>size_t</type>                           <name>tailOffset</name></member>
+            <member><type>size_t</type>                           <name>statusOffset</name></member>
+            <member><type>size_t</type>                           <name>bufferOffset</name></member>
+            <member><type>size_t</type>                           <name>bufferSize</name></member>
+            <member><type>size_t</type>                           <name>extraOffset</name></member>
+            <member><type>size_t</type>                           <name>extraSize</name></member>
+        </type>
     </types>
 
     <enums name="VkCommandStreamExecutionFlagBits" type="bitmask">
+    </enums>
+    <enums name="VkRingCreateFlagBits" type="bitmask">
+    </enums>
+    <enums name="VkRingNotifyFlagBits" type="bitmask">
     </enums>
 
     <commands>
@@ -36,7 +61,6 @@ renderer, and are not exposed to applications.
             <proto><type>void</type> <name>vkSetReplyCommandStreamMESA</name></proto>
             <param>const <type>VkCommandStreamDescriptionMESA</type>* <name>pStream</name></param>
         </command>
-
         <command>
             <proto><type>void</type> <name>vkSeekReplyCommandStreamMESA</name></proto>
             <param><type>size_t</type> <name>position</name></param>
@@ -51,6 +75,22 @@ renderer, and are not exposed to applications.
             <param len="dependencyCount">const <type>VkCommandStreamDependencyMESA</type>* <name>pDependencies</name></param>
             <param optional="true"><type>VkCommandStreamExecutionFlagsMESA</type> <name>flags</name></param>
         </command>
+
+        <command>
+            <proto><type>void</type> <name>vkCreateRingMESA</name></proto>
+            <param><type>uint64_t</type><name>ring</name></param>
+            <param>const <type>VkRingCreateInfoMESA</type>* <name>pCreateInfo</name></param>
+        </command>
+        <command>
+            <proto><type>void</type> <name>vkDestroyRingMESA</name></proto>
+            <param><type>uint64_t</type> <name>ring</name></param>
+        </command>
+        <command>
+            <proto><type>void</type> <name>vkNotifyRingMESA</name></proto>
+            <param><type>uint64_t</type> <name>ring</name></param>
+            <param><type>uint32_t</type> <name>seqno</name></param>
+            <param optional="true"><type>VkRingNotifyFlagsMESA</type> <name>flags</name></param>
+        </command>
     </commands>
 
     <extensions>
@@ -58,13 +98,22 @@ renderer, and are not exposed to applications.
             <require>
                 <enum value="0"                                             name="VK_MESA_VENUS_PROTOCOL_SPEC_VERSION"/>
                 <enum value="&quot;VK_MESA_venus_protocol&quot;"            name="VK_MESA_VENUS_PROTOCOL_EXTENSION_NAME"/>
+                <enum offset="0" extends="VkStructureType"                  name="VK_STRUCTURE_TYPE_RING_CREATE_INFO_MESA"/>
                 <type name="VkCommandStreamExecutionFlagBitsMESA"/>
                 <type name="VkCommandStreamExecutionFlagsMESA"/>
+                <type name="VkRingCreateFlagBitsMESA"/>
+                <type name="VkRingCreateFlagsMESA"/>
+                <type name="VkRingNotifyFlagBitsMESA"/>
+                <type name="VkRingNotifyFlagsMESA"/>
                 <type name="VkCommandStreamDescriptionMESA"/>
                 <type name="VkCommandStreamDependencyMESA"/>
+                <type name="VkRingCreateInfoMESA"/>
                 <command name="vkSetReplyCommandStreamMESA"/>
                 <command name="vkSeekReplyCommandStreamMESA"/>
                 <command name="vkExecuteCommandStreamsMESA"/>
+                <command name="vkCreateRingMESA"/>
+                <command name="vkDestroyRingMESA"/>
+                <command name="vkNotifyRingMESA"/>
             </require>
         </extension>
     </extensions>
