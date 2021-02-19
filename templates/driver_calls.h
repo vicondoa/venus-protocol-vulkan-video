@@ -12,14 +12,14 @@ static inline ${ty.c_func_ret()} vn_call_${ty.name}(struct vn_instance *vn_insta
     bool submitted = false;
     struct vn_renderer_bo *reply_bo;
     void *reply_ptr;
-    uint64_t reply_sync_val;
+    uint32_t ring_seqno;
 
     /* encode and submit */
     struct vn_cs_encoder *enc = vn_instance_lock_cs(vn_instance);
     reply_bo = vn_instance_get_cs_reply_bo_locked(vn_instance, reply_size, &reply_ptr);
     if (likely(reply_bo && vn_cs_encoder_reserve(enc, cmd_size))) {
         vn_encode_${ty.name}(enc, cmd_flags, ${ty.c_func_args()});
-        submitted = vn_instance_submit_cs_locked(vn_instance, reply_bo, &reply_sync_val);
+        submitted = vn_instance_submit_cs_locked(vn_instance, reply_bo, &ring_seqno);
     }
     vn_instance_unlock_cs(vn_instance);
 
@@ -31,7 +31,7 @@ static inline ${ty.c_func_ret()} vn_call_${ty.name}(struct vn_instance *vn_insta
         struct vn_cs_decoder dec;
         vn_cs_decoder_init(&dec, reply_ptr, reply_size);
 
-        vn_instance_wait_cs_reply(vn_instance, reply_sync_val);
+        vn_instance_wait_cs_reply(vn_instance, ring_seqno);
 %   if ty.ret:
         ${ty.ret.name} = vn_decode_${ty.name}_reply(&dec, ${ty.c_func_args()});
 %   else:
@@ -60,14 +60,14 @@ static inline void vn_async_${ty.name}(struct vn_instance *vn_instance, ${ty.c_f
 % if ty.name in ['vkCreateGraphicsPipelines', 'vkCreateComputePipelines']:
 
     bool throttle = false;
-    uint64_t throttle_sync_val;
+    uint32_t throttle_ring_seqno;
     vn_instance->cs_throttle_pipeline_count += createInfoCount;
     if (vn_instance->cs_throttle_pipeline_count >
         vn_instance->cs_throttle_pipeline_threshold) {
         /* TODO refactor vn_instance_submit_cs_locked */
         assert(vn_instance->cs_reply.bo);
         throttle = vn_instance_submit_cs_locked(vn_instance,
-                vn_instance->cs_reply.bo, &throttle_sync_val);
+                vn_instance->cs_reply.bo, &throttle_ring_seqno);
     }
 
 % endif
@@ -77,7 +77,7 @@ static inline void vn_async_${ty.name}(struct vn_instance *vn_instance, ${ty.c_f
 % if ty.name in ['vkCreateGraphicsPipelines', 'vkCreateComputePipelines']:
 
     if (throttle)
-        vn_instance_wait_cs_reply(vn_instance, throttle_sync_val);
+        vn_instance_wait_cs_reply(vn_instance, throttle_ring_seqno);
 % endif
 }
 </%def>\
