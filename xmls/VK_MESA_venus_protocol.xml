@@ -91,6 +91,12 @@ renderer, and are not exposed to applications.
             <param><type>uint32_t</type> <name>seqno</name></param>
             <param optional="true"><type>VkRingNotifyFlagsMESA</type> <name>flags</name></param>
         </command>
+        <command>
+            <proto><type>void</type> <name>vkWriteRingExtraMESA</name></proto>
+            <param><type>uint64_t</type> <name>ring</name></param>
+            <param><type>size_t</type> <name>offset</name></param>
+            <param><type>uint32_t</type> <name>value</name></param>
+        </command>
     </commands>
 
     <extensions>
@@ -114,6 +120,7 @@ renderer, and are not exposed to applications.
                 <command name="vkCreateRingMESA"/>
                 <command name="vkDestroyRingMESA"/>
                 <command name="vkNotifyRingMESA"/>
+                <command name="vkWriteRingExtraMESA"/>
             </require>
         </extension>
     </extensions>
