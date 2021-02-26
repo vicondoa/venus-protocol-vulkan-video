@@ -3,47 +3,47 @@
  * SPDX-License-Identifier: MIT
  */
 
+<%def name="submit_command(ty)">\
+static inline void vn_submit_${ty.name}(struct vn_instance *vn_instance, VkCommandFlagsEXT cmd_flags, ${ty.c_func_params()}, struct vn_instance_submit_command *submit)
+{
+    uint8_t local_cmd_data[VN_SUBMIT_LOCAL_CMD_SIZE];
+    void *cmd_data = local_cmd_data;
+    size_t cmd_size = vn_sizeof_${ty.name}(${ty.c_func_args()});
+    if (cmd_size > sizeof(local_cmd_data)) {
+        cmd_data = malloc(cmd_size);
+        if (!cmd_data)
+            cmd_size = 0;
+    }
+
+    submit->command = VN_CS_ENCODER_INITIALIZER(cmd_data, cmd_size);
+    if (cmd_size)
+        vn_encode_${ty.name}(&submit->command, cmd_flags, ${ty.c_func_args()});
+    submit->reply_size = cmd_flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT ? vn_sizeof_${ty.name}_reply(${ty.c_func_args()}) : 0;
+    vn_instance_submit_command(vn_instance, submit);
+
+    if (cmd_data != local_cmd_data)
+        free(cmd_data);
+}
+</%def>\
+\
 <%def name="call_command(ty)">\
 static inline ${ty.c_func_ret()} vn_call_${ty.name}(struct vn_instance *vn_instance, ${ty.c_func_params()})
 {
-    const size_t cmd_size = vn_sizeof_${ty.name}(${ty.c_func_args()});
-    const size_t reply_size = vn_sizeof_${ty.name}_reply(${ty.c_func_args()});
-    const VkCommandFlagsEXT cmd_flags = VK_COMMAND_GENERATE_REPLY_BIT_EXT;
-    bool submitted = false;
-    struct vn_renderer_bo *reply_bo;
-    void *reply_ptr;
-    uint32_t ring_seqno;
-
-    /* encode and submit */
-    struct vn_cs_encoder *enc = vn_instance_lock_cs(vn_instance);
-    reply_bo = vn_instance_get_cs_reply_bo_locked(vn_instance, reply_size, &reply_ptr);
-    if (likely(reply_bo && vn_cs_encoder_reserve(enc, cmd_size))) {
-        vn_encode_${ty.name}(enc, cmd_flags, ${ty.c_func_args()});
-        submitted = vn_instance_submit_cs_locked(vn_instance, reply_bo, &ring_seqno);
+    struct vn_instance_submit_command submit;
+    vn_submit_${ty.name}(vn_instance, VK_COMMAND_GENERATE_REPLY_BIT_EXT, ${ty.c_func_args()}, &submit);
+%   if ty.ret:
+    if (submit.reply_bo) {
+        const ${ty.ret.to_c()} = vn_decode_${ty.name}_reply(&submit.reply, ${ty.c_func_args()});
+        vn_renderer_bo_unref(submit.reply_bo);
+        return ${ty.ret.name};
+    } else {
+        return VK_ERROR_OUT_OF_HOST_MEMORY;
     }
-    vn_instance_unlock_cs(vn_instance);
-
-    /* decode reply */
-%   if ty.ret:
-    ${ty.ret.to_c()} = VK_ERROR_OUT_OF_HOST_MEMORY;
-%   endif
-    if (likely(submitted)) {
-        struct vn_cs_decoder dec;
-        vn_cs_decoder_init(&dec, reply_ptr, reply_size);
-
-        vn_instance_wait_cs_reply(vn_instance, ring_seqno);
-%   if ty.ret:
-        ${ty.ret.name} = vn_decode_${ty.name}_reply(&dec, ${ty.c_func_args()});
 %   else:
-        vn_decode_${ty.name}_reply(&dec, ${ty.c_func_args()});
-%   endif
-        vn_instance_free_cs_reply_bo(vn_instance, reply_bo);
-    } else if (reply_bo) {
-        vn_instance_free_cs_reply_bo(vn_instance, reply_bo);
+    if (submit.reply_bo) {
+        vn_decode_${ty.name}_reply(&submit.reply, ${ty.c_func_args()});
+        vn_renderer_bo_unref(submit.reply_bo);
     }
-%   if ty.ret:
-
-    return ${ty.ret.name};
 %   endif
 }
 </%def>\
@@ -51,34 +51,8 @@ static inline ${ty.c_func_ret()} vn_call_${ty.name}(struct vn_instance *vn_insta
 <%def name="async_command(ty)">\
 static inline void vn_async_${ty.name}(struct vn_instance *vn_instance, ${ty.c_func_params()})
 {
-    const size_t cmd_size = vn_sizeof_${ty.name}(${ty.c_func_args()});
-    const VkCommandFlagsEXT cmd_flags = 0;
-
-    struct vn_cs_encoder *enc = vn_instance_lock_cs(vn_instance);
-    if (vn_cs_encoder_reserve(enc, cmd_size))
-        vn_encode_${ty.name}(enc, cmd_flags, ${ty.c_func_args()});
-% if ty.name in ['vkCreateGraphicsPipelines', 'vkCreateComputePipelines']:
-
-    bool throttle = false;
-    uint32_t throttle_ring_seqno;
-    vn_instance->cs_throttle_pipeline_count += createInfoCount;
-    if (vn_instance->cs_throttle_pipeline_count >
-        vn_instance->cs_throttle_pipeline_threshold) {
-        /* TODO refactor vn_instance_submit_cs_locked */
-        assert(vn_instance->cs_reply.bo);
-        throttle = vn_instance_submit_cs_locked(vn_instance,
-                vn_instance->cs_reply.bo, &throttle_ring_seqno);
-    }
-
-% endif
-    if (vn_cs_encoder_get_len(enc) > vn_instance->cs_implicit_flush_threshold)
-        vn_instance_submit_cs_locked(vn_instance, NULL, NULL);
-    vn_instance_unlock_cs(vn_instance);
-% if ty.name in ['vkCreateGraphicsPipelines', 'vkCreateComputePipelines']:
-
-    if (throttle)
-        vn_instance_wait_cs_reply(vn_instance, throttle_ring_seqno);
-% endif
+    struct vn_instance_submit_command submit;
+    vn_submit_${ty.name}(vn_instance, 0, ${ty.c_func_args()}, &submit);
 }
 </%def>\
 \
@@ -88,6 +62,11 @@ static inline void vn_async_${ty.name}(struct vn_instance *vn_instance, ${ty.c_f
 #include "vn_protocol_driver_commands.h"
 #include "vn_device.h"
 
+#define VN_SUBMIT_LOCAL_CMD_SIZE 256
+
+% for ty in COMMAND_TYPES:
+${submit_command(ty)}
+% endfor
 % for ty in COMMAND_TYPES:
 ${call_command(ty)}
 ${async_command(ty)}
