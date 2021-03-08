@@ -26,6 +26,12 @@ vn_xml_files = files(
   'xmls/VK_MESA_venus_protocol.xml',
 )
 
+vn_template_banner = vcs_tag(
+  command: ['git', 'rev-parse', '--short=8', 'HEAD'],
+  input: 'templates/banner.in',
+  output: 'banner',
+)
+
 vn_template_common_files = files(
   'templates/common.h',
   'templates/types.h',
@@ -82,7 +88,9 @@ vn_protocol_driver = custom_target(
   output: vn_protocol_driver_outputs,
   command: [
     py, '@INPUT0@', '--outdir', meson.current_build_dir(),
+    '--banner', vn_template_banner.full_path(),
   ],
+  depends: vn_template_banner,
   depend_files: [
     vn_script_files,
     vn_xml_files,
@@ -98,8 +106,9 @@ vn_protocol_renderer = custom_target(
   output: vn_protocol_renderer_outputs,
   command: [
     py, '@INPUT0@', '--outdir', meson.current_build_dir(),
-    '--renderer',
+    '--banner', vn_template_banner.full_path(), '--renderer',
   ],
+  depends: vn_template_banner,
   depend_files: [
     vn_script_files,
     vn_xml_files,
