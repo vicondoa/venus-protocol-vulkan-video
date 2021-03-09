@@ -20,6 +20,9 @@ A command in a command stream has a variable length:
 After `VkCommandTypeEXT` and `VkCommandFlagsEXT`, the parameters of the
 corresponding Vulkan command are serialized in order.
 
+The length of a command is not serialized.  It is impossible to skip an
+unrecognized command during deserialization.
+
 When `VK_COMMAND_GENERATE_REPLY_BIT_EXT` is set in `VkCommandFlagsEXT`, a
 command reply is generated to the reply stream.
 
@@ -46,6 +49,9 @@ A reply in a reply stream has a variable length:
 After `VkCommandTypeEXT`, the return value and the non-const pointer/array
 parameters, if there is any, of the corresponding Vulkan command, are
 serialized in order.
+
+The length of a reply is not serialized.  It is impossible to skip an
+unrecognized reply during deserialization.
 
 ## Scalars
 
