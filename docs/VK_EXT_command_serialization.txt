@@ -70,11 +70,14 @@ When a command parameter is an object handle, dispatchable or not, a
 
 ## Pointers
 
-When a command parameter is a pointer, it is considered a dynamically-sized
-array.  A `uint64_t` is serialized first, indicating the number of values
-serialized.  The values pointed to by the pointer are then serialized.
-Padding to 32-bit, if needed, happens after all values are serialized, not
-after each individual value.
+When a command parameter is a non-`void` pointer, a `uint64_t` is serialized
+first, indicating the number of serialized values follow.  The values pointed
+to by the pointer are then serialized.  Padding to 32-bit, if needed, happens
+after all values are serialized, not after each individual value.
+
+A `void` pointer used to form a `pNext` chain is said to be a `pNext` pointer.
+It is serialized as a pointer to a struct whose type is determined by
+`VkStructureType`.
 
 A `void` pointer pointing to a blob with a known size is said to be a blob
 pointer.  It is serialized as a `uint8_t` pointer.
@@ -82,15 +85,14 @@ pointer.  It is serialized as a `uint8_t` pointer.
 A `char` pointer is serialized as a blob pointer.  The blob consists of
 characters up to, and including, the first null character.
 
-A `NULL` pointer is serialized as an array of size 0.  It has the same
-serialization as a non-`NULL` pointer to an array of size 0 does.  Both of
-them must be parsed to a `NULL` pointer.  (Is this going to be an issue?)
+A pointer serialization with zero value must be deserialized to `NULL`.  It is
+impossible to distinguish `NULL` and a non-`NULL` pointer with zero value
+after serialization.  (Is this going to be an issue?)
 
 ## Fixed-Size Arrays
 
-When a command parameter is a fixed-size array, it is serialized as a
-dynamically-sized array.  The number of values serialized must be less than or
-equal to the fixed size.
+When a command parameter is a fixed-size array, it is serialized as a pointer.
+The number of values serialized must be less than or equal to the fixed size.
 
 ## Structs
 
