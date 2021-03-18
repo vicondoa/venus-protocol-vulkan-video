@@ -50,6 +50,7 @@ vkr_cs_decoder_read(struct vkr_cs_decoder *dec,
 
 static inline void
 vkr_cs_decoder_peek(const struct vkr_cs_decoder *dec,
+                    size_t size,
                     void *val,
                     size_t val_size)
 {

@@ -45,7 +45,7 @@ vn_cs_decoder_read(struct vn_cs_decoder *dec, size_t size, void *val, size_t val
 }
 
 static inline void
-vn_cs_decoder_peek(struct vn_cs_decoder *dec, void *val, size_t val_size)
+vn_cs_decoder_peek(struct vn_cs_decoder *dec, size_t size, void *val, size_t val_size)
 {
 }
 

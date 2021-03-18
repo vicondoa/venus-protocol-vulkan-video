@@ -117,7 +117,7 @@ static inline uint64_t
 vn_peek_array_size(struct vn_cs_decoder *dec)
 {
     uint64_t size;
-    vn_cs_decoder_peek(dec, &size, sizeof(size));
+    vn_cs_decoder_peek(dec, sizeof(size), &size, sizeof(size));
     return size;
 }
 
