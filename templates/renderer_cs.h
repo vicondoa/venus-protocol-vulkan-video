@@ -114,7 +114,7 @@ static inline uint64_t
 vn_cs_get_object_handle(const void **handle, VkObjectType type)
 {
    const struct vkr_object *obj = *(const struct vkr_object **)handle;
-   return obj ? obj->handle : 0;
+   return obj ? obj->handle.u64 : 0;
 }
 
 static inline void

@@ -18,7 +18,9 @@ struct vkr_cs_decoder;
 typedef uint64_t vkr_object_id;
 
 struct vkr_object {
-    uint64_t handle;
+    union {
+        uint64_t u64;
+    } handle;
 };
 
 static inline void
