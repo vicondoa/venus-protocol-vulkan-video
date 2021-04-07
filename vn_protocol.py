@@ -839,19 +839,17 @@ class Gen:
         return self._decode_variable(info)
 
 class GenCS:
-    def __init__(self, gen, template):
+    def __init__(self, gen):
         self.gen = gen
-        self.template = template
 
-    def generate(self):
-        return self.template.render()
+    def generate(self, template):
+        return template.render()
 
 class GenDefines:
-    def __init__(self, gen, template):
+    def __init__(self, gen):
         self.gen = gen
-        self.template = template
 
-    def generate(self):
+    def generate(self, template):
         typedef_types = []
         enum_extends = []
         enum_types = []
@@ -877,7 +875,7 @@ class GenDefines:
 
         command_types = self.gen.supported_types[VkType.COMMAND]
 
-        return self.template.render(
+        return template.render(
                 TYPEDEF_TYPES=typedef_types,
                 ENUM_EXTENDS=enum_extends,
                 ENUM_TYPES=enum_types,
@@ -886,28 +884,26 @@ class GenDefines:
                 COMMAND_TYPES=command_types)
 
 class GenInfo:
-    def __init__(self, gen, template):
+    def __init__(self, gen):
         self.gen = gen
-        self.template = template
 
-    def generate(self):
+    def generate(self, template):
         exts = []
         for ext in self.gen.api.extensions:
             if ext.name in VK_XML_EXTENSION_LIST:
                 exts.append(ext)
         exts.sort(key=lambda ext: ext.name)
 
-        return self.template.render(
+        return template.render(
                 WIRE_FORMAT_VERSION=VN_WIRE_FORMAT_VERSION,
                 VK_XML_VERSION=self.gen.api.vk_xml_version,
                 EXTENSIONS=exts)
 
 class GenTypes:
-    def __init__(self, gen, template):
+    def __init__(self, gen):
         self.gen = gen
-        self.template = template
 
-    def generate(self):
+    def generate(self, template):
         early_scalar_types = []
         scalar_types = []
         for ty in self.gen.supported_types[VkType.DEFAULT]:
@@ -926,26 +922,24 @@ class GenTypes:
                 else:
                     scalar_types.append(ty)
 
-        return self.template.render(
+        return template.render(
                 GEN=self.gen,
                 EARLY_SCALAR_TYPES=early_scalar_types,
                 SCALAR_TYPES=scalar_types)
 
 class GenHandles:
-    def __init__(self, gen, template):
+    def __init__(self, gen):
         self.gen = gen
-        self.template = template
 
-    def generate(self):
+    def generate(self, template):
         handle_types = self.gen.supported_types[VkType.HANDLE]
-        return self.template.render(
+        return template.render(
                 GEN=self.gen,
                 HANDLE_TYPES=handle_types)
 
 class GenStructs:
-    def __init__(self, gen, template):
+    def __init__(self, gen):
         self.gen = gen
-        self.template = template
 
         self.generated = set()
         self.structs = []
@@ -984,19 +978,18 @@ class GenStructs:
         else:
             self.skipped.append(ty)
 
-    def generate(self):
-        return self.template.render(
+    def generate(self, template):
+        return template.render(
                 GEN=self.gen,
                 STRUCT_TYPES=self.structs,
                 STRUCT_SKIPPED=self.skipped,
                 MANUAL_UNION_TYPES=self.manual_unions)
 
 class GenCommands:
-    def __init__(self, gen, template):
+    def __init__(self, gen):
         self.gen = gen
-        self.template = template
 
-    def generate(self):
+    def generate(self, template):
         types = []
         skipped = []
         for ty in self.gen.supported_types[VkType.COMMAND]:
@@ -1005,7 +998,7 @@ class GenCommands:
             else:
                 skipped.append(ty)
 
-        return self.template.render(
+        return template.render(
                 GEN=self.gen,
                 COMMAND_TABLE_SIZE=self.gen.api.max_vk_command_type_value + 1,
                 COMMAND_TYPES=types,
@@ -1068,12 +1061,12 @@ def main():
         template = Template(
             filename=str(gen.TEMPLATE_DIR.joinpath(filename)),
             lookup=gen.TEMPLATE_LOOKUP, output_encoding='utf-8')
-        generator = generator_cls(gen, template)
+        generator = generator_cls(gen)
 
         output = Path(args.outdir).joinpath('vn_protocol_' + filename)
         with open(output, 'wb') as f:
             f.write(banner)
-            f.write(generator.generate())
+            f.write(generator.generate(template))
 
     # generate a header that includes all other headers
     filename = 'driver.h' if gen.is_driver else 'renderer.h'
