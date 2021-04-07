@@ -1017,6 +1017,23 @@ def get_args():
                         action='store_true')
     return parser.parse_args()
 
+def get_generators(gen):
+    classes = [
+        GenCS,
+        GenDefines,
+        GenInfo,
+        GenTypes,
+        GenHandles,
+        GenStructs,
+        GenCommands
+    ]
+
+    generators = {}
+    for cls in classes:
+        generators[cls] = cls(gen)
+
+    return generators
+
 def get_banner(filename):
     banner = None
     if filename:
@@ -1034,6 +1051,7 @@ def main():
     api.parse_xmls(VN_PROTOCOL_XMLS)
 
     gen = Gen(not args.renderer, api)
+    generators = get_generators(gen)
 
     if gen.is_driver:
         outputs = [
@@ -1064,7 +1082,7 @@ def main():
         template = Template(
             filename=str(gen.TEMPLATE_DIR.joinpath(filename)),
             lookup=gen.TEMPLATE_LOOKUP, output_encoding='utf-8')
-        generator = generator_cls(gen)
+        generator = generators[generator_cls]
 
         output = Path(args.outdir).joinpath('vn_protocol_' + filename)
         with open(output, 'wb') as f:
