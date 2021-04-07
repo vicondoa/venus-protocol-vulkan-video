@@ -992,20 +992,20 @@ class GenCommands:
     def __init__(self, gen):
         self.gen = gen
 
-    def generate(self, template):
-        types = []
-        skipped = []
+        self.commands = []
+        self.skipped = []
         for ty in self.gen.supported_types[VkType.COMMAND]:
             if self.gen.is_serializable(ty):
-                types.append(ty)
+                self.commands.append(ty)
             else:
-                skipped.append(ty)
+                self.skipped.append(ty)
 
+    def generate(self, template):
         return template.render(
                 GEN=self.gen,
                 COMMAND_TABLE_SIZE=self.gen.api.max_vk_command_type_value + 1,
-                COMMAND_TYPES=types,
-                COMMAND_SKIPPED=skipped)
+                COMMAND_TYPES=self.commands,
+                COMMAND_SKIPPED=self.skipped)
 
 def get_args():
     parser = argparse.ArgumentParser()
