@@ -886,17 +886,17 @@ class GenInfo:
     def __init__(self, gen):
         self.gen = gen
 
-    def generate(self, template):
-        exts = []
+        self.exts = []
         for ext in self.gen.api.extensions:
             if ext.name in VK_XML_EXTENSION_LIST:
-                exts.append(ext)
-        exts.sort(key=lambda ext: ext.name)
+                self.exts.append(ext)
+        self.exts.sort(key=lambda ext: ext.name)
 
+    def generate(self, template):
         return template.render(
                 WIRE_FORMAT_VERSION=VN_WIRE_FORMAT_VERSION,
                 VK_XML_VERSION=self.gen.api.vk_xml_version,
-                EXTENSIONS=exts)
+                EXTENSIONS=self.exts)
 
 class GenTypes:
     def __init__(self, gen):
