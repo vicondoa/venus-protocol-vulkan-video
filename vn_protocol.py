@@ -13,6 +13,9 @@ from mako.template import Template
 from vkxml import VkApi, VkType, VkVariable
 
 VN_PROTOCOL_DIR = Path(__file__).resolve().parent
+VN_TEMPLATE_DIR = VN_PROTOCOL_DIR.joinpath('templates')
+VN_TEMPLATE_LOOKUP = TemplateLookup(str(VN_TEMPLATE_DIR))
+
 VN_PROTOCOL_XMLS = [
     VN_PROTOCOL_DIR.joinpath('xmls/vk.xml'),
     VN_PROTOCOL_DIR.joinpath('xmls/VK_EXT_command_serialization.xml'),
@@ -82,9 +85,6 @@ VK_XML_EXTENSION_LIST = [
 ]
 
 class Gen:
-    TEMPLATE_DIR = VN_PROTOCOL_DIR.joinpath('templates')
-    TEMPLATE_LOOKUP = TemplateLookup(str(TEMPLATE_DIR))
-
     PRIMITIVE_TYPES = {
         'float': 4,
         'double': 8,
@@ -1080,8 +1080,8 @@ def main():
 
     for generator_cls, filename in outputs:
         template = Template(
-            filename=str(gen.TEMPLATE_DIR.joinpath(filename)),
-            lookup=gen.TEMPLATE_LOOKUP, output_encoding='utf-8')
+            filename=str(VN_TEMPLATE_DIR.joinpath(filename)),
+            lookup=VN_TEMPLATE_LOOKUP, output_encoding='utf-8')
         generator = generators[generator_cls]
 
         output = Path(args.outdir).joinpath('vn_protocol_' + filename)
@@ -1092,8 +1092,8 @@ def main():
     # generate a header that includes all other headers
     filename = 'driver.h' if gen.is_driver else 'renderer.h'
     template = Template(
-        filename=str(gen.TEMPLATE_DIR.joinpath(filename)),
-        lookup=gen.TEMPLATE_LOOKUP, output_encoding='utf-8')
+        filename=str(VN_TEMPLATE_DIR.joinpath(filename)),
+        lookup=VN_TEMPLATE_LOOKUP, output_encoding='utf-8')
     output = Path(args.outdir).joinpath('vn_protocol_' + filename)
     with open(output, 'wb') as f:
         template_filenames = [out[1] for out in outputs]
