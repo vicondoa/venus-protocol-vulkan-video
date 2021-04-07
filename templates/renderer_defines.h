@@ -8,8 +8,10 @@
 #ifndef VN_PROTOCOL_RENDERER_DEFINES_H
 #define VN_PROTOCOL_RENDERER_DEFINES_H
 
+#include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 
 #include "vulkan.h"
 
@@ -50,5 +52,19 @@ struct vn_dispatch_context {
     void (*dispatch_${ty.name})(struct vn_dispatch_context *ctx, struct vn_command_${ty.name} *args);
 % endfor
 };
+
+static inline void vn_dispatch_debug_log(struct vn_dispatch_context *ctx, const char *format, ...)
+{
+    char msg[256];
+    va_list va;
+
+    if (!ctx->debug_log)
+        return;
+
+    va_start(va, format);
+    vsnprintf(msg, sizeof(msg), format, va);
+    ctx->debug_log(ctx, msg);
+    va_end(va);
+}
 
 #endif /* VN_PROTOCOL_RENDERER_DEFINES_H */

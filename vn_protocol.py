@@ -940,33 +940,267 @@ class GenHandles:
                 GEN=self.gen,
                 HANDLE_TYPES=self.handle_types)
 
-class GenStructs:
+class GenStructsAndCommands:
+    # the order matters!
+    RULES = {
+        'structs': [],
+        'transport': [], # matches all
+        'instance': [
+            'CreateInstance',
+            'DestroyInstance',
+            'EnumerateInstance',
+            'GetInstance',
+        ],
+        # put VkPhysicalDevice and VkDevice in the same group because
+        # VkPhysicalDeviceFeatures2 causes too much code to be generated in
+        # the common header
+        'device': [
+            'EnumeratePhysicalDevice',
+            'CreateDevice',
+            'DestroyDevice',
+            'Device',
+            'GetDevice',
+            'GetPhysicalDevice',
+            'EnumerateDevice',
+        ],
+        'queue': [
+            'Queue',
+        ],
+        'fence': [
+            'CreateFence',
+            'DestroyFence',
+            'WaitForFence',
+            'ResetFence',
+            'GetFence',
+        ],
+        'semaphore': [
+            'CreateSemaphore',
+            'DestroySemaphore',
+            'WaitSemaphore',
+            'GetSemaphore',
+            'SignalSemaphore',
+        ],
+        'event': [
+            'CreateEvent',
+            'DestroyEvent',
+            'ResetEvent',
+            'SetEvent',
+            'GetEvent',
+        ],
+        'device_memory': [
+            'AllocateMemory',
+            'FlushMappedMemory',
+            'FreeMemory',
+            'GetDeviceMemory',
+            'InvalidateMappedMemory',
+            'MapMemory',
+            'UnmapMemory',
+        ],
+        'image': [
+            'BindImage',
+            'CreateImage',
+            'DestroyImage',
+            'GetImage',
+        ],
+        'image_view': [
+            'CreateImageView',
+            'DestroyImageView',
+        ],
+        'sampler': [
+            'CreateSampler',
+            'DestroySampler',
+        ],
+        'sampler_ycbcr_conversion': [
+            'CreateSamplerYcbcrConversion',
+            'DestroySamplerYcbcrConversion',
+        ],
+        'buffer': [
+            'BindBuffer',
+            'CreateBuffer',
+            'DestroyBuffer',
+            'GetBuffer',
+        ],
+        'buffer_view': [
+            'CreateBufferView',
+            'DestroyBufferView',
+        ],
+        'descriptor_pool': [
+            'CreateDescriptorPool',
+            'DestroyDescriptorPool',
+            'ResetDescriptorPool',
+        ],
+        'descriptor_set': [
+            'AllocateDescriptorSet',
+            'FreeDescriptorSet',
+            'UpdateDescriptorSet',
+        ],
+        'descriptor_set_layout': [
+            'CreateDescriptorSetLayout',
+            'DestroyDescriptorSetLayout',
+            'GetDescriptorSetLayout',
+        ],
+        'descriptor_update_template': [
+            'CreateDescriptorUpdateTemplate',
+            'DestroyDescriptorUpdateTemplate',
+        ],
+        'render_pass': [
+            'CreateRenderPass',
+            'DestroyRenderPass',
+            'GetRenderArea',
+        ],
+        'framebuffer': [
+            'CreateFramebuffer',
+            'DestroyFramebuffer',
+        ],
+        'query_pool': [
+            'CreateQueryPool',
+            'DestroyQueryPool',
+            'ResetQueryPool',
+            'GetQueryPool',
+        ],
+        'shader_module': [
+            'CreateShaderModule',
+            'DestroyShaderModule',
+        ],
+        'pipeline': [
+            'CreateComputePipeline',
+            'CreateGraphicsPipeline',
+            'DestroyPipeline',
+        ],
+        'pipeline_layout': [
+            'CreatePipelineLayout',
+            'DestroyPipelineLayout',
+        ],
+        'pipeline_cache': [
+            'CreatePipelineCache',
+            'DestroyPipelineCache',
+            'GetPipelineCache',
+            'MergePipelineCache',
+        ],
+        'command_pool': [
+            'CreateCommandPool',
+            'DestroyCommandPool',
+            'ResetCommandPool',
+            'TrimCommandPool',
+        ],
+        'command_buffer': [
+            'AllocateCommandBuffer',
+            'BeginCommandBuffer',
+            'EndCommandBuffer',
+            'FreeCommandBuffer',
+            'ResetCommandBuffer',
+            'Cmd',
+        ],
+    }
+
+    class Group:
+        def __init__(self, name, rules=[]):
+            self.name = name
+            self.rules = rules
+
+            self.type_set = set()
+            self.generated = set()
+
+            self.commands = []
+            self.skipped_commands = []
+            self.structs = []
+            self.manual_unions = []
+            self.skipped_structs = []
+
+        def match_command(self, cmd):
+            for rule in self.rules:
+                if cmd.name[2:].startswith(rule):
+                    return True
+            return False if self.rules else True
+
     def __init__(self, gen):
         self.gen = gen
+        self._init_groups()
 
-        self.generated = set()
-        self.structs = []
-        self.manual_unions = []
-        self.skipped = []
-        for ty in self.gen.supported_types[VkType.STRUCT]:
-            self._add_struct(ty)
-        for ty in self.gen.supported_types[VkType.UNION]:
-            self._add_struct(ty)
+    def _init_groups(self):
+        self.groups = []
+        for key, val in self.RULES.items():
+            self.groups.append(self.Group(key, val))
 
-    def _add_struct(self, ty):
-        # both structs and unions
-        if ty.category not in [ty.STRUCT, ty.UNION]:
+        # reverse before matching
+        self.groups.reverse()
+
+        # add commands and their dependencies to type_sets
+        for cmd in self.gen.supported_types[VkType.COMMAND]:
+            group = None
+            for g in self.groups:
+                if g.match_command(cmd):
+                    group = g
+                    break
+            assert(group)
+            self._add_type_set_recursive(group.type_set, cmd)
+
+        # make sure each type belongs to just one type_set
+        common_type_set = set()
+        for i, g1 in enumerate(self.groups):
+            for g2 in self.groups[i + 1:]:
+                intersection = g1.type_set.intersection(g2.type_set)
+                if intersection:
+                    g2.type_set.difference_update(intersection)
+                    common_type_set.update(intersection)
+            g1.type_set.difference_update(common_type_set)
+
+        # the remaining types belong to the last group's type_set
+        last_group = self.groups[-1]
+        assert last_group.name == 'structs' and not last_group.type_set
+        last_group.type_set = common_type_set
+
+        # now we can add types to groups
+        for cmd in self.gen.supported_types[VkType.COMMAND]:
+            group = None
+            for g in self.groups:
+                if g.match_command(cmd):
+                    group = g
+                    break
+            assert(group)
+            self._add_group_recursive(group, cmd)
+
+    def _add_type_set_recursive(self, type_set, ty):
+        # only commands, structs, and unions
+        if ty.category not in [ty.COMMAND, ty.STRUCT, ty.UNION]:
             return
-        if ty in self.generated:
+        if ty in type_set:
             return
-        self.generated.add(ty)
+
+        deps = [var.ty.base for var in ty.variables] + ty.p_next
+        if ty.ret:
+            deps.append(ty.ret.ty.base)
+
+        for dep in deps:
+            self._add_type_set_recursive(type_set, dep)
+        type_set.add(ty)
+
+    def _add_group_recursive(self, group, ty):
+        # only commands, structs, and unions
+        if ty.category not in [ty.COMMAND, ty.STRUCT, ty.UNION]:
+            return
+
+        # redirect to base group
+        if ty not in group.type_set:
+            group = self.groups[-1]
+            assert(ty in group.type_set)
+
+        if ty in group.generated:
+            return
+        group.generated.add(ty)
 
         if self.gen.is_serializable(ty):
             # add dependencies first
             deps = [var.ty.base for var in ty.variables] + ty.p_next
+            if ty.ret:
+                deps.append(ty.ret.ty.base)
             for dep in deps:
-                self._add_struct(dep)
-            self.structs.append(ty)
+                self._add_group_recursive(group, dep)
+
+            if ty.category == ty.COMMAND:
+                group.commands.append(ty)
+            else:
+                group.structs.append(ty)
         elif ty.category == ty.UNION:
             can_manual = True
             for var in ty.variables:
@@ -975,23 +1209,29 @@ class GenStructs:
                     break
 
             if can_manual:
-                self.manual_unions.append(ty)
+                group.manual_unions.append(ty)
             else:
-                self.skipped.append(ty)
+                group.skipped_structs.append(ty)
+        elif ty.category == ty.COMMAND:
+            group.skipped_commands.append(ty)
         else:
-            self.skipped.append(ty)
+            group.skipped_structs.append(ty)
 
-    def generate(self, template):
+    def generate(self, template, group):
         return template.render(
                 GEN=self.gen,
-                STRUCT_TYPES=self.structs,
-                STRUCT_SKIPPED=self.skipped,
-                MANUAL_UNION_TYPES=self.manual_unions)
+                GUARD=group.name.upper(),
+                COMMAND_TYPES=group.commands,
+                COMMAND_SKIPPED=group.skipped_commands,
+                STRUCT_TYPES=group.structs,
+                STRUCT_SKIPPED=group.skipped_structs,
+                MANUAL_UNION_TYPES=group.manual_unions)
 
-class GenCommands:
+class GenDispatches:
     def __init__(self, gen):
         self.gen = gen
 
+        self.includes = GenStructsAndCommands.RULES.keys()
         self.commands = []
         self.skipped = []
         for ty in self.gen.supported_types[VkType.COMMAND]:
@@ -1003,6 +1243,7 @@ class GenCommands:
     def generate(self, template):
         return template.render(
                 GEN=self.gen,
+                INCLUDES=self.includes,
                 COMMAND_TABLE_SIZE=self.gen.api.max_vk_command_type_value + 1,
                 COMMAND_TYPES=self.commands,
                 COMMAND_SKIPPED=self.skipped)
@@ -1024,8 +1265,8 @@ def get_generators(gen):
         GenInfo,
         GenTypes,
         GenHandles,
-        GenStructs,
-        GenCommands
+        GenStructsAndCommands,
+        GenDispatches,
     ]
 
     generators = {}
@@ -1057,6 +1298,14 @@ def generate_base_headers(generators, base_headers, banner, outdir):
             f.write(banner)
             f.write(generator.generate(template))
 
+def generate_command_headers(generator, variant, banner, outdir):
+    template = get_template(variant + '_commands.h')
+    for group in generator.groups:
+        output = Path(outdir).joinpath('vn_protocol_%s_%s.h' % (variant, group.name))
+        with open(output, 'wb') as f:
+            f.write(banner)
+            f.write(generator.generate(template, group))
+
 def main():
     args = get_args()
 
@@ -1076,9 +1325,6 @@ def main():
             (GenInfo,       variant + '_info.h'),
             (GenTypes,      variant + '_types.h'),
             (GenHandles,    variant + '_handles.h'),
-            (GenStructs,    variant + '_structs.h'),
-            (GenCommands,   variant + '_commands.h'),
-            (GenCommands,   variant + '_calls.h'),
         ]
     else:
         variant = 'renderer'
@@ -1088,18 +1334,21 @@ def main():
             (GenInfo,       variant + '_info.h'),
             (GenTypes,      variant + '_types.h'),
             (GenHandles,    variant + '_handles.h'),
-            (GenStructs,    variant + '_structs.h'),
-            (GenCommands,   variant + '_commands.h'),
-            (GenCommands,   variant + '_dispatches.h'),
+            (GenDispatches, variant + '_dispatches.h'),
         ]
 
     generate_base_headers(generators, base_headers, banner, args.outdir)
+
+    generator = generators[GenStructsAndCommands]
+    generate_command_headers(generator, variant, banner, args.outdir)
 
     # generate a header that includes all other headers
     template = get_template(variant + '.h')
     output = Path(args.outdir).joinpath('vn_protocol_%s.h' % variant)
     with open(output, 'wb') as f:
         template_filenames = [hdr[1] for hdr in base_headers]
+        template_filenames.extend(['%s_%s.h' % (variant, name) for name in
+            GenStructsAndCommands.RULES.keys()])
         f.write(banner)
         f.write(template.render(TEMPLATE_FILENAMES=template_filenames))
 

@@ -14,6 +14,8 @@
 
 #include "vn_protocol_driver_cs.h"
 
+#define VN_SUBMIT_LOCAL_CMD_SIZE 256
+
 % for ty in TYPEDEF_TYPES:
 ${define_typedef(ty)}
 % endfor

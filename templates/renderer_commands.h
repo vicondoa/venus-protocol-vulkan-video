@@ -4,24 +4,112 @@
  */
 
 <%namespace name="command" file="/types_command.h"/>\
+<%namespace name="types" file="/types.h"/>\
+<%namespace name="union" file="/types_union.h"/>\
 \
-#ifndef VN_PROTOCOL_RENDERER_COMMANDS_H
-#define VN_PROTOCOL_RENDERER_COMMANDS_H
+<%def name="dispatch_command(ty)">\
+static inline void vn_dispatch_${ty.name}(struct vn_dispatch_context *ctx, VkCommandFlagsEXT flags)
+{
+    struct vn_command_${ty.name} args;
 
+    if (!ctx->dispatch_${ty.name}) {
+        vn_cs_decoder_set_fatal(ctx->decoder);
+        return;
+    }
+
+    vn_decode_${ty.name}_args_temp(ctx->decoder, &args);
+
+    if (!vn_cs_decoder_get_fatal(ctx->decoder))
+        ctx->dispatch_${ty.name}(ctx, &args);
+
+% if ty.ret and ty.ret.ty.name == 'VkResult':
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && args.${ty.ret.name} < VK_SUCCESS) {
+        switch (args.${ty.ret.name}) {
+        case VK_ERROR_FORMAT_NOT_SUPPORTED:
+            break;
+        default:
+            vn_dispatch_debug_log(ctx, "${ty.name} returned %d", args.${ty.ret.name});
+            break;
+        }
+    }
+% endif
+
+    if (!vn_cs_decoder_get_fatal(ctx->decoder) && (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT))
+       vn_encode_${ty.name}_reply(ctx->encoder, &args);
+
+    vn_cs_decoder_reset_temp_pool(ctx->decoder);
+}
+</%def>\
+\
+#ifndef VN_PROTOCOL_RENDERER_${GUARD}_H
+#define VN_PROTOCOL_RENDERER_${GUARD}_H
+
+% if GUARD == 'STRUCTS':
+#include "vn_protocol_renderer_handles.h"
+% else:
 #include "vn_protocol_renderer_structs.h"
+% endif
 
+<% all_skipped = STRUCT_SKIPPED + MANUAL_UNION_TYPES + COMMAND_SKIPPED %>\
+% if all_skipped:
 /*
- * These commands are not included
+ * These structs/unions/commands are not included
  *
-% for ty in COMMAND_SKIPPED:
+% for ty in all_skipped:
  *   ${ty.name}
 % endfor
  */
 
+% endif
+% for ty in STRUCT_TYPES:
+/* ${types.vn_type_descriptive_name(ty)} */
+
+%   if 'need_encode' in ty.attrs:
+${types.vn_encode_type_helpers(ty)}\
+${types.vn_encode_type(ty)}
+%   endif
+\
+%   if 'need_decode' in ty.attrs:
+${types.vn_decode_type_helpers(ty, '_temp')}\
+${types.vn_decode_type_temp(ty)}
+%   endif
+\
+%   if 'need_partial' in ty.attrs and ty.category == ty.STRUCT:
+${types.vn_decode_type_helpers(ty, '_partial_temp')}\
+${types.vn_decode_type_partial_temp(ty)}
+%   endif
+\
+%   if 'need_decode' in ty.attrs and ty.category == ty.STRUCT:
+${types.vn_replace_type_handle_helpers(ty)}\
+${types.vn_replace_type_handle(ty)}
+%   endif
+% endfor
+\
+% if MANUAL_UNION_TYPES:
+/*
+ * Helpers for manual serialization
+ */
+
+% endif
+\
+% for ty in MANUAL_UNION_TYPES:
+/* ${types.vn_type_descriptive_name(ty)} */
+
+%   if 'need_encode' in ty.attrs:
+${union.vn_encode_union_tag(ty)}
+%   endif
+%   if 'need_decode' in ty.attrs:
+${types.vn_decode_type_temp(ty)}
+%   endif
+% endfor
+\
 % for ty in COMMAND_TYPES:
 ${command.vn_decode_command_args_temp(ty)}
 ${command.vn_replace_command_args_handle(ty)}
 ${command.vn_encode_command_reply(ty)}
 % endfor
 \
-#endif /* VN_PROTOCOL_RENDERER_COMMANDS_H */
+% for ty in COMMAND_TYPES:
+${dispatch_command(ty)}
+% endfor
+#endif /* VN_PROTOCOL_RENDERER_${GUARD}_H */

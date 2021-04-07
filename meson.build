@@ -46,26 +46,51 @@ vn_template_common_files = files(
 
 driver_base_headers = [
   'driver.h',
-  'driver_calls.h',
-  'driver_commands.h',
   'driver_cs.h',
   'driver_defines.h',
   'driver_handles.h',
   'driver_info.h',
-  'driver_structs.h',
   'driver_types.h',
 ]
 
 renderer_base_headers = [
   'renderer.h',
-  'renderer_commands.h',
   'renderer_cs.h',
   'renderer_defines.h',
   'renderer_dispatches.h',
   'renderer_handles.h',
   'renderer_info.h',
-  'renderer_structs.h',
   'renderer_types.h',
+]
+
+command_headers = [
+  'buffer',
+  'buffer_view',
+  'command_buffer',
+  'command_pool',
+  'descriptor_pool',
+  'descriptor_set',
+  'descriptor_set_layout',
+  'descriptor_update_template',
+  'device',
+  'device_memory',
+  'event',
+  'fence',
+  'framebuffer',
+  'image',
+  'image_view',
+  'instance',
+  'pipeline',
+  'pipeline_cache',
+  'pipeline_layout',
+  'query_pool',
+  'queue',
+  'render_pass',
+  'sampler',
+  'sampler_ycbcr_conversion',
+  'semaphore',
+  'shader_module',
+  'transport',
 ]
 
 vn_template_driver_files = []
@@ -75,11 +100,21 @@ foreach basename : driver_base_headers
   vn_protocol_driver_outputs += 'vn_protocol_' + basename
 endforeach
 
+vn_template_driver_files += files('templates/driver_commands.h')
+foreach basename : command_headers
+  vn_protocol_driver_outputs += 'vn_protocol_driver_' + basename + '.h'
+endforeach
+
 vn_template_renderer_files = []
 vn_protocol_renderer_outputs = []
 foreach basename : renderer_base_headers
   vn_template_renderer_files += files('templates/' + basename)
   vn_protocol_renderer_outputs += 'vn_protocol_' + basename
+endforeach
+
+vn_template_renderer_files += files('templates/renderer_commands.h')
+foreach basename : command_headers
+  vn_protocol_renderer_outputs += 'vn_protocol_renderer_' + basename + '.h'
 endforeach
 
 vn_protocol_driver = custom_target(
