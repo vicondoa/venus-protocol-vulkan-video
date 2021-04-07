@@ -4,7 +4,6 @@
  */
 
 <%namespace name="types" file="/types.h"/>\
-<%namespace name="chain" file="/types_chain.h"/>\
 <%namespace name="union" file="/types_union.h"/>\
 \
 #ifndef VN_PROTOCOL_RENDERER_STRUCTS_H
@@ -27,35 +26,22 @@
 /* ${types.vn_type_descriptive_name(ty)} */
 
 %   if 'need_encode' in ty.attrs:
-%     if ty.category == ty.UNION:
-${union.vn_encode_union_tag(ty)}
-%     elif ty.s_type:
-${chain.vn_encode_chain_pnext(ty)}
-${chain.vn_encode_chain_self(ty)}
-%     endif
+${types.vn_encode_type_helpers(ty)}\
 ${types.vn_encode_type(ty)}
 %   endif
 \
 %   if 'need_decode' in ty.attrs:
-%     if ty.s_type:
-${chain.vn_decode_chain_pnext_temp(ty)}
-${chain.vn_decode_chain_self(ty, '_temp')}
-%     endif
+${types.vn_decode_type_helpers(ty, '_temp')}\
 ${types.vn_decode_type_temp(ty)}
 %   endif
 \
 %   if 'need_partial' in ty.attrs and ty.category == ty.STRUCT:
-%     if ty.s_type:
-${chain.vn_decode_chain_pnext_temp(ty, '_partial')}
-${chain.vn_decode_chain_self(ty, '_partial_temp')}
-%     endif
+${types.vn_decode_type_helpers(ty, '_partial_temp')}\
 ${types.vn_decode_type_partial_temp(ty)}
 %   endif
 \
 %   if 'need_decode' in ty.attrs and ty.category == ty.STRUCT:
-%     if ty.s_type:
-${chain.vn_replace_chain_handle_self(ty)}
-%     endif
+${types.vn_replace_type_handle_helpers(ty)}\
 ${types.vn_replace_type_handle(ty)}
 %   endif
 % endfor

@@ -47,6 +47,15 @@ ${chain.vn_sizeof_chain_body(ty)}\
 }
 </%def>
 
+<%def name="vn_sizeof_type_helpers(ty, variant='')">\
+% if ty.category == ty.UNION:
+${union.vn_sizeof_union_tag(ty)}
+% elif ty.category == ty.STRUCT and ty.s_type:
+${chain.vn_sizeof_chain_pnext(ty, variant)}
+${chain.vn_sizeof_chain_self(ty, variant)}
+% endif
+</%def>
+
 <%def name="vn_encode_type(ty)">\
 static inline void
 vn_encode_${ty.name}(struct vn_cs_encoder *enc, const ${ty.name} *val)
@@ -67,6 +76,15 @@ ${chain.vn_encode_chain_body(ty)}\
 }
 </%def>
 
+<%def name="vn_encode_type_helpers(ty, variant='')">\
+% if ty.category == ty.UNION:
+${union.vn_encode_union_tag(ty)}
+% elif ty.category == ty.STRUCT and ty.s_type:
+${chain.vn_encode_chain_pnext(ty, variant)}
+${chain.vn_encode_chain_self(ty, variant)}
+% endif
+</%def>
+
 <%def name="vn_decode_type(ty)">\
 static inline void
 vn_decode_${ty.name}(struct vn_cs_decoder *dec, ${ty.name} *val)
@@ -85,6 +103,17 @@ ${chain.vn_decode_chain_body(ty)}\
 <% assert(False) %>
 % endif
 }
+</%def>
+
+<%def name="vn_decode_type_helpers(ty, variant='')">\
+% if ty.category == ty.STRUCT and ty.s_type:
+%   if '_temp' in variant:
+${chain.vn_decode_chain_pnext_temp(ty, variant.replace('_temp', ''))}
+%   else:
+${chain.vn_decode_chain_pnext(ty)}
+%   endif
+${chain.vn_decode_chain_self(ty, variant)}
+% endif
 </%def>
 
 <%def name="vn_decode_type_temp(ty)">\
@@ -181,4 +210,10 @@ ${chain.vn_replace_chain_handle_body(ty)}\
 <% assert(False) %>
 % endif
 }
+</%def>
+
+<%def name="vn_replace_type_handle_helpers(ty)">\
+% if ty.category == ty.STRUCT and ty.s_type:
+${chain.vn_replace_chain_handle_self(ty)}
+% endif
 </%def>
