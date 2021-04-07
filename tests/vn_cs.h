@@ -12,10 +12,17 @@
 
 #include <vulkan/vulkan.h>
 
+#define VN_CS_ENCODER_INITIALIZER(storage, size) (struct vn_cs_encoder){ 0 }
+
 typedef uint64_t vn_object_id;
 
-struct vn_cs_encoder;
-struct vn_cs_decoder;
+struct vn_cs_encoder {
+    int dummy;
+};
+
+struct vn_cs_decoder {
+    int dummy;
+};
 
 static inline size_t
 vn_cs_encoder_get_len(const struct vn_cs_encoder *enc)
