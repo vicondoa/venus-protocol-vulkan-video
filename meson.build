@@ -44,7 +44,7 @@ vn_template_common_files = files(
   'templates/types_union.h',
 )
 
-driver_basenames = [
+driver_base_headers = [
   'driver.h',
   'driver_calls.h',
   'driver_commands.h',
@@ -56,7 +56,7 @@ driver_basenames = [
   'driver_types.h',
 ]
 
-renderer_basenames = [
+renderer_base_headers = [
   'renderer.h',
   'renderer_commands.h',
   'renderer_cs.h',
@@ -70,14 +70,14 @@ renderer_basenames = [
 
 vn_template_driver_files = []
 vn_protocol_driver_outputs = []
-foreach basename : driver_basenames
+foreach basename : driver_base_headers
   vn_template_driver_files += files('templates/' + basename)
   vn_protocol_driver_outputs += 'vn_protocol_' + basename
 endforeach
 
 vn_template_renderer_files = []
 vn_protocol_renderer_outputs = []
-foreach basename : renderer_basenames
+foreach basename : renderer_base_headers
   vn_template_renderer_files += files('templates/' + basename)
   vn_protocol_renderer_outputs += 'vn_protocol_' + basename
 endforeach

@@ -1044,6 +1044,19 @@ def get_banner(filename):
 
     return banner
 
+def get_template(template_name):
+    return Template(filename=str(VN_TEMPLATE_DIR.joinpath(template_name)),
+                    lookup=VN_TEMPLATE_LOOKUP, output_encoding='utf-8')
+
+def generate_base_headers(generators, outputs, banner, outdir):
+    for cls, name in outputs:
+        generator = generators[cls]
+        template = get_template(name)
+        output = Path(outdir).joinpath('vn_protocol_' + name)
+        with open(output, 'wb') as f:
+            f.write(banner)
+            f.write(generator.generate(template))
+
 def main():
     args = get_args()
 
@@ -1053,8 +1066,10 @@ def main():
     gen = Gen(not args.renderer, api)
     generators = get_generators(gen)
 
+    banner = get_banner(args.banner)
+
     if gen.is_driver:
-        outputs = [
+        base_headers = [
             (GenCS,         'driver_cs.h'),
             (GenDefines,    'driver_defines.h'),
             (GenInfo,       'driver_info.h'),
@@ -1065,7 +1080,7 @@ def main():
             (GenCommands,   'driver_calls.h'),
         ]
     else:
-        outputs = [
+        base_headers = [
             (GenCS,         'renderer_cs.h'),
             (GenDefines,    'renderer_defines.h'),
             (GenInfo,       'renderer_info.h'),
@@ -1076,27 +1091,14 @@ def main():
             (GenCommands,   'renderer_dispatches.h'),
         ]
 
-    banner = get_banner(args.banner)
-
-    for generator_cls, filename in outputs:
-        template = Template(
-            filename=str(VN_TEMPLATE_DIR.joinpath(filename)),
-            lookup=VN_TEMPLATE_LOOKUP, output_encoding='utf-8')
-        generator = generators[generator_cls]
-
-        output = Path(args.outdir).joinpath('vn_protocol_' + filename)
-        with open(output, 'wb') as f:
-            f.write(banner)
-            f.write(generator.generate(template))
+    generate_base_headers(generators, base_headers, banner, args.outdir)
 
     # generate a header that includes all other headers
     filename = 'driver.h' if gen.is_driver else 'renderer.h'
-    template = Template(
-        filename=str(VN_TEMPLATE_DIR.joinpath(filename)),
-        lookup=VN_TEMPLATE_LOOKUP, output_encoding='utf-8')
+    template = get_template(filename)
     output = Path(args.outdir).joinpath('vn_protocol_' + filename)
     with open(output, 'wb') as f:
-        template_filenames = [out[1] for out in outputs]
+        template_filenames = [out[1] for out in base_headers]
         f.write(banner)
         f.write(template.render(TEMPLATE_FILENAMES=template_filenames))
 
