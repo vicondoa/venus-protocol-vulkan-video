@@ -933,11 +933,12 @@ class GenHandles:
     def __init__(self, gen):
         self.gen = gen
 
+        self.handle_types = self.gen.supported_types[VkType.HANDLE]
+
     def generate(self, template):
-        handle_types = self.gen.supported_types[VkType.HANDLE]
         return template.render(
                 GEN=self.gen,
-                HANDLE_TYPES=handle_types)
+                HANDLE_TYPES=self.handle_types)
 
 class GenStructs:
     def __init__(self, gen):
