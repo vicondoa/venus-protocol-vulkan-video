@@ -849,39 +849,38 @@ class GenDefines:
     def __init__(self, gen):
         self.gen = gen
 
-    def generate(self, template):
-        typedef_types = []
-        enum_extends = []
-        enum_types = []
-        bitmask_types = []
-        struct_types = []
-
+        self.enum_extends = []
         for ty in self.gen.api.type_table.values():
             if ty.category == ty.ENUM and ty.enums.vk_xml_values:
                 if len(ty.enums.values) != len(ty.enums.vk_xml_values):
-                    enum_extends.append(ty)
+                    self.enum_extends.append(ty)
 
+        self.typedef_types = []
+        self.enum_types = []
+        self.bitmask_types = []
+        self.struct_types = []
         exts = self.gen.api.extensions[self.gen.api.vk_xml_extension_count:]
         for ext in exts:
             for ty in ext.types:
                 if ty.category == ty.BASETYPE and ty.typedef:
-                    typedef_types.append(ty)
+                    self.typedef_types.append(ty)
                 elif ty.category == ty.ENUM and ty.enums.values:
-                    enum_types.append(ty)
+                    self.enum_types.append(ty)
                 elif ty.category == ty.BITMASK:
-                    bitmask_types.append(ty)
+                    self.bitmask_types.append(ty)
                 elif ty.category == ty.STRUCT:
-                    struct_types.append(ty)
+                    self.struct_types.append(ty)
 
-        command_types = self.gen.supported_types[VkType.COMMAND]
+        self.command_types = self.gen.supported_types[VkType.COMMAND]
 
+    def generate(self, template):
         return template.render(
-                TYPEDEF_TYPES=typedef_types,
-                ENUM_EXTENDS=enum_extends,
-                ENUM_TYPES=enum_types,
-                BITMASK_TYPES=bitmask_types,
-                STRUCT_TYPES=struct_types,
-                COMMAND_TYPES=command_types)
+                TYPEDEF_TYPES=self.typedef_types,
+                ENUM_EXTENDS=self.enum_extends,
+                ENUM_TYPES=self.enum_types,
+                BITMASK_TYPES=self.bitmask_types,
+                STRUCT_TYPES=self.struct_types,
+                COMMAND_TYPES=self.command_types)
 
 class GenInfo:
     def __init__(self, gen):
