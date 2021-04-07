@@ -902,29 +902,32 @@ class GenTypes:
     def __init__(self, gen):
         self.gen = gen
 
-    def generate(self, template):
-        early_scalar_types = []
-        scalar_types = []
+        self.early_scalar_types = []
+        self.scalar_types = []
+
         for ty in self.gen.supported_types[VkType.DEFAULT]:
             if ty.name in self.gen.PRIMITIVE_TYPES:
                 if ty.name in ['uint64_t', 'int32_t']:
-                    early_scalar_types.append(ty)
+                    self.early_scalar_types.append(ty)
                 else:
-                    scalar_types.append(ty)
+                    self.scalar_types.append(ty)
+
         for ty in self.gen.supported_types[VkType.BASETYPE]:
             if ty.typedef and self.gen.is_serializable(ty.typedef):
-                scalar_types.append(ty)
+                self.scalar_types.append(ty)
+
         for ty in self.gen.supported_types[VkType.ENUM]:
             if ty.enums.values:
                 if ty.name == 'VkStructureType':
-                    early_scalar_types.append(ty)
+                    self.early_scalar_types.append(ty)
                 else:
-                    scalar_types.append(ty)
+                    self.scalar_types.append(ty)
 
+    def generate(self, template):
         return template.render(
                 GEN=self.gen,
-                EARLY_SCALAR_TYPES=early_scalar_types,
-                SCALAR_TYPES=scalar_types)
+                EARLY_SCALAR_TYPES=self.early_scalar_types,
+                SCALAR_TYPES=self.scalar_types)
 
 class GenHandles:
     def __init__(self, gen):
