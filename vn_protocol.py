@@ -1048,8 +1048,8 @@ def get_template(template_name):
     return Template(filename=str(VN_TEMPLATE_DIR.joinpath(template_name)),
                     lookup=VN_TEMPLATE_LOOKUP, output_encoding='utf-8')
 
-def generate_base_headers(generators, outputs, banner, outdir):
-    for cls, name in outputs:
+def generate_base_headers(generators, base_headers, banner, outdir):
+    for cls, name in base_headers:
         generator = generators[cls]
         template = get_template(name)
         output = Path(outdir).joinpath('vn_protocol_' + name)
@@ -1069,36 +1069,37 @@ def main():
     banner = get_banner(args.banner)
 
     if gen.is_driver:
+        variant = 'driver'
         base_headers = [
-            (GenCS,         'driver_cs.h'),
-            (GenDefines,    'driver_defines.h'),
-            (GenInfo,       'driver_info.h'),
-            (GenTypes,      'driver_types.h'),
-            (GenHandles,    'driver_handles.h'),
-            (GenStructs,    'driver_structs.h'),
-            (GenCommands,   'driver_commands.h'),
-            (GenCommands,   'driver_calls.h'),
+            (GenCS,         variant + '_cs.h'),
+            (GenDefines,    variant + '_defines.h'),
+            (GenInfo,       variant + '_info.h'),
+            (GenTypes,      variant + '_types.h'),
+            (GenHandles,    variant + '_handles.h'),
+            (GenStructs,    variant + '_structs.h'),
+            (GenCommands,   variant + '_commands.h'),
+            (GenCommands,   variant + '_calls.h'),
         ]
     else:
+        variant = 'renderer'
         base_headers = [
-            (GenCS,         'renderer_cs.h'),
-            (GenDefines,    'renderer_defines.h'),
-            (GenInfo,       'renderer_info.h'),
-            (GenTypes,      'renderer_types.h'),
-            (GenHandles,    'renderer_handles.h'),
-            (GenStructs,    'renderer_structs.h'),
-            (GenCommands,   'renderer_commands.h'),
-            (GenCommands,   'renderer_dispatches.h'),
+            (GenCS,         variant + '_cs.h'),
+            (GenDefines,    variant + '_defines.h'),
+            (GenInfo,       variant + '_info.h'),
+            (GenTypes,      variant + '_types.h'),
+            (GenHandles,    variant + '_handles.h'),
+            (GenStructs,    variant + '_structs.h'),
+            (GenCommands,   variant + '_commands.h'),
+            (GenCommands,   variant + '_dispatches.h'),
         ]
 
     generate_base_headers(generators, base_headers, banner, args.outdir)
 
     # generate a header that includes all other headers
-    filename = 'driver.h' if gen.is_driver else 'renderer.h'
-    template = get_template(filename)
-    output = Path(args.outdir).joinpath('vn_protocol_' + filename)
+    template = get_template(variant + '.h')
+    output = Path(args.outdir).joinpath('vn_protocol_%s.h' % variant)
     with open(output, 'wb') as f:
-        template_filenames = [out[1] for out in base_headers]
+        template_filenames = [hdr[1] for hdr in base_headers]
         f.write(banner)
         f.write(template.render(TEMPLATE_FILENAMES=template_filenames))
 
