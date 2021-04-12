@@ -47,6 +47,18 @@ renderer, and are not exposed to applications.
             <member><type>size_t</type>                           <name>extraOffset</name></member>
             <member><type>size_t</type>                           <name>extraSize</name></member>
         </type>
+
+        <type category="struct" name="VkMemoryResourcePropertiesMESA">
+            <member values="VK_STRUCTURE_TYPE_MEMORY_RESOURCE_PROPERTIES_MESA"><type>VkStructureType</type> <name>sType</name></member>
+            <member optional="true"><type>void</type>*            <name>pNext</name></member>
+            <member><type>uint32_t</type>                         <name>memoryTypeBits</name></member>
+        </type>
+
+        <type category="struct" name="VkImportMemoryResourceInfoMESA">
+            <member values="VK_STRUCTURE_TYPE_IMPORT_MEMORY_RESOURCE_INFO_MESA"><type>VkStructureType</type> <name>sType</name></member>
+            <member optional="true">const <type>void</type>*      <name>pNext</name></member>
+            <member><type>uint32_t</type>                         <name>resourceId</name></member>
+        </type>
     </types>
 
     <enums name="VkCommandStreamExecutionFlagBits" type="bitmask">
@@ -97,6 +109,12 @@ renderer, and are not exposed to applications.
             <param><type>size_t</type> <name>offset</name></param>
             <param><type>uint32_t</type> <name>value</name></param>
         </command>
+        <command>
+            <proto><type>VkResult</type> <name>vkGetMemoryResourcePropertiesMESA</name></proto>
+            <param><type>VkDevice</type> <name>device</name></param>
+            <param><type>uint32_t</type> <name>resourceId</name></param>
+            <param><type>VkMemoryResourcePropertiesMESA</type>* <name>pMemoryResourceProperties</name></param>
+        </command>
     </commands>
 
     <extensions>
@@ -105,6 +123,8 @@ renderer, and are not exposed to applications.
                 <enum value="0"                                             name="VK_MESA_VENUS_PROTOCOL_SPEC_VERSION"/>
                 <enum value="&quot;VK_MESA_venus_protocol&quot;"            name="VK_MESA_VENUS_PROTOCOL_EXTENSION_NAME"/>
                 <enum offset="0" extends="VkStructureType"                  name="VK_STRUCTURE_TYPE_RING_CREATE_INFO_MESA"/>
+                <enum offset="1" extends="VkStructureType"                  name="VK_STRUCTURE_TYPE_MEMORY_RESOURCE_PROPERTIES_MESA"/>
+                <enum offset="2" extends="VkStructureType"                  name="VK_STRUCTURE_TYPE_IMPORT_MEMORY_RESOURCE_INFO_MESA"/>
                 <type name="VkCommandStreamExecutionFlagBitsMESA"/>
                 <type name="VkCommandStreamExecutionFlagsMESA"/>
                 <type name="VkRingCreateFlagBitsMESA"/>
@@ -114,6 +134,8 @@ renderer, and are not exposed to applications.
                 <type name="VkCommandStreamDescriptionMESA"/>
                 <type name="VkCommandStreamDependencyMESA"/>
                 <type name="VkRingCreateInfoMESA"/>
+                <type name="VkMemoryResourcePropertiesMESA"/>
+                <type name="VkImportMemoryResourceInfoMESA"/>
                 <command name="vkSetReplyCommandStreamMESA"/>
                 <command name="vkSeekReplyCommandStreamMESA"/>
                 <command name="vkExecuteCommandStreamsMESA"/>
@@ -121,6 +143,7 @@ renderer, and are not exposed to applications.
                 <command name="vkDestroyRingMESA"/>
                 <command name="vkNotifyRingMESA"/>
                 <command name="vkWriteRingExtraMESA"/>
+                <command name="vkGetMemoryResourcePropertiesMESA"/>
             </require>
         </extension>
     </extensions>
