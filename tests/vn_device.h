@@ -9,25 +9,37 @@
 #include "vn_cs.h"
 
 struct vn_instance;
-struct vn_renderer_bo;
 
 struct vn_instance_submit_command {
-   struct vn_cs_encoder command;
-   size_t reply_size;
-
-   struct vn_renderer_bo *reply_bo;
-   struct vn_cs_decoder reply;
+   int dummy;
 };
 
-static inline bool
-vn_renderer_bo_unref(struct vn_renderer_bo *bo)
+static inline struct vn_cs_encoder *
+vn_instance_submit_command_init(struct vn_instance *instance,
+                                struct vn_instance_submit_command *submit,
+                                void *cmd_data,
+                                size_t cmd_size,
+                                size_t reply_size)
 {
-	return true;
+   return NULL;
 }
 
 void
 vn_instance_submit_command(struct vn_instance *instance,
                            struct vn_instance_submit_command *submit)
+{
+}
+
+static inline struct vn_cs_decoder *
+vn_instance_get_command_reply(struct vn_instance *instance,
+                              struct vn_instance_submit_command *submit)
+{
+    return NULL;
+}
+
+static inline void
+vn_instance_free_command_reply(struct vn_instance *instance,
+                               struct vn_instance_submit_command *submit)
 {
 }
 

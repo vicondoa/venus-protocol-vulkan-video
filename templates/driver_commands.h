@@ -18,15 +18,15 @@ static inline void vn_submit_${ty.name}(struct vn_instance *vn_instance, VkComma
         if (!cmd_data)
             cmd_size = 0;
     }
+    const size_t reply_size = cmd_flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT ? vn_sizeof_${ty.name}_reply(${ty.c_func_args()}) : 0;
 
-    submit->command = VN_CS_ENCODER_INITIALIZER(cmd_data, cmd_size);
-    if (cmd_size)
-        vn_encode_${ty.name}(&submit->command, cmd_flags, ${ty.c_func_args()});
-    submit->reply_size = cmd_flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT ? vn_sizeof_${ty.name}_reply(${ty.c_func_args()}) : 0;
-    vn_instance_submit_command(vn_instance, submit);
-
-    if (cmd_data != local_cmd_data)
-        free(cmd_data);
+    struct vn_cs_encoder *enc = vn_instance_submit_command_init(vn_instance, submit, cmd_data, cmd_size, reply_size);
+    if (cmd_size) {
+        vn_encode_${ty.name}(enc, cmd_flags, ${ty.c_func_args()});
+        vn_instance_submit_command(vn_instance, submit);
+        if (cmd_data != local_cmd_data)
+            free(cmd_data);
+    }
 }
 </%def>\
 \
@@ -35,18 +35,19 @@ static inline ${ty.c_func_ret()} vn_call_${ty.name}(struct vn_instance *vn_insta
 {
     struct vn_instance_submit_command submit;
     vn_submit_${ty.name}(vn_instance, VK_COMMAND_GENERATE_REPLY_BIT_EXT, ${ty.c_func_args()}, &submit);
+    struct vn_cs_decoder *dec = vn_instance_get_command_reply(vn_instance, &submit);
 %   if ty.ret:
-    if (submit.reply_bo) {
-        const ${ty.ret.to_c()} = vn_decode_${ty.name}_reply(&submit.reply, ${ty.c_func_args()});
-        vn_renderer_bo_unref(submit.reply_bo);
+    if (dec) {
+        const ${ty.ret.to_c()} = vn_decode_${ty.name}_reply(dec, ${ty.c_func_args()});
+        vn_instance_free_command_reply(vn_instance, &submit);
         return ${ty.ret.name};
     } else {
         return VK_ERROR_OUT_OF_HOST_MEMORY;
     }
 %   else:
-    if (submit.reply_bo) {
-        vn_decode_${ty.name}_reply(&submit.reply, ${ty.c_func_args()});
-        vn_renderer_bo_unref(submit.reply_bo);
+    if (dec) {
+        vn_decode_${ty.name}_reply(dec, ${ty.c_func_args()});
+        vn_instance_free_command_reply(vn_instance, &submit);
     }
 %   endif
 }
