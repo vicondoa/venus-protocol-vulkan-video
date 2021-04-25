@@ -54,7 +54,7 @@ renderer, and are not exposed to applications.
             <member><type>uint32_t</type>                         <name>memoryTypeBits</name></member>
         </type>
 
-        <type category="struct" name="VkImportMemoryResourceInfoMESA">
+        <type category="struct" name="VkImportMemoryResourceInfoMESA" structextends="VkMemoryAllocateInfo">
             <member values="VK_STRUCTURE_TYPE_IMPORT_MEMORY_RESOURCE_INFO_MESA"><type>VkStructureType</type> <name>sType</name></member>
             <member optional="true">const <type>void</type>*      <name>pNext</name></member>
             <member><type>uint32_t</type>                         <name>resourceId</name></member>
