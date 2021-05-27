@@ -59,6 +59,16 @@ renderer, and are not exposed to applications.
             <member optional="true">const <type>void</type>*      <name>pNext</name></member>
             <member><type>uint32_t</type>                         <name>resourceId</name></member>
         </type>
+
+        <type category="struct" name="VkVenusExperimentalFeatures100000MESA">
+            <member><type>VkBool32</type>                         <name>memoryResourceAllocationSize</name></member>
+        </type>
+
+        <type category="struct" name="VkMemoryResourceAllocationSizeProperties100000MESA" structextends="VkMemoryResourcePropertiesMESA">
+            <member values="VK_STRUCTURE_TYPE_MEMORY_RESOURCE_ALLOCATION_SIZE_PROPERTIES_100000_MESA"><type>VkStructureType</type> <name>sType</name></member>
+            <member optional="true"><type>void</type>*            <name>pNext</name></member>
+            <member><type>uint64_t</type>                         <name>allocationSize</name></member>
+        </type>
     </types>
 
     <enums name="VkCommandStreamExecutionFlagBits" type="bitmask">
@@ -115,16 +125,22 @@ renderer, and are not exposed to applications.
             <param><type>uint32_t</type> <name>resourceId</name></param>
             <param><type>VkMemoryResourcePropertiesMESA</type>* <name>pMemoryResourceProperties</name></param>
         </command>
+        <command>
+            <proto><type>void</type> <name>vkGetVenusExperimentalFeatureData100000MESA</name></proto>
+            <param optional="false,true"><type>size_t</type>* <name>pDataSize</name></param>
+            <param optional="true" len="pDataSize"><type>void</type>* <name>pData</name></param>
+        </command>
     </commands>
 
     <extensions>
         <extension name="VK_MESA_venus_protocol" number="385" type="instance" author="MESA" contact="Chia-I Wu @olvaffe1" supported="vulkan">
             <require>
-                <enum value="0"                                             name="VK_MESA_VENUS_PROTOCOL_SPEC_VERSION"/>
+                <enum value="100000"                                        name="VK_MESA_VENUS_PROTOCOL_SPEC_VERSION"/>
                 <enum value="&quot;VK_MESA_venus_protocol&quot;"            name="VK_MESA_VENUS_PROTOCOL_EXTENSION_NAME"/>
                 <enum offset="0" extends="VkStructureType"                  name="VK_STRUCTURE_TYPE_RING_CREATE_INFO_MESA"/>
                 <enum offset="1" extends="VkStructureType"                  name="VK_STRUCTURE_TYPE_MEMORY_RESOURCE_PROPERTIES_MESA"/>
                 <enum offset="2" extends="VkStructureType"                  name="VK_STRUCTURE_TYPE_IMPORT_MEMORY_RESOURCE_INFO_MESA"/>
+                <enum offset="3" extends="VkStructureType"                  name="VK_STRUCTURE_TYPE_MEMORY_RESOURCE_ALLOCATION_SIZE_PROPERTIES_100000_MESA"/>
                 <type name="VkCommandStreamExecutionFlagBitsMESA"/>
                 <type name="VkCommandStreamExecutionFlagsMESA"/>
                 <type name="VkRingCreateFlagBitsMESA"/>
@@ -136,6 +152,8 @@ renderer, and are not exposed to applications.
                 <type name="VkRingCreateInfoMESA"/>
                 <type name="VkMemoryResourcePropertiesMESA"/>
                 <type name="VkImportMemoryResourceInfoMESA"/>
+                <type name="VkVenusExperimentalFeatures100000MESA"/>
+                <type name="VkMemoryResourceAllocationSizeProperties100000MESA"/>
                 <command name="vkSetReplyCommandStreamMESA"/>
                 <command name="vkSeekReplyCommandStreamMESA"/>
                 <command name="vkExecuteCommandStreamsMESA"/>
@@ -144,6 +162,7 @@ renderer, and are not exposed to applications.
                 <command name="vkNotifyRingMESA"/>
                 <command name="vkWriteRingExtraMESA"/>
                 <command name="vkGetMemoryResourcePropertiesMESA"/>
+                <command name="vkGetVenusExperimentalFeatureData100000MESA"/>
             </require>
         </extension>
     </extensions>
