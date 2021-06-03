@@ -805,7 +805,10 @@ class VkApi:
         complete_ver = complete_ver[(complete_ver.rindex('(') + 1):-1]
         complete_ver = complete_ver.replace(ver_ty.name, ver)
 
-        return 'VK_MAKE_VERSION(%s)' % complete_ver
+        if complete_ver.count(',') == 3:
+            return 'VK_MAKE_API_VERSION(%s)' % complete_ver
+        else:
+            return 'VK_MAKE_VERSION(%s)' % complete_ver
 
     def _post_parse_init(self):
         # resolve enum value aliases
