@@ -575,7 +575,6 @@ class VkEnums:
 
         if 'alias' in enum_elem.attrib:
             val = enum_elem.attrib['alias']
-            val = values[val]
         elif 'value' in enum_elem.attrib:
             val = enum_elem.attrib['value']
         elif 'bitpos' in enum_elem.attrib:
@@ -809,6 +808,20 @@ class VkApi:
         return 'VK_MAKE_VERSION(%s)' % complete_ver
 
     def _post_parse_init(self):
+        # resolve enum value aliases
+        for ty in self.type_table.values():
+            if ty.category != ty.ENUM or not ty.enums.values:
+                continue
+
+            for key, val in ty.enums.values.items():
+                if val not in ty.enums.values:
+                    continue
+
+                # resolve alias
+                while val in ty.enums.values:
+                    val = ty.enums.values[val]
+                ty.enums.values[key] = val
+
         self.vk_xml_version = self._get_xml_version(
                 self.type_table['VK_HEADER_VERSION'],
                 self.type_table['VK_HEADER_VERSION_COMPLETE'])
