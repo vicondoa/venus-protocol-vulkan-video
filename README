@@ -1,7 +1,9 @@
 Update vk.xml
 
- - copy vk.xml from Vulkan-Docs to xmls/
- - copy headers from Vulkan-Headers to include/
+ - ./utils/update_vk_xml.sh <VER>
+ - or manually
+   - copy vk.xml from Vulkan-Docs to xmls/
+   - copy headers from Vulkan-Headers to include/
 
 Add an extension
 
