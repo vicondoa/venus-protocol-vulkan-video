@@ -14,8 +14,10 @@
 ${ty.name}\
 % elif ty.category == ty.BASETYPE:
 typedef ${ty.typedef.name} ${ty.name}\
-% elif ty.category == ty.ENUM:
+% elif ty.category == ty.ENUM and ty.enums.bitwidth == 32:
 enum ${ty.name}\
+% elif ty.category == ty.ENUM and ty.enums.bitwidth == 64:
+typedef VkFlags64 ${ty.name}\
 % elif ty.category == ty.HANDLE:
 VK_DEFINE_${"" if ty.dispatchable else "NON_DISPATCHABLE_"}HANDLE(${ty.name})\
 % elif ty.category == ty.UNION:

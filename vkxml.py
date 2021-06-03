@@ -345,11 +345,14 @@ class VkType:
 
     @classmethod
     def _parse_bitmask(cls, type_elem, type_table):
-        assert(type_elem.find('type').text == 'VkFlags')
+        assert(type_elem.find('type').text in ['VkFlags', 'VkFlags64'])
 
         requires_ty = None
         if 'requires' in type_elem.attrib:
             requires = type_elem.attrib['requires']
+            requires_ty = cls._get_type(requires, type_table)
+        elif 'bitvalues' in type_elem.attrib:
+            requires = type_elem.attrib['bitvalues']
             requires_ty = cls._get_type(requires, type_table)
         return requires_ty
 
@@ -559,11 +562,13 @@ class VkType:
 class VkEnums:
     def __init__(self):
         self.bitmask = False
+        self.bitwidth = 32
         self.values = {}
         self.vk_xml_values = None
 
-    def init(self, bitmask, values):
+    def init(self, bitmask, bitwidth, values):
         self.bitmask = bitmask
+        self.bitwidth = bitwidth
         self.values = values
 
     def extend_enum(self, enum_elem, ext_number):
@@ -600,6 +605,9 @@ class VkEnums:
     def parse_enums(cls, enums_elem, type_table):
         name = enums_elem.attrib['name']
         bitmask = enums_elem.attrib['type'] == 'bitmask'
+        bitwidth = 32
+        if 'bitwidth' in enums_elem.attrib:
+            bitwidth = int(enums_elem.attrib['bitwidth'])
         values = {}
         for enum_elem in enums_elem.iterfind('enum'):
             cls._parse_enum(enum_elem, values)
@@ -612,7 +620,7 @@ class VkEnums:
             ty.enums = VkEnums()
             type_table[name] = ty
 
-        ty.enums.init(bitmask, values)
+        ty.enums.init(bitmask, bitwidth, values)
 
 class VkFeature:
     def __init__(self, api, name, number, types):

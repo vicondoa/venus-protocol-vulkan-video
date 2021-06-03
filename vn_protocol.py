@@ -317,7 +317,7 @@ class Gen:
             if self.var.is_blob() or self.var.ty.base.name == 'char':
                 self.func_stem = 'blob'
             elif self.var.ty.base.category == VkType.BITMASK:
-                self.func_stem = 'VkFlags'
+                self.func_stem = self.var.ty.base.typedef.name
             else:
                 self.func_stem = self.var.ty.base.name
 
