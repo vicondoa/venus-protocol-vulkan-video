@@ -71,6 +71,13 @@ def get_commands(api):
             if ty.category == ty.COMMAND and ty not in all_commands:
                 commands.append(Command(ty))
                 all_commands.add(ty)
+        for opt in ext.optional_types:
+            if opt not in VK_XML_EXTENSION_LIST:
+                continue
+            for ty in ext.optional_types[opt]:
+                if ty.category == ty.COMMAND and ty not in all_commands:
+                    commands.append(Command(ty))
+                    all_commands.add(ty)
         if commands:
             groups.append(Group(ext.name, commands))
 
