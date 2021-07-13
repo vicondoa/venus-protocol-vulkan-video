@@ -18,6 +18,12 @@ static inline void vn_dispatch_${ty.name}(struct vn_dispatch_context *ctx, VkCom
     }
 
     vn_decode_${ty.name}_args_temp(ctx->decoder, &args);
+% if ty.variables and ty.variables[0].ty.base.dispatchable:
+    if (!args.${ty.variables[0].name}) {
+        vn_cs_decoder_set_fatal(ctx->decoder);
+        return;
+    }
+% endif
 
     if (!vn_cs_decoder_get_fatal(ctx->decoder))
         ctx->dispatch_${ty.name}(ctx, &args);
