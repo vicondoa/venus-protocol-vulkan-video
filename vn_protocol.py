@@ -367,11 +367,16 @@ class Gen:
                     loop_type = 'size_t'
                     loop_count = 'strlen(%s) + 1' % self._var_name(level)
                 elif name:
-                    loop_var = self.ty.find_variables(name)[-1]
-                    deref = self._var_deref(loop_var)
+                    loop_vars = self.ty.find_variables(name)
 
-                    loop_type = loop_var.ty.base.name
+                    deref = self._var_deref(loop_vars[-1])
+                    loop_type = loop_vars[-1].ty.base.name
                     loop_count = expr.replace(name, deref + self.prefix + name)
+
+                    assert len(loop_vars) <= 2
+                    if len(loop_vars) > 1 or loop_vars[-1].ty.is_pointer():
+                        loop_count = '(%s%s ? %s : 0)' % (self.prefix,
+                                loop_vars[0].name, loop_count)
                 else:
                     loop_type = 'uint32_t'
                     loop_count = expr
