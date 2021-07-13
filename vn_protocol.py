@@ -706,7 +706,10 @@ class Gen:
         info = self.VariableInfo(ty, var, prefix, validity)
         if not self.is_serializable(var):
             assert(var.maybe_null())
-            info.func_stmt = 'assert(false)'
+            if self.is_driver:
+                info.func_stmt = 'assert(false)'
+            else:
+                info.func_stmt = 'vn_cs_decoder_set_fatal(dec)'
             return info
 
         # decode the encoded array size
