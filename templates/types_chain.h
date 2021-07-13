@@ -221,7 +221,12 @@ ${struct.vn_replace_struct_handle_body(ty, '_self')}\
 <%def name="vn_decode_chain_body(ty, variant='')">\
     VkStructureType stype;
     vn_decode_VkStructureType(dec, &stype);
+% if GEN.is_driver:
     assert(stype == ${ty.s_type});
+% else:
+    if (stype != ${ty.s_type})
+        vn_cs_decoder_set_fatal(dec);
+% endif
 
 % if '_temp' in variant:
     val->sType = stype;
