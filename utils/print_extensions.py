@@ -10,11 +10,10 @@ VN_PROTOCOL_DIR = Path(__file__).resolve().parent.parent
 sys.path.append(str(VN_PROTOCOL_DIR))
 
 from vkxml import VkRegistry
-from vn_protocol import VN_PROTOCOL_XMLS
+from vn_protocol import VN_PROTOCOL_VK_XML, VN_PROTOCOL_PRIVATE_XMLS
 
 def main():
-    reg = VkRegistry()
-    reg.parse_xmls(VN_PROTOCOL_XMLS)
+    reg = VkRegistry.parse(VN_PROTOCOL_VK_XML, VN_PROTOCOL_PRIVATE_XMLS)
 
     wsi = [
         'VK_KHR_display',

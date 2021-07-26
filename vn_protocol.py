@@ -16,8 +16,8 @@ VN_PROTOCOL_DIR = Path(__file__).resolve().parent
 VN_TEMPLATE_DIR = VN_PROTOCOL_DIR.joinpath('templates')
 VN_TEMPLATE_LOOKUP = TemplateLookup(str(VN_TEMPLATE_DIR))
 
-VN_PROTOCOL_XMLS = [
-    VN_PROTOCOL_DIR.joinpath('xmls/vk.xml'),
+VN_PROTOCOL_VK_XML = VN_PROTOCOL_DIR.joinpath('xmls/vk.xml')
+VN_PROTOCOL_PRIVATE_XMLS = [
     VN_PROTOCOL_DIR.joinpath('xmls/VK_EXT_command_serialization.xml'),
     VN_PROTOCOL_DIR.joinpath('xmls/VK_MESA_venus_protocol.xml'),
 ]
@@ -1321,9 +1321,7 @@ def generate_command_headers(generator, variant, banner, outdir):
 def main():
     args = get_args()
 
-    reg = VkRegistry()
-    reg.parse_xmls(VN_PROTOCOL_XMLS)
-
+    reg = VkRegistry.parse(VN_PROTOCOL_VK_XML, VN_PROTOCOL_PRIVATE_XMLS)
     gen = Gen(not args.renderer, reg)
     generators = get_generators(gen)
 

@@ -718,6 +718,8 @@ class VkExtension:
         return ext
 
 class VkRegistry:
+    """Represent a <registry>."""
+
     def __init__(self):
         self.platform_guards = {}
         self.tags = []
@@ -729,22 +731,27 @@ class VkRegistry:
         self.vk_xml_version = None
         self.max_vk_command_type_value = None
 
-    def parse_xmls(self, xmls):
-        vk_xml = xmls.pop(0)
-        self._parse_xml(vk_xml)
+    @staticmethod
+    def parse(vk_xml, private_xmls=[]):
+        """Parse vk.xml and optional private XMLs into a VkRegistry."""
+        reg = VkRegistry()
+        reg._parse_xml(vk_xml)
 
-        self.vk_xml_extension_count = len(self.extensions)
-        for ty in self.type_table.values():
+        reg.vk_xml_extension_count = len(reg.extensions)
+        for ty in reg.type_table.values():
             if ty.category == ty.ENUM:
                 ty.enums.vk_xml_values = set(ty.enums.values.keys())
 
-        for xml in xmls:
-            self._parse_xml(xml)
+        for xml in private_xmls:
+            reg._parse_xml(xml)
 
-        self._post_parse_init()
-        self._validate()
+        reg._resolve()
+        reg._validate()
+
+        return reg
 
     def upper_name(self, name):
+        """Convert FooBarEXT to FOO_BAR_EXT."""
         suffix = ''
         for tag in self.tags:
             if name.endswith(tag):
@@ -775,31 +782,38 @@ class VkRegistry:
                 self._parse_extensions(child)
 
     def _parse_platforms(self, platforms_elem):
+        """Parse <platforms>."""
         for plat_elem in platforms_elem.iterfind('platform'):
             self.platform_guards[plat_elem.attrib['name']] = \
                     plat_elem.attrib['protect']
 
     def _parse_tags(self, tags_elem):
+        """Parse <tags>."""
         for tag_elem in tags_elem.iterfind('tag'):
             self.tags.append(tag_elem.attrib['name'])
 
     def _parse_types(self, types_elem):
+        """Parse <types>."""
         for type_elem in types_elem.iterfind('type'):
             VkType.parse_type(type_elem, self.type_table)
 
     def _parse_enums(self, enums_elem):
+        """Parse <enums>.  There is one for each enumerated type."""
         if 'type' in enums_elem.attrib:
             VkEnums.parse_enums(enums_elem, self.type_table)
 
     def _parse_commands(self, commands_elem):
+        """Parse <commands>."""
         for command_elem in commands_elem.iterfind('command'):
             VkType.parse_command(command_elem, self.type_table)
 
     def _parse_feature(self, feature_elem):
+        """Parse <feature>.  There is one for each Vulkan version."""
         feat = VkFeature.parse_feature(feature_elem, self.type_table)
         self.features.append(feat)
 
     def _parse_extensions(self, extensions_elem):
+        """Parse <extensions>."""
         for extension_elem in extensions_elem.iterfind('extension'):
             ext = VkExtension.parse_extension(extension_elem, self.type_table)
             self.extensions.append(ext)
@@ -818,7 +832,8 @@ class VkRegistry:
         else:
             return 'VK_MAKE_VERSION(%s)' % complete_ver
 
-    def _post_parse_init(self):
+    def _resolve(self):
+        """Resolve after all XMLs are parsed."""
         # resolve enum value aliases
         for ty in self.type_table.values():
             if ty.category != ty.ENUM or not ty.enums.values:
@@ -844,6 +859,7 @@ class VkRegistry:
         self.max_vk_command_type_value = max_val
 
     def _validate(self):
+        """Sanity check."""
         for ty in self.type_table.values():
             ty.validate()
 
