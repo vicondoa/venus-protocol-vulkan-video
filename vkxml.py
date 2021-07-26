@@ -3,7 +3,7 @@
 
 import xml.etree.ElementTree as ET
 
-class VkCVar:
+class VkDecl:
     """Parse a C-declaration like 'int* const* const blah[4]' into
 
     name := 'blah'
@@ -60,8 +60,8 @@ class VkCVar:
 
         return c_decl
 
-    @classmethod
-    def from_c(cls, c_decl):
+    @staticmethod
+    def from_c(c_decl):
         """This is very limited."""
         # extract bit size
         bit_size = None
@@ -93,9 +93,9 @@ class VkCVar:
 
         ref_quals = [qual.strip() for qual in quals]
         qual = ref_quals.pop()
-        type_decor = cls.Decor(qual, array_size, bit_size, ref_quals)
+        type_decor = VkDecl.Decor(qual, array_size, bit_size, ref_quals)
 
-        return cls(name, type_name, type_decor)
+        return VkDecl(name, type_name, type_decor)
 
 class VkVariable:
     def __init__(self, ty, name='unnamed', attrs={}):
@@ -121,7 +121,7 @@ class VkVariable:
         return self.name == 'pNext'
 
     def to_c(self):
-        return VkCVar(self.name, self.ty.base.name, self.ty.decor).to_c(False)
+        return VkDecl(self.name, self.ty.base.name, self.ty.decor).to_c(False)
 
 class VkType:
     INCLUDE        = 0
@@ -306,7 +306,7 @@ class VkType:
 
     @staticmethod
     def _get_type(key, type_table):
-        if isinstance(key, VkCVar):
+        if isinstance(key, VkDecl):
             base_name = key.type_name
             name = key.to_c(True)
         else:
@@ -350,16 +350,16 @@ class VkType:
     @staticmethod
     def _parse_variable(elem, type_table):
         c_decl = VkType._get_inner_text(elem)
-        c_var = VkCVar.from_c(c_decl)
+        decl = VkDecl.from_c(c_decl)
 
         # sanity check
-        assert c_var.name == elem.find('name').text
-        assert c_var.type_name == elem.find('type').text
+        assert decl.name == elem.find('name').text
+        assert decl.type_name == elem.find('type').text
         enum_elem = elem.find('enum')
         if enum_elem is not None:
-            assert c_var.type_decor.dim == enum_elem.text
+            assert decl.type_decor.dim == enum_elem.text
 
-        ty = VkType._get_type(c_var, type_table)
+        ty = VkType._get_type(decl, type_table)
 
         attrs = {}
         if 'values' in elem.attrib:
@@ -405,7 +405,7 @@ class VkType:
         if 'optional' in elem.attrib:
             attrs['optional'] = elem.attrib['optional'].split(',')
 
-        return VkVariable(ty, c_var.name, attrs)
+        return VkVariable(ty, decl.name, attrs)
 
     @staticmethod
     def _parse_type_define(ty, type_elem, type_table):
@@ -479,7 +479,7 @@ class VkType:
     def _parse_type_funcpointer(ty, type_elem, type_table):
         c_decls = VkType._get_inner_text(type_elem).splitlines()
 
-        # clean up the first line to abuse VkCVar
+        # clean up the first line to abuse VkDecl
         c_decl = c_decls.pop(0)
         assert c_decl.startswith('typedef ')
         c_decl = c_decl[8:]
@@ -487,18 +487,18 @@ class VkType:
         index = c_decl.rfind('(')
         c_decl = c_decl[:index]
 
-        c_var = VkCVar.from_c(c_decl)
-        assert ty.name == c_var.name
+        decl = VkDecl.from_c(c_decl)
+        assert ty.name == decl.name
 
-        ret_ty = VkType._get_type(c_var, type_table)
+        ret_ty = VkType._get_type(decl, type_table)
         if ret_ty.name == 'void':
             ret_ty = None
 
         params = []
         for c_decl in c_decls:
-            c_var = VkCVar.from_c(c_decl)
-            param_ty = VkType._get_type(c_var, type_table)
-            params.append(VkVariable(param_ty, c_var.name))
+            decl = VkDecl.from_c(c_decl)
+            param_ty = VkType._get_type(decl, type_table)
+            params.append(VkVariable(param_ty, decl.name))
 
         ty.variables = params
         if ret_ty:
@@ -547,9 +547,9 @@ class VkType:
         for child in command_elem:
             if child.tag == 'proto':
                 c_decl = VkType._get_inner_text(child)
-                c_var = VkCVar.from_c(c_decl)
-                name = c_var.name
-                ret_ty = VkType._get_type(c_var, type_table)
+                decl = VkDecl.from_c(c_decl)
+                name = decl.name
+                ret_ty = VkType._get_type(decl, type_table)
                 if ret_ty.name == 'void':
                     ret_ty = None
             elif child.tag == 'param':
@@ -890,8 +890,8 @@ def test():
         'int* const a[3]',
     ]
     for c_decl in C_DECLS:
-        c_var = VkCVar.from_c(c_decl)
-        assert c_var.to_c(False) == c_decl
+        decl = VkDecl.from_c(c_decl)
+        assert decl.to_c(False) == c_decl
 
 if __name__ == '__main__':
     test()
