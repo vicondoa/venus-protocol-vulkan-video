@@ -4,7 +4,7 @@
  */
 
 <%def name="vn_decode_handle_lookup(ty)">\
-<% assert(not GEN.is_driver) %>\
+<% assert not GEN.is_driver %>\
 static inline void
 vn_decode_${ty.name}_lookup(struct vn_cs_decoder *dec, ${ty.name} *val)
 {
@@ -41,7 +41,7 @@ vn_decode_${ty.name}_lookup(struct vn_cs_decoder *dec, ${ty.name} *val)
 </%def>
 
 <%def name="vn_replace_handle_handle_body(ty)">\
-<% assert(not GEN.is_driver) %>\
+<% assert not GEN.is_driver %>\
 % if ty.dispatchable:
     *val = (${ty.name})(uintptr_t)vn_cs_get_object_handle((const void **)val, ${ty.attrs['c_objtype']});
 % else:

@@ -176,33 +176,33 @@ class VkType:
         self.decor = None
 
     def init(self, name, category):
-        assert(name and self.name is None)
-        assert(category < self.CATEGORY_COUNT and self.category is None)
+        assert name and self.name is None
+        assert category < self.CATEGORY_COUNT and self.category is None
         self.name = name
         self.category = category
         if category != self.DERIVED:
             self.base = self
 
     def validate(self):
-        assert(self.name is not None)
-        assert(self.category is not None)
-        assert(self.base == self.base.base)
+        assert self.name is not None
+        assert self.category is not None
+        assert self.base == self.base.base
 
         if self.category != self.INCLUDE:
-            assert(self.base.name.isidentifier())
+            assert self.base.name.isidentifier()
 
         if self.category == self.DERIVED:
-            assert(self.base != self)
-            assert(self.decor)
+            assert self.base != self
+            assert self.decor
         else:
-            assert(self.base == self)
-            assert(self.decor is None)
+            assert self.base == self
+            assert self.decor is None
             if self.category == self.BASETYPE and self.typedef:
-                assert(self.typedef == self.typedef.base)
+                assert self.typedef == self.typedef.base
 
         if self.s_type:
-            assert(self.variables[0].name == 'sType')
-            assert(self.variables[1].name == 'pNext')
+            assert self.variables[0].name == 'sType'
+            assert self.variables[1].name == 'pNext'
 
     def is_array(self):
         return bool(self.decor.dim) if self.decor else False
@@ -338,14 +338,14 @@ class VkType:
         name = elem.attrib['name']
         alias = elem.attrib['alias']
 
-        assert(name not in type_table)
+        assert name not in type_table
         ty = cls._get_type(alias, type_table)
         ty.aliases.append(name)
         type_table[name] = ty
 
     @classmethod
     def _parse_bitmask(cls, type_elem, type_table):
-        assert(type_elem.find('type').text in ['VkFlags', 'VkFlags64'])
+        assert type_elem.find('type').text in ['VkFlags', 'VkFlags64']
 
         requires_ty = None
         if 'requires' in type_elem.attrib:
@@ -362,11 +362,11 @@ class VkType:
         c_var = VkCVar.from_c(c_decl)
 
         # sanity check
-        assert(c_var.name == elem.find('name').text)
-        assert(c_var.type_name == elem.find('type').text)
+        assert c_var.name == elem.find('name').text
+        assert c_var.type_name == elem.find('type').text
         enum_elem = elem.find('enum')
         if enum_elem is not None:
-            assert(c_var.type_decor.dim == enum_elem.text)
+            assert c_var.type_decor.dim == enum_elem.text
 
         ty = cls._get_type(c_var, type_table)
 
@@ -444,7 +444,7 @@ class VkType:
 
         # clean up the first line to abuse VkCVar
         c_decl = c_decls.pop(0)
-        assert(c_decl.startswith('typedef '))
+        assert c_decl.startswith('typedef ')
         c_decl = c_decl[8:]
         c_decl = c_decl.replace('(VKAPI_PTR * ', '', 1)
         index = c_decl.rfind('(')
@@ -525,7 +525,7 @@ class VkType:
         elif category == cls.FUNCPOINTER:
             pfn, params, ret_ty = cls._parse_funcpointer(type_elem,
                     type_table)
-            assert(pfn == name)
+            assert pfn == name
             ty.variables = params
             if ret_ty:
                 ty.ret = VkVariable(ret_ty, 'ret')
@@ -551,7 +551,7 @@ class VkType:
                 var = cls._parse_variable(child, type_table)
                 params.append(var)
 
-        assert(name == command_elem.find('proto').find('name').text)
+        assert name == command_elem.find('proto').find('name').text
 
         ty = cls._get_type(name, type_table)
         ty.init(name, cls.COMMAND)
@@ -588,16 +588,16 @@ class VkEnums:
         elif 'offset' in enum_elem.attrib:
             offset = int(enum_elem.attrib['offset'])
             extnumber = int(enum_elem.attrib.get('extnumber', ext_number))
-            assert(extnumber > 0)
+            assert extnumber > 0
             val = str(1000000000 + (extnumber - 1) * 1000 + offset)
         else:
-            assert(False)
+            assert False
 
         if 'dir' in enum_elem.attrib:
             val = enum_elem.attrib['dir'] + val
 
         if key in values:
-            assert(values[key] == val)
+            assert values[key] == val
         else:
             values[key] = val
 
@@ -807,7 +807,7 @@ class VkApi:
     def _get_xml_version(self, ver_ty, complete_ver_ty):
         ver = ver_ty.define
         ver = ver[(ver.rindex(' ') + 1):]
-        assert(ver.isdigit())
+        assert ver.isdigit()
 
         complete_ver = complete_ver_ty.define
         complete_ver = complete_ver[(complete_ver.rindex('(') + 1):-1]
@@ -862,7 +862,7 @@ def test():
     ]
     for c_decl in C_DECLS:
         c_var = VkCVar.from_c(c_decl)
-        assert(c_var.to_c(False) == c_decl)
+        assert c_var.to_c(False) == c_decl
 
 if __name__ == '__main__':
     test()

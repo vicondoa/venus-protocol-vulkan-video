@@ -24,7 +24,7 @@ vn_sizeof_${ty.name}_array(const ${ty.name} *val, uint32_t count)
 % elif ty.category == ty.ENUM and ty.enums.bitwidth == 64:
     return vn_sizeof_uint64_t_array((const uint64_t *)val, count);
 % else:
-<% assert(False) %>
+<% assert False %>
 % endif
 }
 </%def>
@@ -49,7 +49,7 @@ vn_encode_${ty.name}_array(struct vn_cs_encoder *enc, const ${ty.name} *val, uin
 % elif ty.category == ty.ENUM and ty.enums.bitwidth == 64:
     vn_encode_uint64_t_array(enc, (const uint64_t *)val, count);
 % else:
-<% assert(False) %>
+<% assert False %>
 % endif
 }
 </%def>
@@ -74,7 +74,7 @@ vn_decode_${ty.name}_array(struct vn_cs_decoder *dec, ${ty.name} *val, uint32_t 
 % elif ty.category == ty.ENUM and ty.enums.bitwidth == 64:
     vn_decode_uint64_t_array(dec, (uint64_t *)val, count);
 % else:
-<% assert(False) %>
+<% assert False %>
 % endif
 }
 </%def>

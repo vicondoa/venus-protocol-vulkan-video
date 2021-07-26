@@ -127,7 +127,7 @@ class Gen:
                 if key not in command_type_ty.enums.values:
                     raise KeyError('%s not defined for %s' % (key, command_type_ty.name))
             enum_value_count += 1 + len(cmd.aliases)
-        assert(enum_value_count == len(command_type_ty.enums.values))
+        assert enum_value_count == len(command_type_ty.enums.values)
 
     def _set_type_needs(self, ty):
         for var in ty.variables:
@@ -257,7 +257,7 @@ class Gen:
         elif ty.category == ty.UNION:
             return ty.name in self.UNION_DEFAULT_TAGS
 
-        assert(ty.category in [ty.STRUCT, ty.COMMAND])
+        assert ty.category in [ty.STRUCT, ty.COMMAND]
         if ty.category == ty.STRUCT:
             if ty.name in ['VkBaseInStructure', 'VkBaseOutStructure']:
                 return False
@@ -642,13 +642,13 @@ class Gen:
     def _sizeof_variable_info(self, ty, var, prefix, validity, dst):
         info = self.VariableInfo(ty, var, prefix, validity)
         if not self.is_serializable(var):
-            assert(var.maybe_null())
+            assert var.maybe_null()
             info.func_stmt = 'assert(false)'
             return info
 
         # save strlen result to a temp
         if var.is_string():
-            assert(info.array_size.startswith('strlen'))
+            assert info.array_size.startswith('strlen')
             info.func_array_size_stmt = \
                     'const size_t string_size = %s' % info.array_size
             info.array_size = 'string_size'
@@ -676,13 +676,13 @@ class Gen:
     def _encode_variable_info(self, ty, var, prefix, validity):
         info = self.VariableInfo(ty, var, prefix, validity)
         if not self.is_serializable(var):
-            assert(var.maybe_null())
+            assert var.maybe_null()
             info.func_stmt = 'assert(false)'
             return info
 
         # save strlen result to a temp
         if var.is_string():
-            assert(info.array_size.startswith('strlen'))
+            assert info.array_size.startswith('strlen')
             info.func_array_size_stmt = \
                     'const size_t string_size = %s' % info.array_size
             info.array_size = 'string_size'
@@ -710,7 +710,7 @@ class Gen:
     def _decode_variable_info(self, ty, var, prefix, validity, alloc_storage):
         info = self.VariableInfo(ty, var, prefix, validity)
         if not self.is_serializable(var):
-            assert(var.maybe_null())
+            assert var.maybe_null()
             if self.is_driver:
                 info.func_stmt = 'assert(false)'
             else:
@@ -720,7 +720,7 @@ class Gen:
         # decode the encoded array size
         if info.array_size:
             if var.is_string():
-                assert(info.array_size.startswith('strlen'))
+                assert info.array_size.startswith('strlen')
                 info.func_array_size_stmt = \
                         'const size_t string_size = vn_decode_array_size(dec, UINT64_MAX)'
                 info.array_size = 'string_size'
@@ -1144,7 +1144,7 @@ class GenStructsAndCommands:
                 if g.match_command(cmd):
                     group = g
                     break
-            assert(group)
+            assert group
             self._add_type_set_recursive(group.type_set, cmd)
 
         # make sure each type belongs to just one type_set
@@ -1169,7 +1169,7 @@ class GenStructsAndCommands:
                 if g.match_command(cmd):
                     group = g
                     break
-            assert(group)
+            assert group
             self._add_group_recursive(group, cmd)
 
     def _add_type_set_recursive(self, type_set, ty):
@@ -1195,7 +1195,7 @@ class GenStructsAndCommands:
         # redirect to base group
         if ty not in group.type_set:
             group = self.groups[-1]
-            assert(ty in group.type_set)
+            assert ty in group.type_set
 
         if ty in group.generated:
             return

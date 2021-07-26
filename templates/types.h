@@ -25,7 +25,7 @@ union ${ty.name}\
 % elif ty.category == ty.STRUCT:
 struct ${ty.name}${" chain" if ty.s_type else ""}\
 % else:
-<% assert(False) %>
+<% assert False %>
 % endif
 </%def>
 
@@ -44,7 +44,7 @@ ${struct.vn_sizeof_struct_body(ty)}\
 % elif ty.category == ty.STRUCT and ty.s_type:
 ${chain.vn_sizeof_chain_body(ty)}\
 % else:
-<% assert(False) %>
+<% assert False %>
 % endif
 }
 </%def>
@@ -73,7 +73,7 @@ ${struct.vn_encode_struct_body(ty)}\
 % elif ty.category == ty.STRUCT and ty.s_type:
 ${chain.vn_encode_chain_body(ty)}\
 % else:
-<% assert(False) %>
+<% assert False %>
 % endif
 }
 </%def>
@@ -102,7 +102,7 @@ ${struct.vn_decode_struct_body(ty)}\
 % elif ty.category == ty.STRUCT and ty.s_type:
 ${chain.vn_decode_chain_body(ty)}\
 % else:
-<% assert(False) %>
+<% assert False %>
 % endif
 }
 </%def>
@@ -133,7 +133,7 @@ ${struct.vn_decode_struct_body(ty, '_temp')}\
 % elif ty.category == ty.STRUCT and ty.s_type:
 ${chain.vn_decode_chain_body(ty, '_temp')}\
 % else:
-<% assert(False) %>
+<% assert False %>
 % endif
 }
 </%def>
@@ -153,7 +153,7 @@ ${struct.vn_sizeof_struct_body(ty, '_partial')}\
 % elif ty.category == ty.STRUCT and ty.s_type:
 ${chain.vn_sizeof_chain_body(ty, '_partial')}\
 % else:
-<% assert(False) %>
+<% assert False %>
 % endif
 }
 </%def>
@@ -173,7 +173,7 @@ ${struct.vn_encode_struct_body(ty, '_partial')}\
 % elif ty.category == ty.STRUCT and ty.s_type:
 ${chain.vn_encode_chain_body(ty, '_partial')}\
 % else:
-<% assert(False) %>
+<% assert False %>
 % endif
 }
 </%def>
@@ -193,7 +193,7 @@ ${struct.vn_decode_struct_body(ty, '_partial_temp')}\
 % elif ty.category == ty.STRUCT and ty.s_type:
 ${chain.vn_decode_chain_body(ty, '_partial_temp')}\
 % else:
-<% assert(False) %>
+<% assert False %>
 % endif
 }
 </%def>
@@ -209,7 +209,7 @@ ${struct.vn_replace_struct_handle_body(ty)}\
 % elif ty.category == ty.STRUCT and ty.s_type and not GEN.is_driver:
 ${chain.vn_replace_chain_handle_body(ty)}\
 % else:
-<% assert(False) %>
+<% assert False %>
 % endif
 }
 </%def>
