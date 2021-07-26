@@ -661,6 +661,8 @@ class VkFeature:
         return cls(api, name, number, types)
 
 class VkExtension:
+    """Represent a <extension>."""
+
     def __init__(self, name, number, supported):
         self.name = name
         self.number = int(number)
@@ -674,13 +676,14 @@ class VkExtension:
         self.types = []
         self.optional_types = {}
 
-    @classmethod
-    def parse_extension(cls, elem, type_table):
+    @staticmethod
+    def parse_extension(elem, type_table):
+        """Parse <extension> into a VkExtension."""
         name = elem.attrib['name']
         number = elem.attrib['number']
         supported = elem.attrib['supported']
 
-        ext = cls(name, number, supported)
+        ext = VkExtension(name, number, supported)
 
         ext.platform = elem.attrib.get('platform')
         ext.promoted = elem.attrib.get('promotedto')
@@ -690,9 +693,8 @@ class VkExtension:
             ext.requires = reqs.split(',')
 
         for require_elem in elem.iterfind('require'):
-            for enum_elem in require_elem:
-                if enum_elem.tag != 'enum':
-                    continue
+            # parse SPEC_VERSION to get the extension version
+            for enum_elem in require_elem.iterfind('enum'):
                 if enum_elem.attrib['name'].endswith('SPEC_VERSION'):
                     ext.version = int(enum_elem.attrib['value'])
                     break
@@ -703,6 +705,7 @@ class VkExtension:
             require_types = VkFeature.parse_require(
                     require_elem, type_table, number)
 
+            # check if this <require> depends on another extension
             require_dep = require_elem.attrib.get('extension')
             if require_dep:
                 if require_dep not in ext.optional_types:
