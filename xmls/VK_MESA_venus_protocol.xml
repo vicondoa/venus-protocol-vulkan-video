@@ -72,11 +72,11 @@ renderer, and are not exposed to applications.
         </type>
     </types>
 
-    <enums name="VkCommandStreamExecutionFlagBits" type="bitmask">
+    <enums name="VkCommandStreamExecutionFlagBitsMESA" type="bitmask">
     </enums>
-    <enums name="VkRingCreateFlagBits" type="bitmask">
+    <enums name="VkRingCreateFlagBitsMESA" type="bitmask">
     </enums>
-    <enums name="VkRingNotifyFlagBits" type="bitmask">
+    <enums name="VkRingNotifyFlagBitsMESA" type="bitmask">
     </enums>
 
     <commands>
