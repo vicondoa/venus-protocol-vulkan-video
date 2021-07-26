@@ -560,22 +560,28 @@ class VkType:
             ty.ret = VkVariable(ret_ty, 'ret')
 
 class VkEnums:
+    """Represent a <enums>."""
+
     def __init__(self):
-        self.bitmask = False
         self.bitwidth = 32
         self.values = {}
         self.vk_xml_values = None
 
-    def init(self, bitmask, bitwidth, values):
-        self.bitmask = bitmask
+    def init_values(self, bitwidth, values):
+        assert not self.values
         self.bitwidth = bitwidth
         self.values = values
 
-    def extend_enum(self, enum_elem, ext_number):
-        self._parse_enum(enum_elem, self.values, ext_number)
+    def extend_value(self, enum_elem, ext_number):
+        key, val = self._parse_enum(enum_elem, ext_number)
+        if key in self.values:
+            assert self.values[key] == val
+        else:
+            self.values[key] = val
 
     @staticmethod
-    def _parse_enum(enum_elem, values, ext_number=None):
+    def _parse_enum(enum_elem, ext_number=None):
+        """Parse <enum> into a (key, val) pair."""
         key = enum_elem.attrib['name']
 
         if 'alias' in enum_elem.attrib:
@@ -596,31 +602,26 @@ class VkEnums:
         if 'dir' in enum_elem.attrib:
             val = enum_elem.attrib['dir'] + val
 
-        if key in values:
-            assert values[key] == val
-        else:
-            values[key] = val
+        return key, val
 
-    @classmethod
-    def parse_enums(cls, enums_elem, type_table):
+    @staticmethod
+    def parse_enums(enums_elem, type_table):
+        """Parse <enums> and update the corresponding VkType."""
         name = enums_elem.attrib['name']
-        bitmask = enums_elem.attrib['type'] == 'bitmask'
+
         bitwidth = 32
         if 'bitwidth' in enums_elem.attrib:
             bitwidth = int(enums_elem.attrib['bitwidth'])
+
         values = {}
         for enum_elem in enums_elem.iterfind('enum'):
-            cls._parse_enum(enum_elem, values)
+            key, val = VkEnums._parse_enum(enum_elem, values)
+            assert key not in values
+            values[key] = val
 
-        if name in type_table:
-            ty = type_table[name]
-        else:
-            ty = VkType()
-            ty.init(name, VkType.ENUM)
-            ty.enums = VkEnums()
-            type_table[name] = ty
-
-        ty.enums.init(bitmask, bitwidth, values)
+        # look up and update VkType
+        ty = type_table[name]
+        ty.enums.init_values(bitwidth, values)
 
 class VkFeature:
     """Represent a <feature>."""
@@ -640,7 +641,7 @@ class VkFeature:
                 if 'extends' not in child.attrib:
                     continue
                 ty = type_table[child.attrib['extends']]
-                ty.enums.extend_enum(child, ext_number)
+                ty.enums.extend_value(child, ext_number)
             elif child.tag in ['type', 'command']:
                 name = child.attrib['name']
                 ty = type_table[name]
