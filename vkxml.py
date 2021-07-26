@@ -623,6 +623,8 @@ class VkEnums:
         ty.enums.init(bitmask, bitwidth, values)
 
 class VkFeature:
+    """Represent a <feature>."""
+
     def __init__(self, api, name, number, types):
         self.api = api
         self.name = name
@@ -631,6 +633,7 @@ class VkFeature:
 
     @staticmethod
     def parse_require(require_elem, type_table, ext_number=None):
+        """Parse <require> into a list of VkType."""
         types = []
         for child in require_elem:
             if child.tag == 'enum':
@@ -645,20 +648,21 @@ class VkFeature:
 
         return types
 
-    @classmethod
-    def parse_feature(cls, feature_elem, type_table):
+    @staticmethod
+    def parse_feature(feature_elem, type_table):
+        """Parse <feature> into a VkFeature."""
         api = feature_elem.attrib['api']
         name = feature_elem.attrib['name']
         number = feature_elem.attrib['number']
 
         types = []
         for require_elem in feature_elem.iterfind('require'):
-            require_types = cls.parse_require(require_elem, type_table)
+            require_types = VkFeature.parse_require(require_elem, type_table)
             for ty in require_types:
                 if ty not in types:
                     types.append(ty)
 
-        return cls(api, name, number, types)
+        return VkFeature(api, name, number, types)
 
 class VkExtension:
     """Represent a <extension>."""
