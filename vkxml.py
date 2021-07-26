@@ -304,8 +304,8 @@ class VkType:
                 text.append(child.tail)
         return ' '.join(text)
 
-    @classmethod
-    def _get_type(cls, key, type_table):
+    @staticmethod
+    def _get_type(key, type_table):
         if isinstance(key, VkCVar):
             base_name = key.type_name
             name = key.to_c(True)
@@ -313,52 +313,43 @@ class VkType:
             base_name = key
             name = key
 
+        # return the type if exists
         if name in type_table:
             return type_table[name]
 
+        # get (or create) the base type first
         if base_name in type_table:
             base_ty = type_table[base_name]
         else:
-            base_ty = cls()
+            base_ty = VkType()
             type_table[base_name] = base_ty
 
+        # this is a base type
         if name == base_name:
-            ty = base_ty
-        else:
-            ty = cls()
-            ty.init(name, cls.DERIVED)
-            ty.base = base_ty
-            ty.decor = key.type_decor
-            type_table[name] = ty
+            return base_ty
+
+        # create the derived type
+        ty = VkType()
+        ty.init(name, ty.DERIVED)
+        ty.base = base_ty
+        ty.decor = key.type_decor
+        type_table[name] = ty
 
         return ty
 
-    @classmethod
-    def _parse_alias(cls, elem, type_table):
-        name = elem.attrib['name']
-        alias = elem.attrib['alias']
+    @staticmethod
+    def _parse_alias(type_elem, type_table):
+        name = type_elem.attrib['name']
+        alias = type_elem.attrib['alias']
 
         assert name not in type_table
-        ty = cls._get_type(alias, type_table)
+        ty = VkType._get_type(alias, type_table)
         ty.aliases.append(name)
         type_table[name] = ty
 
-    @classmethod
-    def _parse_bitmask(cls, type_elem, type_table):
-        assert type_elem.find('type').text in ['VkFlags', 'VkFlags64']
-
-        requires_ty = None
-        if 'requires' in type_elem.attrib:
-            requires = type_elem.attrib['requires']
-            requires_ty = cls._get_type(requires, type_table)
-        elif 'bitvalues' in type_elem.attrib:
-            requires = type_elem.attrib['bitvalues']
-            requires_ty = cls._get_type(requires, type_table)
-        return requires_ty
-
-    @classmethod
-    def _parse_variable(cls, elem, type_table):
-        c_decl = cls._get_inner_text(elem)
+    @staticmethod
+    def _parse_variable(elem, type_table):
+        c_decl = VkType._get_inner_text(elem)
         c_var = VkCVar.from_c(c_decl)
 
         # sanity check
@@ -368,7 +359,7 @@ class VkType:
         if enum_elem is not None:
             assert c_var.type_decor.dim == enum_elem.text
 
-        ty = cls._get_type(c_var, type_table)
+        ty = VkType._get_type(c_var, type_table)
 
         attrs = {}
         if 'values' in elem.attrib:
@@ -416,11 +407,48 @@ class VkType:
 
         return VkVariable(ty, c_var.name, attrs)
 
-    @classmethod
-    def _parse_struct(cls, type_elem, type_table):
+    @staticmethod
+    def _parse_type_define(ty, type_elem, type_table):
+        # get and save the #define macro
+        ty.define = VkType._get_inner_text(type_elem)
+
+    @staticmethod
+    def _parse_type_basetype(ty, type_elem, type_table):
+        typedef_elem = type_elem.find('type')
+        if typedef_elem is not None:
+            ty.typedef = VkType._get_type(typedef_elem.text, type_table)
+
+    @staticmethod
+    def _parse_type_handle(ty, type_elem, type_table):
+        if type_elem.find('type').text == 'VK_DEFINE_HANDLE':
+            ty.dispatchable = True
+
+    @staticmethod
+    def _parse_type_enum(ty, type_elem, type_table):
+        # enum values will be filled in when <enums> is parsed
+        ty.enums = VkEnums()
+
+    @staticmethod
+    def _parse_type_bitmask(ty, type_elem, type_table):
+        to = type_elem.find('type').text
+        assert to in ['VkFlags', 'VkFlags64']
+
+        requires_ty = None
+        if 'requires' in type_elem.attrib:
+            requires = type_elem.attrib['requires']
+            requires_ty = VkType._get_type(requires, type_table)
+        elif 'bitvalues' in type_elem.attrib:
+            requires = type_elem.attrib['bitvalues']
+            requires_ty = VkType._get_type(requires, type_table)
+
+        ty.typedef = VkType._get_type(to, type_table)
+        ty.requires = requires_ty
+
+    @staticmethod
+    def _parse_type_struct(ty, type_elem, type_table):
         members = []
         for member_elem in type_elem.iterfind('member'):
-            var = cls._parse_variable(member_elem, type_table)
+            var = VkType._parse_variable(member_elem, type_table)
             members.append(var)
 
         s_type = None
@@ -430,17 +458,26 @@ class VkType:
         struct_extends = []
         if 'structextends' in type_elem.attrib:
             struct_names = type_elem.attrib['structextends'].split(',')
-            struct_extends = [cls._get_type(name, type_table) for
+            struct_extends = [VkType._get_type(name, type_table) for
                     name in struct_names]
 
         returnedonly = type_elem.attrib.get(
                 'returnedonly', 'false') != 'false'
 
-        return members, s_type, struct_extends, returnedonly
+        ty.variables = members
+        ty.s_type = s_type
+        for struct_ty in struct_extends:
+            struct_ty.p_next.append(ty)
+        if returnedonly:
+            ty.attrs['returnedonly'] = True
 
-    @classmethod
-    def _parse_funcpointer(cls, type_elem, type_table):
-        c_decls = cls._get_inner_text(type_elem).splitlines()
+    @staticmethod
+    def _parse_type_union(ty, type_elem, type_table):
+        VkType._parse_type_struct(ty, type_elem, type_table)
+
+    @staticmethod
+    def _parse_type_funcpointer(ty, type_elem, type_table):
+        c_decls = VkType._get_inner_text(type_elem).splitlines()
 
         # clean up the first line to abuse VkCVar
         c_decl = c_decls.pop(0)
@@ -451,36 +488,40 @@ class VkType:
         c_decl = c_decl[:index]
 
         c_var = VkCVar.from_c(c_decl)
-        ret_ty = cls._get_type(c_var, type_table)
+        assert ty.name == c_var.name
+
+        ret_ty = VkType._get_type(c_var, type_table)
         if ret_ty.name == 'void':
             ret_ty = None
-        name = c_var.name
 
         params = []
         for c_decl in c_decls:
             c_var = VkCVar.from_c(c_decl)
-            param_ty = cls._get_type(c_var, type_table)
+            param_ty = VkType._get_type(c_var, type_table)
             params.append(VkVariable(param_ty, c_var.name))
 
-        return name, params, ret_ty
+        ty.variables = params
+        if ret_ty:
+            ty.ret = VkVariable(ret_ty, 'ret')
 
-    @classmethod
-    def parse_type(cls, type_elem, type_table):
+    @staticmethod
+    def parse_type(type_elem, type_table):
+        """Parse <type> into a VkType."""
         if 'alias' in type_elem.attrib:
-            cls._parse_alias(type_elem, type_table)
+            VkType._parse_alias(type_elem, type_table)
             return
 
-        category = {
-            'include':     cls.INCLUDE,
-            'define':      cls.DEFINE,
-            None:          cls.DEFAULT,
-            'basetype':    cls.BASETYPE,
-            'handle':      cls.HANDLE,
-            'enum':        cls.ENUM,
-            'bitmask':     cls.BITMASK,
-            'struct':      cls.STRUCT,
-            'union':       cls.UNION,
-            'funcpointer': cls.FUNCPOINTER,
+        category, parse_func = {
+            'include':     (VkType.INCLUDE,     None),
+            'define':      (VkType.DEFINE,      VkType._parse_type_define),
+            None:          (VkType.DEFAULT,     None),
+            'basetype':    (VkType.BASETYPE,    VkType._parse_type_basetype),
+            'handle':      (VkType.HANDLE,      VkType._parse_type_handle),
+            'enum':        (VkType.ENUM,        VkType._parse_type_enum),
+            'bitmask':     (VkType.BITMASK,     VkType._parse_type_bitmask),
+            'struct':      (VkType.STRUCT,      VkType._parse_type_struct),
+            'union':       (VkType.UNION,       VkType._parse_type_union),
+            'funcpointer': (VkType.FUNCPOINTER, VkType._parse_type_funcpointer),
         }[type_elem.attrib.get('category')]
 
         if 'name' in type_elem.attrib:
@@ -488,52 +529,16 @@ class VkType:
         else:
             name = type_elem.find('name').text
 
-        ty = cls._get_type(name, type_table)
+        ty = VkType._get_type(name, type_table)
         ty.init(name, category)
+        if parse_func:
+            parse_func(ty, type_elem, type_table)
 
-        if category == cls.DEFINE:
-            ty.define = cls._get_inner_text(type_elem)
-        elif category == cls.BASETYPE:
-            typedef_elem = type_elem.find('type')
-            if typedef_elem is not None:
-                ty.typedef = cls._get_type(typedef_elem.text, type_table)
-        elif category == cls.HANDLE:
-            if type_elem.find('type').text == 'VK_DEFINE_HANDLE':
-                ty.dispatchable = True
-        elif category == cls.ENUM:
-            ty.enums = VkEnums()
-        elif category == cls.BITMASK:
-            to = type_elem.find('type').text
-            ty.typedef = cls._get_type(to, type_table)
-            requires_ty = cls._parse_bitmask(type_elem, type_table)
-            ty.requires = requires_ty
-        elif category == cls.STRUCT:
-            members, s_type, struct_extends, returnedonly = cls._parse_struct(
-                    type_elem, type_table)
-            ty.variables = members
-            ty.s_type = s_type
-            for struct_ty in struct_extends:
-                struct_ty.p_next.append(ty)
-            if returnedonly:
-                ty.attrs['returnedonly'] = True
-        elif category == cls.UNION:
-            members, _, _, returnedonly = cls._parse_struct(
-                    type_elem, type_table)
-            ty.variables = members
-            if returnedonly:
-                ty.attrs['returnedonly'] = True
-        elif category == cls.FUNCPOINTER:
-            pfn, params, ret_ty = cls._parse_funcpointer(type_elem,
-                    type_table)
-            assert pfn == name
-            ty.variables = params
-            if ret_ty:
-                ty.ret = VkVariable(ret_ty, 'ret')
-
-    @classmethod
-    def parse_command(cls, command_elem, type_table):
+    @staticmethod
+    def parse_command(command_elem, type_table):
+        """Parse <command> into a VkType."""
         if 'alias' in command_elem.attrib:
-            cls._parse_alias(command_elem, type_table)
+            VkType._parse_alias(command_elem, type_table)
             return
 
         name = None
@@ -541,20 +546,20 @@ class VkType:
         ret_ty = None
         for child in command_elem:
             if child.tag == 'proto':
-                c_decl = cls._get_inner_text(child)
+                c_decl = VkType._get_inner_text(child)
                 c_var = VkCVar.from_c(c_decl)
                 name = c_var.name
-                ret_ty = cls._get_type(c_var, type_table)
+                ret_ty = VkType._get_type(c_var, type_table)
                 if ret_ty.name == 'void':
                     ret_ty = None
             elif child.tag == 'param':
-                var = cls._parse_variable(child, type_table)
+                var = VkType._parse_variable(child, type_table)
                 params.append(var)
 
         assert name == command_elem.find('proto').find('name').text
 
-        ty = cls._get_type(name, type_table)
-        ty.init(name, cls.COMMAND)
+        ty = VkType._get_type(name, type_table)
+        ty.init(name, ty.COMMAND)
         ty.variables = params
         if ret_ty:
             ty.ret = VkVariable(ret_ty, 'ret')
