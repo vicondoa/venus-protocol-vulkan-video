@@ -9,7 +9,7 @@ import sys
 VN_PROTOCOL_DIR = Path(__file__).resolve().parent.parent
 sys.path.append(str(VN_PROTOCOL_DIR))
 
-from vkxml import VkApi
+from vkxml import VkRegistry
 from vn_protocol import VN_PROTOCOL_XMLS, VK_XML_EXTENSION_LIST
 
 class Command:
@@ -50,11 +50,11 @@ class Group:
             next_id = cmd.assign_id(known_ids, next_id)
         return next_id
 
-def get_commands(api):
+def get_commands(reg):
     all_commands = set()
     groups = []
 
-    for feat in api.features:
+    for feat in reg.features:
         commands = []
         for ty in feat.types:
             if ty.category == ty.COMMAND and ty not in all_commands:
@@ -62,7 +62,7 @@ def get_commands(api):
                 all_commands.add(ty)
         groups.append(Group(feat.name, commands))
 
-    for ext in api.extensions:
+    for ext in reg.extensions:
         if ext.name not in VK_XML_EXTENSION_LIST:
             continue
 
@@ -100,14 +100,14 @@ def print_commands(name, groups):
     print('    </enums>')
 
 def main():
-    api = VkApi()
-    api.parse_xmls(VN_PROTOCOL_XMLS)
+    reg = VkRegistry()
+    reg.parse_xmls(VN_PROTOCOL_XMLS)
 
-    groups = get_commands(api)
+    groups = get_commands(reg)
 
     # assign ids to commands
-    command_type_ty = api.type_table['VkCommandTypeEXT']
-    next_id = api.max_vk_command_type_value + 1
+    command_type_ty = reg.type_table['VkCommandTypeEXT']
+    next_id = reg.max_vk_command_type_value + 1
     for group in groups:
         next_id = group.assign_ids(command_type_ty.enums.values, next_id)
 

@@ -10,7 +10,7 @@ from pathlib import Path
 from mako.lookup import TemplateLookup
 from mako.template import Template
 
-from vkxml import VkApi, VkType, VkVariable
+from vkxml import VkRegistry, VkType, VkVariable
 
 VN_PROTOCOL_DIR = Path(__file__).resolve().parent
 VN_TEMPLATE_DIR = VN_PROTOCOL_DIR.joinpath('templates')
@@ -106,17 +106,17 @@ class Gen:
         'VkPipelineExecutableStatisticValueKHR': 2,
     }
 
-    def __init__(self, is_driver, api):
+    def __init__(self, is_driver, reg):
         self.is_driver = is_driver
 
-        self.api = copy.deepcopy(api)
-        self._fixup_api()
+        self.reg = copy.deepcopy(reg)
+        self._fixup_registry()
 
         self.supported_types = {}
         self._init_supported_types()
 
         # validate VkCommandTypeEXT
-        command_type_ty = self.api.type_table['VkCommandTypeEXT']
+        command_type_ty = self.reg.type_table['VkCommandTypeEXT']
         enum_value_count = 0
         for cmd in self.supported_types[VkType.COMMAND]:
             key = 'VK_COMMAND_TYPE_' + cmd.name + '_EXT'
@@ -161,8 +161,8 @@ class Gen:
             else:
                 var.ty.set_attribute('need_encode', True)
 
-    def _fixup_api(self):
-        for ty in self.api.type_table.values():
+    def _fixup_registry(self):
+        for ty in self.reg.type_table.values():
             if ty.category == ty.COMMAND:
                 ty.attrs['c_type'] = 'VK_COMMAND_TYPE_' + ty.name + '_EXT'
 
@@ -185,7 +185,7 @@ class Gen:
                             v.attrs['var_in'] = var
                             v.attrs['var_out'] = var
             elif ty.category == ty.HANDLE:
-                objtype = 'VK_OBJECT_TYPE_' + self.api.upper_name(ty.name[2:])
+                objtype = 'VK_OBJECT_TYPE_' + self.reg.upper_name(ty.name[2:])
                 ty.attrs['c_objtype'] = objtype
 
             self._set_type_needs(ty)
@@ -193,9 +193,9 @@ class Gen:
     def _get_supported_types(self):
         # collect types from features and extensions
         types = []
-        for feat in self.api.features:
+        for feat in self.reg.features:
             types.extend(feat.types)
-        for ext in self.api.extensions:
+        for ext in self.reg.extensions:
             if ext.name not in VK_XML_EXTENSION_LIST:
                 continue
 
@@ -223,7 +223,7 @@ class Gen:
             ty.p_next = p_next
 
         # keep type_table order
-        for ty in self.api.type_table.values():
+        for ty in self.reg.type_table.values():
             if ty not in supported_types:
                 continue
 
@@ -862,7 +862,7 @@ class GenDefines:
         self.gen = gen
 
         self.enum_extends = []
-        for ty in self.gen.api.type_table.values():
+        for ty in self.gen.reg.type_table.values():
             if ty.category == ty.ENUM and ty.enums.vk_xml_values:
                 if len(ty.enums.values) != len(ty.enums.vk_xml_values):
                     self.enum_extends.append(ty)
@@ -871,7 +871,7 @@ class GenDefines:
         self.enum_types = []
         self.bitmask_types = []
         self.struct_types = []
-        exts = self.gen.api.extensions[self.gen.api.vk_xml_extension_count:]
+        exts = self.gen.reg.extensions[self.gen.reg.vk_xml_extension_count:]
         for ext in exts:
             for ty in ext.types:
                 if ty.category == ty.BASETYPE and ty.typedef:
@@ -899,7 +899,7 @@ class GenInfo:
         self.gen = gen
 
         self.exts = []
-        for ext in self.gen.api.extensions:
+        for ext in self.gen.reg.extensions:
             if ext.name in VK_XML_EXTENSION_LIST:
                 self.exts.append(ext)
         self.exts.sort(key=lambda ext: ext.name)
@@ -907,7 +907,7 @@ class GenInfo:
     def generate(self, template):
         return template.render(
                 WIRE_FORMAT_VERSION=VN_WIRE_FORMAT_VERSION,
-                VK_XML_VERSION=self.gen.api.vk_xml_version,
+                VK_XML_VERSION=self.gen.reg.vk_xml_version,
                 EXTENSIONS=self.exts)
 
 class GenTypes:
@@ -1256,7 +1256,7 @@ class GenDispatches:
         return template.render(
                 GEN=self.gen,
                 INCLUDES=self.includes,
-                COMMAND_TABLE_SIZE=self.gen.api.max_vk_command_type_value + 1,
+                COMMAND_TABLE_SIZE=self.gen.reg.max_vk_command_type_value + 1,
                 COMMAND_TYPES=self.commands,
                 COMMAND_SKIPPED=self.skipped)
 
@@ -1321,10 +1321,10 @@ def generate_command_headers(generator, variant, banner, outdir):
 def main():
     args = get_args()
 
-    api = VkApi()
-    api.parse_xmls(VN_PROTOCOL_XMLS)
+    reg = VkRegistry()
+    reg.parse_xmls(VN_PROTOCOL_XMLS)
 
-    gen = Gen(not args.renderer, api)
+    gen = Gen(not args.renderer, reg)
     generators = get_generators(gen)
 
     if gen.is_driver:

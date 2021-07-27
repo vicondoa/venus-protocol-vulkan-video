@@ -717,7 +717,7 @@ class VkExtension:
 
         return ext
 
-class VkApi:
+class VkRegistry:
     def __init__(self):
         self.platform_guards = {}
         self.tags = []

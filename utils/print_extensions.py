@@ -9,12 +9,12 @@ import sys
 VN_PROTOCOL_DIR = Path(__file__).resolve().parent.parent
 sys.path.append(str(VN_PROTOCOL_DIR))
 
-from vkxml import VkApi
+from vkxml import VkRegistry
 from vn_protocol import VN_PROTOCOL_XMLS
 
 def main():
-    api = VkApi()
-    api.parse_xmls(VN_PROTOCOL_XMLS)
+    reg = VkRegistry()
+    reg.parse_xmls(VN_PROTOCOL_XMLS)
 
     wsi = [
         'VK_KHR_display',
@@ -23,7 +23,7 @@ def main():
     ]
 
     exts = {}
-    for ext in api.extensions:
+    for ext in reg.extensions:
         if ext.supported != 'vulkan':
             continue
 
