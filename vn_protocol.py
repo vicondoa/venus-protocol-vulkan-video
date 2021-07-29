@@ -284,8 +284,14 @@ class Gen:
         return types, skipped
 
     class VariableInfo:
+        # the variable is initialized, such as an input to the driver
         VALID = 0
+        # the variable is uninitialized, such as an output to the driver
         INVALID = 1
+        # the variable is partially initialized, such as an output to the
+        # driver that is also a handle (because the id is specified by the
+        # driver) or a struct (because it can potentially include handles,
+        # sType, or pNext)
         PARTIAL = 2
 
         def __init__(self, ty, var, prefix, validity):
@@ -297,15 +303,71 @@ class Gen:
             self.func_stem = None
             self._init_func_stem()
 
+            # code() will print
+            #
+            #     for (loop_type loop_index = 0;
+            #          loop_index < loop_count;
+            #          loop_index++)
+            #
+            # For example, when the variable is a int32_t array of N elements,
+            # we have
+            #
+            #     loop_level = 1
+            #     loop_types = ['uint32_t']
+            #     loop_indices = ['i']
+            #     loop_counts = ['N']
+            #
+            # There is no nested loops after unrolling currently.
             self.loop_level = None
             self.loop_types = []
             self.loop_indices = []
             self.loop_counts = []
             self._init_loop_info()
 
+            # Try to unroll the inner most loop.
+            #
+            # For example, when the variable is a int32_t array of N elements
+            # like the example above, we unroll the loop and have
+            #
+            #     loop_level = 0
+            #     looop_types = []
+            #     looop_indices = []
+            #     looop_counts = []
+            #     array_size = ['N']
             self.array_size = None
             self._unroll_loop()
 
+            # Roughly, code() will print
+            #
+            #     loop_alloc_stmt;
+            #     loop_extra_stmt;
+            #     for (...) {
+            #         func_array_size_stmt;
+            #         func_alloc_stmt;
+            #         func_extra_stmt;
+            #         func_stmt;
+            #     }
+            #
+            # For example, when the variable is a int32_t array, we have these
+            # for encode
+            #
+            #     # loop is unrolled
+            #     loop_alloc_stmts = []
+            #     loop_extra_stmts = []
+            #     func_array_size_stmt = None
+            #     func_alloc_stmt = None
+            #     func_extra_stmt = 'vn_encode_array_size(...)'
+            #     func_stmt = 'vn_encode_int32_t_array(...)'
+            #
+            # and these for decode
+            #
+            #     # loop is unrolled
+            #     loop_alloc_stmts = []
+            #     loop_extra_stmts = []
+            #     func_array_size_stmt = 'vn_decode_array_size(...)'
+            #     func_alloc_stmt = 'vn_cs_decoder_alloc_temp(...)'
+            #     func_extra_stmt = None
+            #     func_stmt = 'vn_decode_int32_t_array(...)'
             self.loop_alloc_stmts = []
             self.loop_extra_stmts = []
             self.func_array_size_stmt = None
