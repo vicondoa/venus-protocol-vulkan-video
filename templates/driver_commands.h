@@ -67,7 +67,7 @@ static inline void vn_async_${ty.name}(struct vn_instance *vn_instance, ${ty.c_f
 % if GUARD == 'STRUCTS':
 #include "vn_protocol_driver_handles.h"
 % else:
-#include "vn_device.h"
+#include "vn_instance.h"
 #include "vn_protocol_driver_structs.h"
 % endif
 

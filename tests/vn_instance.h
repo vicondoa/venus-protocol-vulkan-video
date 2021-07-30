@@ -3,8 +3,8 @@
  * SPDX-License-Identifier: MIT
  */
 
-#ifndef VN_DEVICE_H
-#define VN_DEVICE_H
+#ifndef VN_INSTANCE_H
+#define VN_INSTANCE_H
 
 #include "vn_cs.h"
 
@@ -43,4 +43,4 @@ vn_instance_free_command_reply(struct vn_instance *instance,
 {
 }
 
-#endif /* VN_DEVICE_H */
+#endif /* VN_INSTANCE_H */
