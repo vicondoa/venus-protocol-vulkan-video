@@ -51,6 +51,10 @@ static inline void vn_dispatch_${ty.name}(struct vn_dispatch_context *ctx, VkCom
 #include "vn_protocol_renderer_structs.h"
 % endif
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpointer-arith"
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+
 <% all_skipped = STRUCT_SKIPPED + MANUAL_UNION_TYPES + COMMAND_SKIPPED %>\
 % if all_skipped:
 /*
@@ -113,4 +117,6 @@ ${command.vn_encode_command_reply(ty)}
 % for ty in COMMAND_TYPES:
 ${dispatch_command(ty)}
 % endfor
+#pragma GCC diagnostic pop
+
 #endif /* VN_PROTOCOL_RENDERER_${GUARD}_H */
