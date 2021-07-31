@@ -104,8 +104,10 @@ class VkVariable:
         self.attrs = attrs
 
     def maybe_null(self):
-        return self.ty.is_pointer() and \
-                'optional' in self.attrs and \
+        return self.ty.is_pointer() and self.is_optional()
+
+    def is_optional(self):
+        return 'optional' in self.attrs and \
                 self.attrs['optional'][0] == 'true'
 
     def is_blob(self):
