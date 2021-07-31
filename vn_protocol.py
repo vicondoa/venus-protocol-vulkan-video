@@ -666,12 +666,18 @@ class Gen:
             code += '} else {\n    '
             code += '    vn_decode_array_size(dec, 0);\n    '
             code += '    %s = NULL;\n    ' % info._var_name()
+            if not self.is_driver and not info.var.is_optional() and \
+                    info.var.can_validate():
+                code += '    vn_cs_decoder_set_fatal(dec);\n    '
             code += '}'
         elif info.var.ty.is_pointer():
             code += 'if (vn_decode_simple_pointer(dec)) {\n    '
             code += '    %s\n    ' % info.code(2).strip()
             code += '} else {\n    '
             code += '    %s = NULL;\n    ' % info._var_name()
+            if not self.is_driver and not info.var.is_optional() and \
+                    info.var.can_validate():
+                code += '    vn_cs_decoder_set_fatal(dec);\n    '
             code += '}'
         elif info.need_bracket():
             code += '{\n    '
