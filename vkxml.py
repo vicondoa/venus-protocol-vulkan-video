@@ -103,6 +103,12 @@ class VkVariable:
         self.name = name
         self.attrs = attrs
 
+    def can_validate(self):
+        if 'noautovalidity' in self.attrs and \
+                self.attrs['noautovalidity'] == 'true':
+            return False
+        return True
+
     def maybe_null(self):
         return self.ty.is_pointer() and self.is_optional()
 
@@ -409,6 +415,8 @@ class VkType:
                 attrs['len_names'] = len_names
         if 'optional' in elem.attrib:
             attrs['optional'] = elem.attrib['optional'].split(',')
+        if 'noautovalidity' in elem.attrib:
+            attrs['noautovalidity'] = elem.attrib['noautovalidity']
 
         return VkVariable(ty, decl.name, attrs)
 
