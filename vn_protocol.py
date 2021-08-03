@@ -283,6 +283,62 @@ class Gen:
                 skipped.append(next_ty)
         return types, skipped
 
+    class LoopInfo:
+        """Information needed to generate loops to access a variable."""
+
+        def __init__(self):
+            self.loops = []
+
+        def add_loop(self, iter_type, iter_count):
+            level = len(self.loops)
+            iter_name = chr(ord('i') + level)
+            loop = self.Loop(level, iter_type, iter_name, iter_count)
+            self.loops.append(loop)
+
+        def pop_loop(self):
+            return self.loops.pop()
+
+        def is_last(self, level):
+            return level == len(self.loops) - 1
+
+        def get_iter_counts(self):
+            return [loop.iter_count for loop in self.loops]
+
+        def get_subscripts(self, to_level):
+            iter_names = [loop.iter_name for loop in self.loops[:to_level]]
+            return '[' + ']['.join(iter_names) + ']'
+
+        def __bool__(self):
+            return bool(self.loops)
+
+        def __len__(self):
+            return len(self.loops)
+
+        def __iter__(self):
+            return iter(self.loops)
+
+        class Loop:
+            def __init__(self, level, iter_type, iter_name, iter_count):
+                # code() will print
+                #
+                #     for (iter_type iter_name = 0;
+                #          iter_name < iter_count;
+                #          iter_name++)
+                #
+                # For example, when the variable is an int32_t array of N
+                # elements, we have
+                #
+                #     iter_type = 'uint32_t'
+                #     iter_name = 'i'
+                #     iter_count = 'N'
+                self.level = level
+                self.iter_type = iter_type
+                self.iter_name = iter_name
+                self.iter_count = iter_count
+
+                # code() will print statements before the for-loop.
+                self.statements = []
+
     class VariableInfo:
         # the variable is initialized, such as an input to the driver
         VALID = 0
@@ -303,57 +359,26 @@ class Gen:
             self.func_stem = None
             self._init_func_stem()
 
-            # code() will print
-            #
-            #     for (loop_type loop_index = 0;
-            #          loop_index < loop_count;
-            #          loop_index++)
-            #
-            # For example, when the variable is a int32_t array of N elements,
-            # we have
-            #
-            #     loop_level = 1
-            #     loop_types = ['uint32_t']
-            #     loop_indices = ['i']
-            #     loop_counts = ['N']
-            #
-            # There is no nested loops after unrolling currently.
-            self.loop_level = None
-            self.loop_types = []
-            self.loop_indices = []
-            self.loop_counts = []
+            self.loop_info = None
             self._init_loop_info()
 
-            # Try to unroll the inner most loop.
+            # Try to unroll the inner most loop and save its iter_count to
+            # array_size.
             #
-            # For example, when the variable is a int32_t array of N elements
-            # like the example above, we unroll the loop and have
-            #
-            #     loop_level = 0
-            #     looop_types = []
-            #     looop_indices = []
-            #     looop_counts = []
-            #     array_size = ['N']
+            # There is no nested loops after unrolling currently.
             self.array_size = None
             self._unroll_loop()
 
-            # Roughly, code() will print
+            # code() will print
             #
-            #     loop_alloc_stmt;
-            #     loop_extra_stmt;
-            #     for (...) {
-            #         func_array_size_stmt;
-            #         func_alloc_stmt;
-            #         func_extra_stmt;
-            #         func_stmt;
-            #     }
+            #     func_array_size_stmt;
+            #     func_alloc_stmt;
+            #     func_extra_stmt;
+            #     func_stmt;
             #
             # For example, when the variable is a int32_t array, we have these
             # for encode
             #
-            #     # loop is unrolled
-            #     loop_alloc_stmts = []
-            #     loop_extra_stmts = []
             #     func_array_size_stmt = None
             #     func_alloc_stmt = None
             #     func_extra_stmt = 'vn_encode_array_size(...)'
@@ -361,15 +386,10 @@ class Gen:
             #
             # and these for decode
             #
-            #     # loop is unrolled
-            #     loop_alloc_stmts = []
-            #     loop_extra_stmts = []
             #     func_array_size_stmt = 'vn_decode_array_size(...)'
             #     func_alloc_stmt = 'vn_cs_decoder_alloc_temp(...)'
             #     func_extra_stmt = None
             #     func_stmt = 'vn_decode_int32_t_array(...)'
-            self.loop_alloc_stmts = []
-            self.loop_extra_stmts = []
             self.func_array_size_stmt = None
             self.func_alloc_stmt = None
             self.func_extra_stmt = None
@@ -393,7 +413,7 @@ class Gen:
 
         def _var_loop_indices(self, loop_level):
             if loop_level:
-                return '[' + ']['.join(self.loop_indices[:loop_level]) + ']'
+                return self.loop_info.get_subscripts(loop_level)
             else:
                 return ''
 
@@ -410,89 +430,85 @@ class Gen:
                 return '%s%s' % (var_name, indices)
 
         def _init_loop_info(self):
+            self.loop_info = Gen.LoopInfo()
+
             if 'len_exprs' not in self.var.attrs:
                 if self.var.ty.is_static_array():
-                    self.loop_level = 1
-                    self.loop_types.append('uint32_t')
-                    self.loop_indices.append('i')
-                    self.loop_counts.append(self.var.ty.static_array_size())
-                else:
-                    self.loop_level = 0
+                    iter_count = self.var.ty.static_array_size()
+                    self.loop_info.add_loop('uint32_t', iter_count)
                 return
 
             len_exprs = self.var.attrs['len_exprs']
             len_names = self.var.attrs['len_names']
-            self.loop_level = len(len_exprs)
-            self.loop_indices = [chr(ord('i') + i) for i in range(self.loop_level)]
             for level, (expr, name) in enumerate(zip(len_exprs, len_names)):
                 if expr == 'null-terminated':
-                    loop_type = 'size_t'
-                    loop_count = 'strlen(%s) + 1' % self._var_name(level)
+                    iter_type = 'size_t'
+                    iter_count = 'strlen(%s) + 1' % self._var_name(level)
                 elif name:
                     loop_vars = self.ty.find_variables(name)
 
                     deref = self._var_deref(loop_vars[-1])
-                    loop_type = loop_vars[-1].ty.base.name
-                    loop_count = expr.replace(name, deref + self.prefix + name)
+                    iter_type = loop_vars[-1].ty.base.name
+                    iter_count = expr.replace(name, deref + self.prefix + name)
 
                     assert len(loop_vars) <= 2
                     if len(loop_vars) > 1 or loop_vars[-1].ty.is_pointer():
-                        loop_count = '(%s%s ? %s : 0)' % (self.prefix,
-                                loop_vars[0].name, loop_count)
+                        iter_count = '(%s%s ? %s : 0)' % (self.prefix,
+                                loop_vars[0].name, iter_count)
                 else:
-                    loop_type = 'uint32_t'
-                    loop_count = expr
+                    iter_type = 'uint32_t'
+                    iter_count = expr
 
-                self.loop_types.append(loop_type)
-                self.loop_counts.append(loop_count)
+                self.loop_info.add_loop(iter_type, iter_count)
 
         def _unroll_loop(self):
             # unroll loops for scalar arrays to get padding right
             scalar_categories = [VkType.DEFAULT, VkType.BASETYPE, VkType.ENUM]
-            if not self.loop_level:
+            if not self.loop_info:
                 return
             if not self.var.ty.base.category in scalar_categories:
                 return
 
+            loop = self.loop_info.pop_loop()
             self.func_stem += '_array'
-            self.loop_level -= 1
-            self.loop_types.pop()
-            self.loop_indices.pop()
-            self.array_size = self.loop_counts.pop()
+            self.array_size = loop.iter_count
 
         def init_alloc_stmts(self):
-            alloc_counts = self.loop_counts[:]
+            alloc_counts = self.loop_info.get_iter_counts()
             if self.array_size:
                 alloc_counts.append(self.array_size)
 
             if not alloc_counts:
                 var_name = self._var_name()
                 deref = self._var_deref()
-                stmt = '%s = vn_cs_decoder_alloc_temp(dec, sizeof(%s%s))' % (
+                alloc_stmt = '%s = vn_cs_decoder_alloc_temp(dec, sizeof(%s%s))' % (
                         var_name, deref, var_name)
-                self.func_alloc_stmt = stmt
+                self.func_alloc_stmt = alloc_stmt
                 return
 
-            alloc_stmts = []
             for level, count in enumerate(alloc_counts):
                 if self.var.is_blob():
                     size = count
                 else:
                     size = 'sizeof(*%s) * %s' % (self._var_name(level), count)
 
-                stmt = '%s = vn_cs_decoder_alloc_temp(dec, %s)' % (
+                alloc_stmt = '%s = vn_cs_decoder_alloc_temp(dec, %s)' % (
                         self._var_name(level, level > 0), size)
-                alloc_stmts.append(stmt)
+                check_stmt = 'if (!%s) return' % self._var_name(level)
 
-            if self.array_size:
-                self.func_alloc_stmt = alloc_stmts.pop()
-            self.loop_alloc_stmts = alloc_stmts
+                if level < len(self.loop_info):
+                    loop = self.loop_info.loops[level]
+                    loop.statements.append(alloc_stmt)
+                    loop.statements.append(check_stmt)
+                else:
+                    self.func_alloc_stmt = alloc_stmt
 
         def func_args(self, const_cast):
             var_name = self.prefix + self.var.name
+            loop_level = len(self.loop_info)
 
             deref_count = self.var.ty.indirection_depth() + self.var.ty.is_static_array()
-            deref_count -= self.loop_level
+            deref_count -= loop_level
             # we want a pointer to var
             deref_count -= 1
 
@@ -502,7 +518,7 @@ class Gen:
             elif deref_count < 0:
                 deref = '&' * -deref_count
 
-            args = '%s%s' % (deref, self._var_name(self.loop_level, const_cast))
+            args = '%s%s' % (deref, self._var_name(loop_level, const_cast))
             if self.array_size:
                 args += ', ' + self.array_size
 
@@ -511,22 +527,16 @@ class Gen:
         def _code_enter_loops(self, indent_level, bracket_last):
             code = ''
             indent = '    ' * indent_level
-            for level in range(self.loop_level):
-                if level < len(self.loop_alloc_stmts):
-                    code += '%s%s;\n' % (indent, self.loop_alloc_stmts[level])
-                    code += '%sif (!%s) return;\n' % (indent, self._var_name(level))
+            for loop in self.loop_info:
+                for stmt in loop.statements:
+                    code += '%s%s;\n' % (indent, stmt)
 
-                if level < len(self.loop_extra_stmts):
-                    code += '%s%s;\n' % (indent, self.loop_extra_stmts[level])
-
-                init_expr = '%s %c = 0' % (self.loop_types[level],
-                        self.loop_indices[level])
-                cond_expr = '%c < %s' % (self.loop_indices[level],
-                        self.loop_counts[level])
-                incr_expr = '%c++' % self.loop_indices[level]
+                init_expr = '%s %c = 0' % (loop.iter_type, loop.iter_name)
+                cond_expr = '%c < %s' % (loop.iter_name, loop.iter_count)
+                incr_expr = '%c++' % loop.iter_name
 
                 bracket = ' {'
-                if not bracket_last and level == self.loop_level - 1:
+                if not bracket_last and self.loop_info.is_last(loop.level):
                     bracket = ''
 
                 code += '%sfor (%s; %s; %s)%s\n' % (indent, init_expr,
@@ -537,8 +547,10 @@ class Gen:
             return code
 
         def _code_body(self, indent_level):
+            loop_level = len(self.loop_info)
+
             code = ''
-            indent = '    ' * (indent_level + self.loop_level)
+            indent = '    ' * (indent_level + loop_level)
 
             if self.func_array_size_stmt:
                 code += '%s%s;\n' % (indent, self.func_array_size_stmt)
@@ -546,7 +558,7 @@ class Gen:
             if self.func_alloc_stmt:
                 code += '%s%s;\n' % (indent, self.func_alloc_stmt)
                 code += '%sif (!%s) return;\n' % (
-                        indent, self._var_name(self.loop_level))
+                        indent, self._var_name(loop_level))
 
             if self.func_extra_stmt:
                 code += '%s%s;\n' % (indent, self.func_extra_stmt)
@@ -558,22 +570,20 @@ class Gen:
 
         def _code_leave_loops(self, indent_level, bracket_last):
             code = ''
-            for level in reversed(range(self.loop_level)):
-                if bracket_last or level < self.loop_level - 1:
+            for level in reversed(range(len(self.loop_info))):
+                if bracket_last or not self.loop_info.is_last(level):
                     indent = '    ' * (indent_level + level)
                     code += '%s}\n' % indent
             return code
 
         def need_bracket(self):
-            if self.loop_alloc_stmts or self.loop_extra_stmts:
+            if self.loop_info:
                 return True
+
             count = (bool(self.func_array_size_stmt) +
                      bool(self.func_extra_stmt) +
                      bool(self.func_stmt))
             if count > 1:
-                return True
-
-            if self.loop_level:
                 return True
 
             return False
@@ -717,9 +727,9 @@ class Gen:
             info.array_size = 'string_size'
 
         # encode array sizes
-        for loop_count in info.loop_counts:
-            stmt = '%s += vn_sizeof_array_size(%s)' % (dst, loop_count)
-            info.loop_extra_stmts.append(stmt)
+        for loop in info.loop_info:
+            stmt = '%s += vn_sizeof_array_size(%s)' % (dst, loop.iter_count)
+            loop.statements.append(stmt)
         if info.array_size:
             info.func_extra_stmt = \
                     '%s += vn_sizeof_array_size(%s)' % (dst, info.array_size)
@@ -751,9 +761,9 @@ class Gen:
             info.array_size = 'string_size'
 
         # encode array sizes
-        for loop_count in info.loop_counts:
-            stmt = 'vn_encode_array_size(enc, %s)' % loop_count
-            info.loop_extra_stmts.append(stmt)
+        for loop in info.loop_info:
+            stmt = 'vn_encode_array_size(enc, %s)' % loop.iter_count
+            loop.statements.append(stmt)
         if info.array_size:
             info.func_extra_stmt = \
                     'vn_encode_array_size(enc, %s)' % info.array_size
@@ -796,9 +806,9 @@ class Gen:
             info.init_alloc_stmts()
 
         # decode array sizes
-        for loop_count in info.loop_counts:
-            stmt = 'vn_decode_array_size(dec, %s)' % loop_count
-            info.loop_extra_stmts.append(stmt)
+        for loop in info.loop_info:
+            stmt = 'vn_decode_array_size(dec, %s)' % loop.iter_count
+            loop.statements.append(stmt)
 
         # nothing to decode
         if validity == info.INVALID:
