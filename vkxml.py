@@ -128,6 +128,9 @@ class VkVariable:
     def is_string(self):
         return self.ty.base.name == 'char' and not self.ty.is_static_array()
 
+    def is_dynamic_array(self):
+        return self.ty.is_pointer() and 'len_exprs' in self.attrs
+
     def is_p_next(self):
         return self.name == 'pNext'
 
