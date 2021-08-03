@@ -121,12 +121,12 @@ class VkVariable:
 
     def is_blob(self):
         return self.ty.indirection_depth() == 1 and \
-               not self.ty.is_array() and \
+               not self.ty.is_static_array() and \
                self.ty.base.name == 'void' and  \
                'len_exprs' in self.attrs
 
     def is_string(self):
-        return self.ty.base.name == 'char' and not self.ty.is_array()
+        return self.ty.base.name == 'char' and not self.ty.is_static_array()
 
     def is_p_next(self):
         return self.name == 'pNext'
@@ -215,10 +215,10 @@ class VkType:
             assert self.variables[0].name == 'sType'
             assert self.variables[1].name == 'pNext'
 
-    def is_array(self):
+    def is_static_array(self):
         return bool(self.decor.dim) if self.decor else False
 
-    def array_size(self):
+    def static_array_size(self):
         return self.decor.dim if self.decor else None
 
     def is_pointer(self):
@@ -227,8 +227,8 @@ class VkType:
     def indirection_depth(self):
         return len(self.decor.ref_quals) if self.decor else 0
 
-    def is_const_array(self):
-        return self.is_array() and 'const' in self.decor.qual
+    def is_const_static_array(self):
+        return self.is_static_array() and 'const' in self.decor.qual
 
     def is_const_pointer(self):
         if self.is_pointer():

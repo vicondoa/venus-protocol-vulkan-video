@@ -131,7 +131,7 @@ class Gen:
 
     def _set_type_needs(self, ty):
         for var in ty.variables:
-            if var.ty.is_pointer() or var.ty.is_array():
+            if var.ty.is_pointer() or var.ty.is_static_array():
                 var.ty.base.attrs['need_array'] = True
                 if var.ty.base.typedef:
                     var.ty.base.typedef.base.attrs['need_array'] = True
@@ -151,7 +151,7 @@ class Gen:
                     var.ty.set_attribute('need_encode', True)
 
         if ty.ret:
-            if ty.ret.ty.is_pointer() or ty.ret.ty.is_array():
+            if ty.ret.ty.is_pointer() or ty.ret.ty.is_static_array():
                 ty.ret.ty.base.attrs['need_array'] = True
                 if ty.ret.ty.base.typedef:
                     ty.ret.ty.base.typedef.base.attrs['need_array'] = True
@@ -386,7 +386,7 @@ class Gen:
         def _var_deref(self, var=None):
             if not var:
                 var = self.var
-            return '*' * (var.ty.indirection_depth() + var.ty.is_array())
+            return '*' * (var.ty.indirection_depth() + var.ty.is_static_array())
 
         def _var_const_cast(self):
             return '(%s %s)' % (self.var.ty.base.name, self._var_deref())
@@ -401,7 +401,7 @@ class Gen:
             var_name = self.prefix + self.var.name
             indices = self._var_loop_indices(loop_level)
             if const_cast and (self.var.ty.is_const_pointer() or
-                    self.var.ty.is_const_array()):
+                    self.var.ty.is_const_static_array()):
                 if indices:
                     return '(%s%s)%s' % (self._var_const_cast(), var_name, indices)
                 else:
@@ -411,11 +411,11 @@ class Gen:
 
         def _init_loop_info(self):
             if 'len_exprs' not in self.var.attrs:
-                if self.var.ty.is_array():
+                if self.var.ty.is_static_array():
                     self.loop_level = 1
                     self.loop_types.append('uint32_t')
                     self.loop_indices.append('i')
-                    self.loop_counts.append(self.var.ty.array_size())
+                    self.loop_counts.append(self.var.ty.static_array_size())
                 else:
                     self.loop_level = 0
                 return
@@ -491,7 +491,7 @@ class Gen:
         def func_args(self, const_cast):
             var_name = self.prefix + self.var.name
 
-            deref_count = self.var.ty.indirection_depth() + self.var.ty.is_array()
+            deref_count = self.var.ty.indirection_depth() + self.var.ty.is_static_array()
             deref_count -= self.loop_level
             # we want a pointer to var
             deref_count -= 1
@@ -627,7 +627,7 @@ class Gen:
 
     def _encode_variable(self, info):
         if info.validity == info.INVALID:
-            if info.will_handle_array_size() and not info.var.ty.is_array():
+            if info.will_handle_array_size() and not info.var.ty.is_static_array():
                 return 'vn_encode_array_size(enc, %s ? %s : 0); /* out */' % (
                         info._var_name(), info.array_size)
             elif info.var.ty.is_pointer():
