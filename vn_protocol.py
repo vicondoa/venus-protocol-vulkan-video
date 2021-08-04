@@ -508,11 +508,6 @@ class Gen:
 
             return args
 
-        def will_handle_array_size(self):
-            return self.loop_extra_stmts or self.func_extra_stmt or \
-                   (self.func_array_size_stmt and 'decode' in
-                           self.func_array_size_stmt)
-
         def _code_enter_loops(self, indent_level, bracket_last):
             code = ''
             indent = '    ' * indent_level
@@ -603,7 +598,7 @@ class Gen:
                 return '/* skip %s */' % info._var_name()
 
         code = ''
-        if info.var.ty.is_pointer() and info.will_handle_array_size():
+        if info.var.is_dynamic_array():
             code += 'if (%s) {\n    ' % info._var_name()
             code += '    %s\n    ' % info.code(2).strip()
             code += '} else {\n    '
@@ -627,7 +622,7 @@ class Gen:
 
     def _encode_variable(self, info):
         if info.validity == info.INVALID:
-            if info.will_handle_array_size() and not info.var.ty.is_static_array():
+            if info.var.is_dynamic_array():
                 return 'vn_encode_array_size(enc, %s ? %s : 0); /* out */' % (
                         info._var_name(), info.array_size)
             elif info.var.ty.is_pointer():
@@ -636,7 +631,7 @@ class Gen:
                 return '/* skip %s */' % info._var_name()
 
         code = ''
-        if info.var.ty.is_pointer() and info.will_handle_array_size():
+        if info.var.is_dynamic_array():
             code += 'if (%s) {\n    ' % info._var_name()
             code += '    %s\n    ' % info.code(2).strip()
             code += '} else {\n    '
@@ -660,7 +655,7 @@ class Gen:
                 return '/* skip %s */' % info._var_name()
 
         code = ''
-        if info.var.ty.is_pointer() and info.will_handle_array_size():
+        if info.var.is_dynamic_array():
             code += 'if (vn_peek_array_size(dec)) {\n    '
             code += '    %s\n    ' % info.code(2).strip()
             code += '} else {\n    '
