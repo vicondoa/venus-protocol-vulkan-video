@@ -776,6 +776,17 @@ class Gen:
             info.statements.append(stmt)
             return info
 
+        # decode array sizes
+        for loop in info.loop_info:
+            temp_name = 'iter_count'
+            if loop.level > 0:
+                temp_name += '_' + loop.iter_name
+
+            stmt = 'const %s %s = vn_decode_array_size(dec, %s)' % \
+                    (loop.iter_type, temp_name, loop.iter_count)
+            loop.statements.append(stmt)
+            loop.iter_count = temp_name
+
         # decode the encoded array size
         if info.array_size:
             if var.is_string():
@@ -792,11 +803,6 @@ class Gen:
 
         if alloc_storage and var.ty.is_pointer():
             info.init_alloc_stmts()
-
-        # decode array sizes
-        for loop in info.loop_info:
-            stmt = 'vn_decode_array_size(dec, %s)' % loop.iter_count
-            loop.statements.append(stmt)
 
         # nothing to decode
         if validity == info.INVALID:
