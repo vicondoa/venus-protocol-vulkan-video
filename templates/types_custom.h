@@ -84,6 +84,35 @@ vn_decode_blob_array(struct vn_cs_decoder *dec, void *val, size_t size)
 }
 </%def>
 
+<%def name="vn_custom_string()">\
+/* string */
+
+% if GEN.is_driver:
+static inline size_t
+vn_sizeof_char_array(const char *val, size_t size)
+{
+    return vn_sizeof_blob_array(val, size);
+}
+
+% endif
+static inline void
+vn_encode_char_array(struct vn_cs_encoder *enc, const char *val, size_t size)
+{
+    assert(size && strlen(val) < size);
+    vn_encode_blob_array(enc, val, size);
+}
+
+static inline void
+vn_decode_char_array(struct vn_cs_decoder *dec, char *val, size_t size)
+{
+    vn_decode_blob_array(dec, val, size);
+    if (size)
+        val[size - 1] = '\0';
+    else
+        vn_cs_decoder_set_fatal(dec);
+}
+</%def>
+
 <%def name="vn_custom_array_size()">\
 /* array size (uint64_t) */
 

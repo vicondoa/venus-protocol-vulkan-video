@@ -390,7 +390,7 @@ class Gen:
             self.statements = []
 
         def _init_func_stem(self):
-            if self.var.is_blob() or self.var.ty.base.name == 'char':
+            if self.var.is_blob():
                 self.func_stem = 'blob'
             elif self.var.ty.base.category == VkType.BITMASK:
                 self.func_stem = self.var.ty.base.typedef.name

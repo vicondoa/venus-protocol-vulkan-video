@@ -27,6 +27,7 @@ ${scalar.vn_decode_scalar_array(ty)}
 \
 ${custom.vn_custom_size_t()}
 ${custom.vn_custom_blob()}
+${custom.vn_custom_string()}
 ${custom.vn_custom_array_size()}
 \
 % for ty in SCALAR_TYPES:
