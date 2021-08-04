@@ -131,11 +131,11 @@ vn_encode_array_size(struct vn_cs_encoder *enc, uint64_t size)
 }
 
 static inline uint64_t
-vn_decode_array_size(struct vn_cs_decoder *dec, uint64_t max_size)
+vn_decode_array_size(struct vn_cs_decoder *dec, uint64_t expected_size)
 {
     uint64_t size;
     vn_decode_uint64_t(dec, &size);
-    if (size > max_size) {
+    if (size != expected_size) {
         vn_cs_decoder_set_fatal(dec);
         size = 0;
     }
@@ -178,6 +178,6 @@ vn_encode_simple_pointer(struct vn_cs_encoder *enc, const void *val)
 static inline bool
 vn_decode_simple_pointer(struct vn_cs_decoder *dec)
 {
-    return vn_decode_array_size(dec, 1);
+    return vn_decode_array_size_unchecked(dec);
 }
 </%def>
