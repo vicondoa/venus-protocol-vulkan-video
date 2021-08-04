@@ -143,6 +143,14 @@ vn_decode_array_size(struct vn_cs_decoder *dec, uint64_t max_size)
 }
 
 static inline uint64_t
+vn_decode_array_size_unchecked(struct vn_cs_decoder *dec)
+{
+    uint64_t size;
+    vn_decode_uint64_t(dec, &size);
+    return size;
+}
+
+static inline uint64_t
 vn_peek_array_size(struct vn_cs_decoder *dec)
 {
     uint64_t size;

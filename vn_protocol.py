@@ -780,7 +780,8 @@ class Gen:
         if info.array_size:
             if var.is_string():
                 assert info.array_size.startswith('strlen')
-                stmt = 'const size_t string_size = vn_decode_array_size(dec, UINT64_MAX)'
+                assert info.func_stem == 'char_array'
+                stmt = 'const size_t string_size = vn_decode_array_size_unchecked(dec)'
                 info.statements.append(stmt)
                 info.array_size = 'string_size'
             else:
