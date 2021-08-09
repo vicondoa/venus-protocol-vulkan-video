@@ -11,9 +11,9 @@ vn_decode_${ty.name}_lookup(struct vn_cs_decoder *dec, ${ty.name} *val)
     uint64_t id;
     vn_decode_uint64_t(dec, &id);
 % if ty.dispatchable:
-    *val = (${ty.name})vn_cs_decoder_lookup_object(dec, id);
+    *val = (${ty.name})vn_cs_decoder_lookup_object(dec, id, ${ty.attrs['c_objtype']});
 % else:
-    *val = (${ty.name})(uintptr_t)vn_cs_decoder_lookup_object(dec, id);
+    *val = (${ty.name})(uintptr_t)vn_cs_decoder_lookup_object(dec, id, ${ty.attrs['c_objtype']});
 % endif
 }
 </%def>
