@@ -113,9 +113,6 @@ class VkVariable:
         return self.ty.is_pointer() and self.is_optional()
 
     def is_optional(self):
-        # the length is determined by another variable
-        if 'len_exprs' in self.attrs:
-            return True
         return 'optional' in self.attrs and \
                 self.attrs['optional'][0] == 'true'
 

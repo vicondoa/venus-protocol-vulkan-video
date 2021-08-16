@@ -362,6 +362,11 @@ class Gen:
             self.loop_info = None
             self._init_loop_info()
 
+            # remember the dynamic array size
+            self.dynamic_array_size = None
+            if self.var.is_dynamic_array():
+                self.dynamic_array_size = self.loop_info.loops[0].iter_count
+
             # Try to unroll the inner most loop and save its iter_count to
             # array_size.
             #
@@ -652,11 +657,13 @@ class Gen:
             code += 'if (vn_peek_array_size(dec)) {\n    '
             code += '    %s\n    ' % info.code(2).strip()
             code += '} else {\n    '
-            code += '    vn_decode_array_size(dec, 0);\n    '
-            code += '    %s = NULL;\n    ' % info._var_name()
             if not self.is_driver and not info.var.is_optional() and \
                     info.var.can_validate():
-                code += '    vn_cs_decoder_set_fatal(dec);\n    '
+                code += '    vn_decode_array_size(dec, %s);\n    ' % \
+                    info.dynamic_array_size
+            else:
+                code += '    vn_decode_array_size_unchecked(dec);\n    '
+            code += '    %s = NULL;\n    ' % info._var_name()
             code += '}'
         elif info.var.ty.is_pointer():
             code += 'if (vn_decode_simple_pointer(dec)) {\n    '
