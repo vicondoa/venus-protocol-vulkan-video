@@ -362,10 +362,15 @@ class Gen:
             self.loop_info = None
             self._init_loop_info()
 
-            # remember the dynamic array size
+            # remember the dynamic array size before unrolling
             self.dynamic_array_size = None
             if self.var.is_dynamic_array():
-                self.dynamic_array_size = self.loop_info.loops[0].iter_count
+                loop = self.loop_info.loops[0]
+                if self.var.ty.is_c_string():
+                    # not usable
+                    assert 'strlen' in loop.iter_count
+                else:
+                    self.dynamic_array_size = loop.iter_count
 
             # Try to unroll the inner most loop and save its iter_count to
             # array_size.
@@ -658,7 +663,7 @@ class Gen:
             code += '    %s\n    ' % info.code(2).strip()
             code += '} else {\n    '
             if not self.is_driver and not info.var.is_optional() and \
-                    info.var.can_validate():
+                    info.var.can_validate() and info.dynamic_array_size:
                 code += '    vn_decode_array_size(dec, %s);\n    ' % \
                     info.dynamic_array_size
             else:
