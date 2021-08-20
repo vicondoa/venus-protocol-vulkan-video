@@ -243,6 +243,13 @@ class VkType:
                     return True
         return False
 
+    def is_c_string(self):
+        """Return True if the type is a C-string.
+
+        This does not include char arrays or arrays of C-strings.
+        """
+        return self.base.name == 'char' and self.indirection_depth() == 1
+
     def find_variables(self, len_name):
         names = len_name.split('->')
         var_list = []
