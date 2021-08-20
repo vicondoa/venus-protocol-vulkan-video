@@ -122,11 +122,17 @@ class VkVariable:
                self.ty.base.name == 'void' and  \
                'len_exprs' in self.attrs
 
-    def is_string(self):
-        return self.ty.base.name == 'char' and not self.ty.is_static_array()
-
     def is_dynamic_array(self):
         return self.ty.is_pointer() and 'len_exprs' in self.attrs
+
+    def has_c_string(self):
+        """Return True for C-strings and arrays of C-strings."""
+        if not self.is_dynamic_array():
+            return False
+        for len_expr in self.attrs['len_exprs']:
+            if len_expr == 'null-terminated':
+                return True
+        return False
 
     def is_p_next(self):
         return self.name == 'pNext'

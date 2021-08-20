@@ -710,7 +710,7 @@ class Gen:
             return info
 
         # save strlen result to a temp
-        if var.is_string():
+        if var.has_c_string():
             assert info.array_size.startswith('strlen')
             stmt = 'const size_t string_size = %s' % info.array_size
             info.statements.append(stmt)
@@ -745,7 +745,7 @@ class Gen:
             return info
 
         # save strlen result to a temp
-        if var.is_string():
+        if var.has_c_string():
             assert info.array_size.startswith('strlen')
             stmt = 'const size_t string_size = %s' % info.array_size
             info.statements.append(stmt)
@@ -796,7 +796,7 @@ class Gen:
 
         # decode the encoded array size
         if info.array_size:
-            if var.is_string():
+            if var.has_c_string():
                 assert info.array_size.startswith('strlen')
                 assert info.func_stem == 'char_array'
                 stmt = 'const size_t string_size = vn_decode_array_size_unchecked(dec)'
