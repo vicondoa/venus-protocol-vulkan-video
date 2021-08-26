@@ -858,14 +858,13 @@ class Gen:
 
     def _get_variable_validity(self, ty, var, initialized):
         if initialized:
-            validity = self.VariableInfo.VALID
-        else:
-            partially_initialized = [ty.HANDLE, ty.STRUCT]
-            if var.ty.base.category in partially_initialized:
-                validity = self.VariableInfo.PARTIAL
-            else:
-                validity = self.VariableInfo.INVALID
-        return validity
+            return self.VariableInfo.VALID
+
+        partially_initialized = [ty.HANDLE, ty.STRUCT]
+        if var.ty.base.category in partially_initialized:
+            return self.VariableInfo.PARTIAL
+
+        return self.VariableInfo.INVALID
 
     def sizeof_struct_member(self, ty, var, prefix, struct_is_partial, dst):
         validity = self._get_variable_validity(ty, var, not struct_is_partial)
