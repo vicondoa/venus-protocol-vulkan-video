@@ -63,6 +63,7 @@ renderer, and are not exposed to applications.
         <type category="struct" name="VkVenusExperimentalFeatures100000MESA">
             <member><type>VkBool32</type>                         <name>memoryResourceAllocationSize</name></member>
             <member><type>VkBool32</type>                         <name>globalFencing</name></member>
+            <member><type>VkBool32</type>                         <name>largeRing</name></member>
         </type>
 
         <type category="struct" name="VkMemoryResourceAllocationSizeProperties100000MESA" structextends="VkMemoryResourcePropertiesMESA">
