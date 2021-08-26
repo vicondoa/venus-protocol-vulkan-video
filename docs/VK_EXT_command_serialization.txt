@@ -36,7 +36,7 @@ is assumed to be uninitialized except for
  - `uint32_t` indicating the size of another command parameter
 
 A special rule must be followed to serialize only the initialized parts.
-(More specific?  The codegen likely has bugs as well.)
+(More specific?  There are also bugs (grep WA) in the codegen.)
 
 ## Reply Streams
 
