@@ -33,6 +33,8 @@ static inline void vn_submit_${ty.name}(struct vn_instance *vn_instance, VkComma
 <%def name="call_command(ty)">\
 static inline ${ty.c_func_ret()} vn_call_${ty.name}(struct vn_instance *vn_instance, ${ty.c_func_params()})
 {
+    VN_TRACE_FUNC();
+
     struct vn_instance_submit_command submit;
     vn_submit_${ty.name}(vn_instance, VK_COMMAND_GENERATE_REPLY_BIT_EXT, ${ty.c_func_args()}, &submit);
     struct vn_cs_decoder *dec = vn_instance_get_command_reply(vn_instance, &submit);

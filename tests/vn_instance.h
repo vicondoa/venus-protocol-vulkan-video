@@ -8,6 +8,8 @@
 
 #include "vn_cs.h"
 
+#define VN_TRACE_FUNC()
+
 struct vn_instance;
 
 struct vn_instance_submit_command {
