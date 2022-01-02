@@ -10,6 +10,17 @@
 
 #include "vn_protocol_renderer_defines.h"
 
+struct vn_info_extension_table {
+   union {
+      bool enabled[${len(EXTENSIONS)}];
+      struct {
+% for ext in EXTENSIONS:
+         bool ${ext.name[3:]};
+% endfor
+      };
+   };
+};
+
 ${define_info(WIRE_FORMAT_VERSION, VK_XML_VERSION, EXTENSIONS)}
 \
 #endif /* VN_PROTOCOL_RENDERER_INFO_H */

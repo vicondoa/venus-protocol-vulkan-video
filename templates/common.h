@@ -45,6 +45,13 @@ struct vn_command_${ty.name} {
 </%def>
 
 <%def name="define_info(wire_format_ver, vk_xml_ver, exts)">\
+struct vn_info_extension {
+   uint32_t index;
+
+   const char *name;
+   uint32_t spec_version;
+};
+
 static inline uint32_t
 vn_info_wire_format_version(void)
 {
@@ -58,30 +65,21 @@ vn_info_vk_xml_version(void)
 }
 
 static inline int
-vn_info_extension_compare(const void *a, const void *b)
+vn_info_extension_compare(const void *name, const void *ext)
 {
-   return strcmp(a, *(const char **)b);
+   return strcmp(name, ((const struct vn_info_extension *)ext)->name);
 }
 
-static inline uint32_t
-vn_info_extension_spec_version(const char *name)
+static inline const struct vn_info_extension *
+vn_info_extension_get(const char *name)
 {
-    static uint32_t ext_count = ${len(exts)};
-    static const char *ext_names[${len(exts)}] = {
-% for ext in exts:
-        "${ext.name}",
+   static const struct vn_info_extension vn_info_extensions[${len(exts)}] = {
+% for i, ext in enumerate(exts):
+      { ${i}, "${ext.name}", ${ext.version} },
 % endfor
-    };
-    static const uint32_t ext_versions[${len(exts)}] = {
-% for ext in exts:
-        ${ext.version},
-% endfor
-    };
-    const char **found;
+   };
 
-    found = bsearch(name, ext_names, ext_count, sizeof(ext_names[0]),
-          vn_info_extension_compare);
-
-    return found ? ext_versions[found - ext_names] : 0;
+   return bsearch(name, vn_info_extensions, ${len(exts)},
+         sizeof(*vn_info_extensions), vn_info_extension_compare);
 }
 </%def>

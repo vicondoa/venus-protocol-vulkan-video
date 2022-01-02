@@ -999,17 +999,20 @@ class GenInfo:
     def __init__(self, gen):
         self.gen = gen
 
-        self.exts = []
-        for ext in self.gen.reg.extensions:
-            if ext.name in VK_XML_EXTENSION_LIST:
-                self.exts.append(ext)
-        self.exts.sort(key=lambda ext: ext.name)
+        self.exts = [ext for ext in self.gen.reg.extensions
+                if ext.name in VK_XML_EXTENSION_LIST]
+        self.exts = sorted(self.exts, key=self.extension_sort_key)
 
     def generate(self, template):
         return template.render(
                 WIRE_FORMAT_VERSION=VN_WIRE_FORMAT_VERSION,
                 VK_XML_VERSION=self.gen.reg.vk_xml_version,
                 EXTENSIONS=self.exts)
+
+    @staticmethod
+    def extension_sort_key(ext):
+        # sort by names for bsearch
+        return ext.name
 
 class GenTypes:
     def __init__(self, gen):
