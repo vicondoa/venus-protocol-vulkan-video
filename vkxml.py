@@ -181,6 +181,7 @@ class VkType:
 
         # for STRUCT (optional)
         self.s_type = None
+        self._struct_extends = []
         self.p_next = []
 
         # for FUNCPOINTER/COMMAND
@@ -483,17 +484,14 @@ class VkType:
 
         struct_extends = []
         if 'structextends' in type_elem.attrib:
-            struct_names = type_elem.attrib['structextends'].split(',')
-            struct_extends = [VkType._get_type(name, type_table) for
-                    name in struct_names]
+            struct_extends = type_elem.attrib['structextends'].split(',')
 
         returnedonly = type_elem.attrib.get(
                 'returnedonly', 'false') != 'false'
 
         ty.variables = members
         ty.s_type = s_type
-        for struct_ty in struct_extends:
-            struct_ty.p_next.append(ty)
+        ty._struct_extends = struct_extends
         if returnedonly:
             ty.attrs['returnedonly'] = True
 
@@ -873,11 +871,22 @@ class VkRegistry:
 
     def _resolve(self):
         """Resolve after all XMLs are parsed."""
-        # resolve enum value aliases
-        for ty in self.type_table.values():
+        for name, ty in self.type_table.items():
+            # skip aliases
+            if name in ty.aliases:
+                continue
+
+            # add ty to p_next of the type it extends
+            if ty._struct_extends:
+                extended_tys = [VkType._get_type(name, self.type_table) for name in ty._struct_extends]
+                for extended_ty in extended_tys:
+                    assert ty not in extended_ty.p_next
+                    extended_ty.p_next.append(ty)
+
             if ty.category != ty.ENUM or not ty.enums.values:
                 continue
 
+            # resolve enum value aliases
             for key, val in ty.enums.values.items():
                 if val not in ty.enums.values:
                     continue
