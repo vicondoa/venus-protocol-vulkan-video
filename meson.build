@@ -83,6 +83,7 @@ command_headers = [
   'pipeline',
   'pipeline_cache',
   'pipeline_layout',
+  'private_data_slot',
   'query_pool',
   'queue',
   'render_pass',

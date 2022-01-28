@@ -1117,6 +1117,7 @@ class GenStructsAndCommands:
             'CreateImage',
             'DestroyImage',
             'GetImage',
+            'GetDeviceImage',
         ],
         'image_view': [
             'CreateImageView',
@@ -1135,6 +1136,7 @@ class GenStructsAndCommands:
             'CreateBuffer',
             'DestroyBuffer',
             'GetBuffer',
+            'GetDeviceBuffer',
         ],
         'buffer_view': [
             'CreateBufferView',
@@ -1206,6 +1208,12 @@ class GenStructsAndCommands:
             'FreeCommandBuffer',
             'ResetCommandBuffer',
             'Cmd',
+        ],
+        'private_data_slot': [
+            'CreatePrivateDataSlot',
+            'DestroyPrivateDataSlot',
+            'GetPrivateData',
+            'SetPrivateData',
         ],
     }
 
