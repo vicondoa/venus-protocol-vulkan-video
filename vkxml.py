@@ -164,6 +164,9 @@ class VkType:
 
         self.attrs = {}
 
+        # True if defined by private XMLs
+        self.is_private = None
+
         # for DEFINE
         self.define = None
 
@@ -775,14 +778,15 @@ class VkRegistry:
         reg._parse_xml(vk_xml)
 
         reg.vk_xml_extension_count = len(reg.extensions)
-        for ty in reg.type_table.values():
+        vk_xml_types = set(reg.type_table.values())
+        for ty in vk_xml_types:
             if ty.category == ty.ENUM:
                 ty.enums.vk_xml_values = set(ty.enums.values.keys())
 
         for xml in private_xmls:
             reg._parse_xml(xml)
 
-        reg._resolve()
+        reg._resolve(vk_xml_types)
         reg._validate()
 
         return reg
@@ -869,12 +873,14 @@ class VkRegistry:
         else:
             return 'VK_MAKE_VERSION(%s)' % complete_ver
 
-    def _resolve(self):
+    def _resolve(self, vk_xml_types):
         """Resolve after all XMLs are parsed."""
         for name, ty in self.type_table.items():
             # skip aliases
             if name in ty.aliases:
                 continue
+
+            ty.is_private = ty not in vk_xml_types
 
             # add ty to p_next of the type it extends
             if ty._struct_extends:
