@@ -61,6 +61,7 @@ renderer_base_headers = [
   'renderer_handles.h',
   'renderer_info.h',
   'renderer_types.h',
+  'renderer_util.h',
 ]
 
 command_headers = [

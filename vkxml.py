@@ -161,6 +161,7 @@ class VkType:
         self.base = None
 
         self.aliases = []
+        self.ext_aliases = {}
 
         self.attrs = {}
 
@@ -668,6 +669,7 @@ class VkFeature:
     def parse_require(require_elem, type_table, ext_number=None):
         """Parse <require> into a list of VkType."""
         types = []
+        names = []
         for child in require_elem:
             if child.tag == 'enum':
                 if 'extends' not in child.attrib:
@@ -678,8 +680,9 @@ class VkFeature:
                 name = child.attrib['name']
                 ty = type_table[name]
                 types.append(ty)
+                names.append(name)
 
-        return types
+        return (types, names)
 
     @staticmethod
     def parse_feature(feature_elem, type_table):
@@ -690,7 +693,8 @@ class VkFeature:
 
         types = []
         for require_elem in feature_elem.iterfind('require'):
-            require_types = VkFeature.parse_require(require_elem, type_table)
+            require_types, _ = VkFeature.parse_require(require_elem,
+                                                       type_table)
             for ty in require_types:
                 if ty not in types:
                     types.append(ty)
@@ -739,7 +743,7 @@ class VkExtension:
             if ext.supported != 'vulkan':
                 continue
 
-            require_types = VkFeature.parse_require(
+            require_types, require_names = VkFeature.parse_require(
                     require_elem, type_table, number)
 
             # check if this <require> depends on another extension
@@ -751,7 +755,8 @@ class VkExtension:
             else:
                 types = ext.types
 
-            for ty in require_types:
+            for ty, alias in zip(require_types, require_names):
+                ty.ext_aliases[name] = alias
                 if ty not in types:
                     types.append(ty)
 

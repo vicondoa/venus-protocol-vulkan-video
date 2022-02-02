@@ -1384,6 +1384,55 @@ class GenStructsAndCommands:
                 STRUCT_SKIPPED=group.skipped_structs,
                 MANUAL_UNION_TYPES=group.manual_unions)
 
+class GenUtil:
+    def __init__(self, gen):
+        self.gen = gen
+        self.physical_device_commands = []
+        self.device_commands = []
+
+        cmds = self.gen.supported_types[VkType.COMMAND]
+        for cmd in cmds:
+            if cmd.is_private or not cmd.variables:
+                continue
+
+            dispatch_handle = cmd.variables[0].ty
+            if (dispatch_handle.category != cmd.HANDLE or not
+                dispatch_handle.dispatchable or
+                dispatch_handle.name == 'VkInstance'):
+                continue
+
+            cmd_feat = None
+            cmd_exts = []
+            for feat in self.gen.reg.features:
+                if cmd in feat.types:
+                    cmd_feat = feat
+                    break
+            for ext in self.gen.reg.extensions:
+                if ext.name in VK_XML_EXTENSION_LIST and cmd in ext.types:
+                    cmd_exts.append(ext)
+
+            assert cmd_feat or cmd_exts
+            entry = (cmd, cmd_feat, cmd_exts)
+
+            if dispatch_handle.name == 'VkPhysicalDevice':
+                # we require Vulkan 1.1 and do not need to use
+                # vkGetInstanceProcAddr
+                if feat.number in ['1.0', '1.1']:
+                    continue
+                self.physical_device_commands.append(entry)
+            else:
+                # it is faster to use the pointers returned by
+                # vkGetDeviceProcAddr
+                self.device_commands.append(entry)
+
+    def generate(self, template):
+        return template.render(
+                GEN=self.gen,
+                PHYSICAL_DEVICE_COMMANDS=sorted(self.physical_device_commands,
+                    key=lambda entry: entry[0].name),
+                DEVICE_COMMANDS=sorted(self.device_commands,
+                    key=lambda entry: entry[0].name))
+
 class GenDispatches:
     def __init__(self, gen):
         self.gen = gen
@@ -1423,6 +1472,7 @@ def get_generators(gen):
         GenTypes,
         GenHandles,
         GenStructsAndCommands,
+        GenUtil,
         GenDispatches,
     ]
 
@@ -1487,6 +1537,7 @@ def main():
             (GenInfo,       variant + '_info.h'),
             (GenTypes,      variant + '_types.h'),
             (GenHandles,    variant + '_handles.h'),
+            (GenUtil,       variant + '_util.h'),
             (GenDispatches, variant + '_dispatches.h'),
         ]
 
