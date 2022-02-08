@@ -107,6 +107,7 @@ VK_XML_EXTENSION_LIST = [
     # KHR extensions
     'VK_KHR_external_memory_fd',
     # EXT extensions
+    'VK_EXT_custom_border_color',
     'VK_EXT_external_memory_dma_buf',
     'VK_EXT_image_drm_format_modifier',
     'VK_EXT_queue_family_foreign',
