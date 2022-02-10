@@ -341,6 +341,10 @@ virtualization or remoting, and are not exposed to applications.
         <enum value="233"   name="VK_COMMAND_TYPE_vkCmdSetPatchControlPointsEXT_EXT"/>
         <enum value="234"   name="VK_COMMAND_TYPE_vkCmdSetLogicOpEXT_EXT"/>
 
+        <comment>VK_EXT_calibrated_timestamps</comment>
+        <enum value="235"   name="VK_COMMAND_TYPE_vkGetPhysicalDeviceCalibrateableTimeDomainsEXT_EXT"/>
+        <enum value="236"   name="VK_COMMAND_TYPE_vkGetCalibratedTimestampsEXT_EXT"/>
+
         <comment>VK_MESA_venus_protocol</comment>
         <enum value="178"   name="VK_COMMAND_TYPE_vkSetReplyCommandStreamMESA_EXT"/>
         <enum value="179"   name="VK_COMMAND_TYPE_vkSeekReplyCommandStreamMESA_EXT"/>
