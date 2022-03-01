@@ -111,6 +111,7 @@ VK_XML_EXTENSION_LIST = [
     'VK_EXT_custom_border_color',
     'VK_EXT_external_memory_dma_buf',
     'VK_EXT_image_drm_format_modifier',
+    'VK_EXT_line_rasterization',
     'VK_EXT_queue_family_foreign',
     'VK_EXT_transform_feedback',
 ]
