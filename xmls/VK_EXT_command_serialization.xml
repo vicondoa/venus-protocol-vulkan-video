@@ -334,6 +334,10 @@ virtualization or remoting, and are not exposed to applications.
         <enum value="193"   name="VK_COMMAND_TYPE_vkGetMemoryFdKHR_EXT"/>
         <enum value="194"   name="VK_COMMAND_TYPE_vkGetMemoryFdPropertiesKHR_EXT"/>
 
+        <comment>VK_KHR_external_fence_fd</comment>
+        <enum value="238"   name="VK_COMMAND_TYPE_vkImportFenceFdKHR_EXT"/>
+        <enum value="239"   name="VK_COMMAND_TYPE_vkGetFenceFdKHR_EXT"/>
+
         <comment>VK_EXT_image_drm_format_modifier</comment>
         <enum value="187"   name="VK_COMMAND_TYPE_vkGetImageDrmFormatModifierPropertiesEXT_EXT"/>
 

@@ -105,6 +105,7 @@ VK_XML_EXTENSION_LIST = [
     'VK_EXT_tooling_info',
     'VK_EXT_ycbcr_2plane_444_formats',
     # KHR extensions
+    'VK_KHR_external_fence_fd',
     'VK_KHR_external_memory_fd',
     # EXT extensions
     'VK_EXT_calibrated_timestamps',
