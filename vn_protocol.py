@@ -1110,6 +1110,7 @@ class GenStructsAndCommands:
             'DestroyDevice',
             'Device',
             'GetDevice',
+            'GetCalibratedTimestamps',
             'GetPhysicalDevice',
             'EnumerateDevice',
         ],
