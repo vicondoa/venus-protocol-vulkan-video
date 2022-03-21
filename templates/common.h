@@ -46,9 +46,8 @@ struct vn_command_${ty.name} {
 
 <%def name="define_info(wire_format_ver, vk_xml_ver, exts)">\
 struct vn_info_extension {
-   uint32_t index;
-
    const char *name;
+   uint32_t number;
    uint32_t spec_version;
 };
 
@@ -56,7 +55,7 @@ struct vn_info_extension {
 static const uint32_t _vn_info_extension_count = ${len(exts)};
 static const struct vn_info_extension _vn_info_extensions[${len(exts)}] = {
 % for i, ext in enumerate(exts):
-   { ${i}, "${ext.name}", ${ext.version} },
+   { "${ext.name}", ${ext.number}, ${ext.version} },
 % endfor
 };
 
