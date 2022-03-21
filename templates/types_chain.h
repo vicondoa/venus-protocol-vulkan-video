@@ -19,7 +19,14 @@ vn_sizeof_${ty.name}_pnext${variant}(const void *val)
     while (pnext) {
         switch ((int32_t)pnext->sType) {
 %   for next_ty in next_types:
+<%
+        ty_cond = GEN.get_type_condition(next_ty)
+%>\
         case ${next_ty.s_type}:
+%       if ty_cond:
+            if (${ty_cond})
+                break;
+%       endif
             size += vn_sizeof_simple_pointer(pnext);
             size += vn_sizeof_VkStructureType(&pnext->sType);
             size += vn_sizeof_${ty.name}_pnext${variant}(pnext->pNext);
@@ -56,7 +63,14 @@ vn_encode_${ty.name}_pnext${variant}(struct vn_cs_encoder *enc, const void *val)
     while (pnext) {
         switch ((int32_t)pnext->sType) {
 %   for next_ty in next_types:
+<%
+        ty_cond = GEN.get_type_condition(next_ty)
+%>\
         case ${next_ty.s_type}:
+%       if ty_cond:
+            if (${ty_cond})
+                break;
+%       endif
             vn_encode_simple_pointer(enc, pnext);
             vn_encode_VkStructureType(enc, &pnext->sType);
             vn_encode_${ty.name}_pnext${variant}(enc, pnext->pNext);

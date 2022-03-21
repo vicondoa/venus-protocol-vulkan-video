@@ -17,6 +17,18 @@ typedef uint64_t vn_object_id;
 struct vn_cs_encoder;
 struct vn_cs_decoder;
 
+static inline bool
+vn_cs_renderer_protocol_has_api_version(uint32_t api_version)
+{
+    return true;
+}
+
+static inline bool
+vn_cs_renderer_protocol_has_extension(uint32_t ext_number)
+{
+    return true;
+}
+
 static inline size_t
 vn_cs_encoder_get_len(const struct vn_cs_encoder *enc)
 {

@@ -320,6 +320,81 @@ class Gen:
                 skipped.append(next_ty)
         return types, skipped
 
+    @staticmethod
+    def _api_number_to_version(num):
+        major, minor = num.split('.')
+        return 'VK_API_VERSION_' + major + '_' + minor
+
+    def get_type_condition(self, ty):
+        if not self.is_driver:
+            return None
+
+        # pNext chain support is required
+        COND_NONE = 0
+        # pNext chain depends on core api version
+        # cover only new types from core api
+        COND_API = 1
+        # pNext chain depends on extension(s) or extension pair(s)
+        # cover types from exts and promoted core exts
+        COND_EXT = 2
+
+        # type of condition
+        cond = COND_NONE
+        # api version e.g. '4206592'
+        api_version = 0
+        # map name to ext of exts in VK_XML_EXTENSION_LIST
+        ext_map = {}
+        # ext condition of the type
+        exts = []
+        # ext pair condition of the type
+        ext_pairs = []
+
+        for feat in self.reg.features:
+            if ty in feat.types:
+                # 1.2 is required for protocol
+                if feat.number in ['1.0', '1.1', '1.2']:
+                    assert cond == COND_NONE
+                    return None
+                api_version = self._api_number_to_version(feat.number)
+                cond = COND_API
+                break
+
+        for ext in self.reg.extensions:
+            if ext.name in VK_XML_EXTENSION_LIST:
+                ext_map[ext.name] = ext
+
+        for ext in ext_map.values():
+            if ty in ext.types:
+                # venus protocol versioning is not handled here
+                if ext.name == 'VK_MESA_venus_protocol':
+                    assert cond == COND_NONE
+                    return None
+                exts.append(ext)
+                cond = COND_EXT
+            elif ext.optional_types:
+                for key in ext.optional_types:
+                    if key in ext_map and ty in ext.optional_types[key]:
+                        ext_pairs.append((ext, ext_map[key]))
+                        cond = COND_EXT
+                        break
+
+        assert cond != COND_NONE
+
+        stmt = ''
+        if cond == COND_EXT:
+            ext_check = 'vn_cs_renderer_protocol_has_extension'
+            stmt_exts = ' && '.join(f'!{ext_check}({ext.number} /* {ext.name} */)'
+                                    for ext in exts)
+            stmt_ext_pairs = ' && '.join(
+                f'!({ext_check}({ext1.number} /* {ext1.name} */) && '
+                f'{ext_check}({ext2.number} /* {ext2.name} */))'
+                for ext1, ext2 in ext_pairs)
+            stmt = ' && '.join(filter(None, [stmt_exts, stmt_ext_pairs]))
+        else:
+            stmt = '!vn_cs_renderer_protocol_has_api_version(%s)' % api_version
+
+        return stmt
+
     class LoopInfo:
         """Information needed to generate loops to access a variable."""
 
