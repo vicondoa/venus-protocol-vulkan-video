@@ -53,6 +53,7 @@ struct vn_info_extension {
 };
 
 /* sorted by extension names for bsearch */
+static const uint32_t _vn_info_extension_count = ${len(exts)};
 static const struct vn_info_extension _vn_info_extensions[${len(exts)}] = {
 % for i, ext in enumerate(exts):
    { ${i}, "${ext.name}", ${ext.version} },
@@ -77,10 +78,19 @@ vn_info_extension_compare(const void *name, const void *ext)
    return strcmp(name, ((const struct vn_info_extension *)ext)->name);
 }
 
-static inline const struct vn_info_extension *
-vn_info_extension_get(const char *name)
+static inline int32_t
+vn_info_extension_index(const char *name)
 {
-   return bsearch(name, _vn_info_extensions, ${len(exts)},
-         sizeof(*_vn_info_extensions), vn_info_extension_compare);
+   const struct vn_info_extension *ext = bsearch(name, _vn_info_extensions,
+      _vn_info_extension_count, sizeof(*_vn_info_extensions),
+      vn_info_extension_compare);
+   return ext ? ext - _vn_info_extensions : -1;
+}
+
+static inline const struct vn_info_extension *
+vn_info_extension_get(int32_t index)
+{
+   assert(index >= 0 && (uint32_t)index < _vn_info_extension_count);
+   return &_vn_info_extensions[index];
 }
 </%def>
