@@ -52,6 +52,13 @@ struct vn_info_extension {
    uint32_t spec_version;
 };
 
+/* sorted by extension names for bsearch */
+static const struct vn_info_extension _vn_info_extensions[${len(exts)}] = {
+% for i, ext in enumerate(exts):
+   { ${i}, "${ext.name}", ${ext.version} },
+% endfor
+};
+
 static inline uint32_t
 vn_info_wire_format_version(void)
 {
@@ -73,13 +80,7 @@ vn_info_extension_compare(const void *name, const void *ext)
 static inline const struct vn_info_extension *
 vn_info_extension_get(const char *name)
 {
-   static const struct vn_info_extension vn_info_extensions[${len(exts)}] = {
-% for i, ext in enumerate(exts):
-      { ${i}, "${ext.name}", ${ext.version} },
-% endfor
-   };
-
-   return bsearch(name, vn_info_extensions, ${len(exts)},
-         sizeof(*vn_info_extensions), vn_info_extension_compare);
+   return bsearch(name, _vn_info_extensions, ${len(exts)},
+         sizeof(*_vn_info_extensions), vn_info_extension_compare);
 }
 </%def>
