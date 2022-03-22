@@ -44,7 +44,9 @@ struct vn_command_${ty.name} {
 };
 </%def>
 
-<%def name="define_info(wire_format_ver, vk_xml_ver, exts)">\
+<%def name="define_info(wire_format_ver, vk_xml_ver, exts, max_ext_number)">\
+#define VN_INFO_EXTENSION_MAX_NUMBER (${max_ext_number})
+
 struct vn_info_extension {
    const char *name;
    uint32_t number;

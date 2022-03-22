@@ -1039,11 +1039,18 @@ class GenInfo:
                 if ext.name in VK_XML_EXTENSION_LIST]
         self.exts = sorted(self.exts, key=self.extension_sort_key)
 
+        self.max_ext_number = 0
+        for ext in self.exts:
+            if ext.number > self.max_ext_number:
+                self.max_ext_number = ext.number
+        assert self.max_ext_number > 0
+
     def generate(self, template):
         return template.render(
                 WIRE_FORMAT_VERSION=VN_WIRE_FORMAT_VERSION,
                 VK_XML_VERSION=self.gen.reg.vk_xml_version,
-                EXTENSIONS=self.exts)
+                EXTENSIONS=self.exts,
+                MAX_EXTENSION_NUMBER=self.max_ext_number)
 
     @staticmethod
     def extension_sort_key(ext):
