@@ -192,9 +192,9 @@ class Gen:
                     ty.ret.ty.base.typedef.base.attrs['need_array'] = True
 
             if self.is_driver:
-                var.ty.set_attribute('need_decode', True)
+                ty.ret.ty.set_attribute('need_decode', True)
             else:
-                var.ty.set_attribute('need_encode', True)
+                ty.ret.ty.set_attribute('need_encode', True)
 
     def _fixup_registry(self):
         for ty in self.reg.type_table.values():
