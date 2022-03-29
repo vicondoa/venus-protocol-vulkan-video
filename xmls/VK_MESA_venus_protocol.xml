@@ -79,6 +79,12 @@ renderer, and are not exposed to applications.
             <member><type>VkSemaphore</type>                      <name>semaphore</name></member>
             <member><type>uint32_t</type>                         <name>resourceId</name></member>
         </type>
+
+        <type category="struct" name="VkDeviceQueueTimelineInfoMESA" structextends="VkDeviceQueueInfo2">
+            <member values="VK_STRUCTURE_TYPE_DEVICE_QUEUE_TIMELINE_INFO_MESA"><type>VkStructureType</type> <name>sType</name></member>
+            <member optional="true">const <type>void</type>*      <name>pNext</name></member>
+            <member><type>uint32_t</type>                         <name>ringIdx</name></member>
+        </type>
     </types>
 
     <enums name="VkCommandStreamExecutionFlagBitsMESA" type="bitmask">
@@ -167,6 +173,7 @@ renderer, and are not exposed to applications.
                 <enum offset="2" extends="VkStructureType"                  name="VK_STRUCTURE_TYPE_IMPORT_MEMORY_RESOURCE_INFO_MESA"/>
                 <enum offset="3" extends="VkStructureType"                  name="VK_STRUCTURE_TYPE_MEMORY_RESOURCE_ALLOCATION_SIZE_PROPERTIES_100000_MESA"/>
                 <enum offset="4" extends="VkStructureType"                  name="VK_STRUCTURE_TYPE_IMPORT_SEMAPHORE_RESOURCE_INFO_100000_MESA"/>
+                <enum offset="5" extends="VkStructureType"                  name="VK_STRUCTURE_TYPE_DEVICE_QUEUE_TIMELINE_INFO_MESA"/>
                 <type name="VkCommandStreamExecutionFlagBitsMESA"/>
                 <type name="VkCommandStreamExecutionFlagsMESA"/>
                 <type name="VkRingCreateFlagBitsMESA"/>
@@ -181,6 +188,7 @@ renderer, and are not exposed to applications.
                 <type name="VkVenusExperimentalFeatures100000MESA"/>
                 <type name="VkMemoryResourceAllocationSizeProperties100000MESA"/>
                 <type name="VkImportSemaphoreResourceInfo100000MESA"/>
+                <type name="VkDeviceQueueTimelineInfoMESA"/>
                 <command name="vkSetReplyCommandStreamMESA"/>
                 <command name="vkSeekReplyCommandStreamMESA"/>
                 <command name="vkExecuteCommandStreamsMESA"/>
