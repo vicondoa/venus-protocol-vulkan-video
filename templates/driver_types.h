@@ -10,6 +10,7 @@
 #ifndef VN_PROTOCOL_DRIVER_TYPES_H
 #define VN_PROTOCOL_DRIVER_TYPES_H
 
+#include "vn_protocol_driver_cs.h"
 #include "vn_protocol_driver_defines.h"
 
 % for ty in EARLY_SCALAR_TYPES:
