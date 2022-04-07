@@ -99,6 +99,8 @@ vn_decode_${ty.name}_pnext(struct vn_cs_decoder *dec, const void *val)
         assert(pnext);
         if (pnext->sType == stype)
             break;
+
+        pnext = pnext->pNext;
     }
 
     switch ((int32_t)pnext->sType) {
