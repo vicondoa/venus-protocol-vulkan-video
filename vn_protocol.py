@@ -731,12 +731,6 @@ class Gen:
             code += '} else {\n    '
             code += '    %s += vn_sizeof_array_size(0);\n    ' % dst
             code += '}'
-        elif info.var.ty.is_pointer() and info.need_bracket():
-            code += '%s += vn_sizeof_simple_pointer(%s);\n    ' % (
-                        dst, info._var_name())
-            code += 'if (%s) {\n    ' % info._var_name()
-            code += '    %s\n    ' % info.code(2).strip()
-            code += '}'
         elif info.var.ty.is_pointer():
             code += '%s += vn_sizeof_simple_pointer(%s);\n    ' % (
                         dst, info._var_name())
@@ -763,10 +757,6 @@ class Gen:
             code += '    %s\n    ' % info.code(2).strip()
             code += '} else {\n    '
             code += '    vn_encode_array_size(enc, 0);\n    '
-            code += '}'
-        elif info.var.ty.is_pointer() and info.need_bracket():
-            code += 'if (vn_encode_simple_pointer(enc, %s)) {\n    ' % info._var_name()
-            code += '    %s\n    ' % info.code(2).strip()
             code += '}'
         elif info.var.ty.is_pointer():
             code += 'if (vn_encode_simple_pointer(enc, %s))\n    ' % info._var_name()
