@@ -609,9 +609,9 @@ class Gen:
             if not alloc_counts:
                 var_name = self._var_name()
                 deref = self._var_deref()
-                alloc_stmt = '%s = vn_cs_decoder_alloc_temp(dec, sizeof(%s%s))' % (
+                alloc_stmt = '%s = vn_cs_decoder_alloc_temp(dec, sizeof(%s%s));' % (
                         var_name, deref, var_name)
-                check_stmt = 'if (!%s) return' % var_name
+                check_stmt = 'if (!%s) return;' % var_name
                 self.statements.append(alloc_stmt)
                 self.statements.append(check_stmt)
                 return
@@ -622,9 +622,9 @@ class Gen:
                 else:
                     size = 'sizeof(*%s) * %s' % (self._var_name(level), count)
 
-                alloc_stmt = '%s = vn_cs_decoder_alloc_temp(dec, %s)' % (
+                alloc_stmt = '%s = vn_cs_decoder_alloc_temp(dec, %s);' % (
                         self._var_name(level, level > 0), size)
-                check_stmt = 'if (!%s) return' % self._var_name(level)
+                check_stmt = 'if (!%s) return;' % self._var_name(level)
 
                 if level < len(self.loop_info):
                     loop = self.loop_info.loops[level]
@@ -660,7 +660,7 @@ class Gen:
             indent = '    ' * indent_level
             for loop in self.loop_info:
                 for stmt in loop.statements:
-                    code += '%s%s;\n' % (indent, stmt)
+                    code += '%s%s\n' % (indent, stmt)
 
                 init_expr = '%s %c = 0' % (loop.iter_type, loop.iter_name)
                 cond_expr = '%c < %s' % (loop.iter_name, loop.iter_count)
@@ -684,7 +684,7 @@ class Gen:
             indent = '    ' * (indent_level + loop_level)
 
             for stmt in self.statements:
-                code += '%s%s;\n' % (indent, stmt)
+                code += '%s%s\n' % (indent, stmt)
 
             return code
 
@@ -843,22 +843,22 @@ class Gen:
         info = self.VariableInfo(ty, var, prefix, validity)
         if not self.is_serializable(var):
             assert var.maybe_null()
-            info.statements.append('assert(false)')
+            info.statements.append('assert(false);')
             return info
 
         # save strlen result to a temp
         if var.has_c_string():
             assert info.array_size.startswith('strlen')
-            stmt = 'const size_t string_size = %s' % info.array_size
+            stmt = 'const size_t string_size = %s;' % info.array_size
             info.statements.append(stmt)
             info.array_size = 'string_size'
 
         # encode array sizes
         for loop in info.loop_info:
-            stmt = '%s += vn_sizeof_array_size(%s)' % (dst, loop.iter_count)
+            stmt = '%s += vn_sizeof_array_size(%s);' % (dst, loop.iter_count)
             loop.statements.append(stmt)
         if info.array_size:
-            stmt = '%s += vn_sizeof_array_size(%s)' % (dst, info.array_size)
+            stmt = '%s += vn_sizeof_array_size(%s);' % (dst, info.array_size)
             info.statements.append(stmt)
 
         # nothing to encode
@@ -869,9 +869,9 @@ class Gen:
         if validity == info.PARTIAL and var.ty.base.category == ty.STRUCT:
             func_name += '_partial'
 
-        stmt = '%s += %s(%s)' % (dst, func_name, info.func_args(False))
+        stmt = '%s += %s(%s);' % (dst, func_name, info.func_args(False))
         if validity == info.WA1:
-            stmt = '/* WA1: %s */(void)0' % stmt
+            stmt = '/* WA1: %s */(void)0;' % stmt
 
         info.statements.append(stmt)
 
@@ -881,22 +881,22 @@ class Gen:
         info = self.VariableInfo(ty, var, prefix, validity)
         if not self.is_serializable(var):
             assert var.maybe_null()
-            info.statements.append('assert(false)')
+            info.statements.append('assert(false);')
             return info
 
         # save strlen result to a temp
         if var.has_c_string():
             assert info.array_size.startswith('strlen')
-            stmt = 'const size_t string_size = %s' % info.array_size
+            stmt = 'const size_t string_size = %s;' % info.array_size
             info.statements.append(stmt)
             info.array_size = 'string_size'
 
         # encode array sizes
         for loop in info.loop_info:
-            stmt = 'vn_encode_array_size(enc, %s)' % loop.iter_count
+            stmt = 'vn_encode_array_size(enc, %s);' % loop.iter_count
             loop.statements.append(stmt)
         if info.array_size:
-            stmt = 'vn_encode_array_size(enc, %s)' % info.array_size
+            stmt = 'vn_encode_array_size(enc, %s);' % info.array_size
             info.statements.append(stmt)
 
         # nothing to encode
@@ -908,11 +908,11 @@ class Gen:
             func_name += '_partial'
 
         if 'stride' in var.attrs:
-            stmt = '%s(enc, (void *)%s + %s * %c)' % (func_name, info._var_name(), var.attrs['stride'], loop.iter_name)
+            stmt = '%s(enc, (void *)%s + %s * %c);' % (func_name, info._var_name(), var.attrs['stride'], loop.iter_name)
         else:
-            stmt = '%s(enc, %s)' % (func_name, info.func_args(False))
+            stmt = '%s(enc, %s);' % (func_name, info.func_args(False))
         if validity == info.WA1:
-            stmt = '/* WA1: %s */(void)0' % stmt
+            stmt = '/* WA1: %s */(void)0;' % stmt
 
         info.statements.append(stmt)
 
@@ -923,9 +923,9 @@ class Gen:
         if not self.is_serializable(var):
             assert var.maybe_null()
             if self.is_driver:
-                stmt = 'assert(false)'
+                stmt = 'assert(false);'
             else:
-                stmt = 'vn_cs_decoder_set_fatal(dec)'
+                stmt = 'vn_cs_decoder_set_fatal(dec);'
             info.statements.append(stmt)
             return info
 
@@ -935,7 +935,7 @@ class Gen:
             if loop.level > 0:
                 temp_name += '_' + loop.iter_name
 
-            stmt = 'const %s %s = vn_decode_array_size(dec, %s)' % \
+            stmt = 'const %s %s = vn_decode_array_size(dec, %s);' % \
                     (loop.iter_type, temp_name, loop.iter_count)
             loop.statements.append(stmt)
             loop.iter_count = temp_name
@@ -945,11 +945,11 @@ class Gen:
             if var.has_c_string():
                 assert info.array_size.startswith('strlen')
                 assert info.func_stem == 'char_array'
-                stmt = 'const size_t string_size = vn_decode_array_size_unchecked(dec)'
+                stmt = 'const size_t string_size = vn_decode_array_size_unchecked(dec);'
                 info.statements.append(stmt)
                 info.array_size = 'string_size'
             else:
-                stmt = 'const size_t array_size = vn_decode_array_size(dec, %s)' \
+                stmt = 'const size_t array_size = vn_decode_array_size(dec, %s);' \
                         % info.array_size
                 info.statements.append(stmt)
                 info.array_size = 'array_size'
@@ -976,9 +976,9 @@ class Gen:
             elif alloc_storage and var.ty.base.dispatchable:
                 func_name += '_temp'
 
-        stmt = '%s(dec, %s)' % (func_name, info.func_args(True))
+        stmt = '%s(dec, %s);' % (func_name, info.func_args(True))
         if validity == info.WA1:
-            stmt = '/* WA1 */ %s = vn_peek_array_size(dec)' % info._var_name()
+            stmt = '/* WA1 */ %s = vn_peek_array_size(dec);' % info._var_name()
 
         info.statements.append(stmt)
 
@@ -994,7 +994,7 @@ class Gen:
             not self.is_serializable(var)):
             return info
 
-        stmt = 'vn_replace_%s_handle(%s)' % (info.func_stem,
+        stmt = 'vn_replace_%s_handle(%s);' % (info.func_stem,
                 info.func_args(True))
         info.statements.append(stmt)
 
