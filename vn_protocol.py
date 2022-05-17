@@ -777,40 +777,43 @@ class Gen:
             code += '%s%s\n' % (indent, stmt)
         return code
 
-    def _decode_variable(self, info):
+    def _decode_variable(self, info, indent_level):
+        indent = '    ' * indent_level
         if info.validity == info.INVALID:
             if not info.var.ty.is_pointer():
-                return '/* skip %s */' % info._var_name()
+                return '%s/* skip %s */' % (indent, info._var_name())
 
-        code = ''
+        stmts = []
         if info.var.is_dynamic_array():
-            code += 'if (vn_peek_array_size(dec)) {\n    '
-            code += '    %s\n    ' % info.code(2).strip()
-            code += '} else {\n    '
+            stmts.append('if (vn_peek_array_size(dec)) {')
+            stmts.append('    %s' % info.code(indent_level + 1).strip())
+            stmts.append('} else {')
             if not self.is_driver and not info.var.is_optional() and \
                     info.var.can_validate() and info.dynamic_array_size:
-                code += '    vn_decode_array_size(dec, %s);\n    ' % \
-                    info.dynamic_array_size
+                stmts.append('    vn_decode_array_size(dec, %s);' % info.dynamic_array_size)
             else:
-                code += '    vn_decode_array_size_unchecked(dec);\n    '
-            code += '    %s = NULL;\n    ' % info._var_name()
-            code += '}'
+                stmts.append('    vn_decode_array_size_unchecked(dec);')
+            stmts.append('    %s = NULL;' % info._var_name())
+            stmts.append('}')
         elif info.var.ty.is_pointer():
-            code += 'if (vn_decode_simple_pointer(dec)) {\n    '
-            code += '    %s\n    ' % info.code(2).strip()
-            code += '} else {\n    '
-            code += '    %s = NULL;\n    ' % info._var_name()
+            stmts.append('if (vn_decode_simple_pointer(dec)) {')
+            stmts.append('    %s' % info.code(indent_level + 1).strip())
+            stmts.append('} else {')
+            stmts.append('    %s = NULL;' % info._var_name())
             if not self.is_driver and not info.var.is_optional() and \
                     info.var.can_validate():
-                code += '    vn_cs_decoder_set_fatal(dec);\n    '
-            code += '}'
+                stmts.append('    vn_cs_decoder_set_fatal(dec);')
+            stmts.append('}')
         elif info.need_bracket():
-            code += '{\n    '
-            code += '    %s\n    ' % info.code(2).strip()
-            code += '}'
+            stmts.append('{')
+            stmts.append('    %s' % info.code(indent_level + 1).strip())
+            stmts.append('}')
         else:
-            code += info.code(1).strip()
+            stmts.append(info.code(indent_level).strip())
 
+        code = ''
+        for stmt in stmts:
+            code += '%s%s\n' % (indent, stmt)
         return code
 
     def _replace_variable_handle(self, info):
@@ -1022,10 +1025,10 @@ class Gen:
         info = self._encode_variable_info(ty, var, prefix, validity)
         return self._encode_variable(info, indent_level).strip()
 
-    def decode_struct_member(self, ty, var, prefix, struct_is_partial, alloc_storage):
+    def decode_struct_member(self, ty, var, prefix, struct_is_partial, alloc_storage, indent_level=1):
         validity = self._get_variable_validity(ty, var, not struct_is_partial)
         info = self._decode_variable_info(ty, var, prefix, validity, alloc_storage)
-        return self._decode_variable(info)
+        return self._decode_variable(info, indent_level).strip()
 
     def replace_struct_member_handle(self, ty, var, prefix):
         validity = self._get_variable_validity(ty, var, True)
@@ -1045,7 +1048,7 @@ class Gen:
     def decode_command_arg(self, ty, var, prefix):
         validity = self._get_variable_validity(ty, var, 'var_in' in var.attrs)
         info = self._decode_variable_info(ty, var, prefix, validity, True)
-        return self._decode_variable(info)
+        return self._decode_variable(info, 1).strip()
 
     def replace_command_arg_handle(self, ty, var, prefix):
         validity = self._get_variable_validity(ty, var, 'var_in' in var.attrs)
@@ -1074,7 +1077,7 @@ class Gen:
 
         info = self._decode_variable_info(ty, var, prefix,
                 self.VariableInfo.VALID, False)
-        return self._decode_variable(info)
+        return self._decode_variable(info, 1).strip()
 
 class GenCS:
     def __init__(self, gen):
