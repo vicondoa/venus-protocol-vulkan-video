@@ -816,23 +816,27 @@ class Gen:
             code += '%s%s\n' % (indent, stmt)
         return code
 
-    def _replace_variable_handle(self, info):
+    def _replace_variable_handle(self, info, indent_level):
+        indent = '    ' * indent_level
         if info.validity != info.VALID or \
-           info.var.ty.base.category not in [VkType.HANDLE, VkType.STRUCT] or \
-           not self.is_serializable(info.var):
-            return '/* skip %s */' % info._var_name()
+                info.var.ty.base.category not in [VkType.HANDLE, VkType.STRUCT] or \
+                not self.is_serializable(info.var):
+            return '%s/* skip %s */' % (indent, info._var_name())
+
+        stmts = []
+        if info.var.ty.is_pointer() and info.need_bracket():
+            stmts.append('if (%s) {' % info._var_name())
+            stmts.append('   %s' % info.code(indent_level + 1).strip())
+            stmts.append('}')
+        elif info.var.ty.is_pointer():
+            stmts.append('if (%s)' % info._var_name())
+            stmts.append('    %s' % info.code(indent_level + 1).strip())
+        else:
+            stmts.append(info.code(indent_level).strip())
 
         code = ''
-        if info.var.ty.is_pointer() and info.need_bracket():
-            code += 'if (%s) {\n    ' % info._var_name()
-            code += '   %s\n    ' % info.code(2).strip()
-            code += '}'
-        elif info.var.ty.is_pointer():
-            code += 'if (%s)\n    ' % info._var_name()
-            code += '    %s' % info.code(2).strip()
-        else:
-            code += info.code(1).strip()
-
+        for stmt in stmts:
+            code += '%s%s\n' % (indent, stmt)
         return code
 
     def _sizeof_variable_info(self, ty, var, prefix, validity, dst):
@@ -1033,7 +1037,7 @@ class Gen:
     def replace_struct_member_handle(self, ty, var, prefix):
         validity = self._get_variable_validity(ty, var, True)
         info = self._replace_variable_handle_info(ty, var, prefix, validity)
-        return self._replace_variable_handle(info)
+        return self._replace_variable_handle(info, 1).strip()
 
     def sizeof_command_arg(self, ty, var, prefix, dst):
         validity = self._get_variable_validity(ty, var, 'var_in' in var.attrs)
@@ -1053,7 +1057,7 @@ class Gen:
     def replace_command_arg_handle(self, ty, var, prefix):
         validity = self._get_variable_validity(ty, var, 'var_in' in var.attrs)
         info = self._replace_variable_handle_info(ty, var, prefix, validity)
-        return self._replace_variable_handle(info)
+        return self._replace_variable_handle(info, 1).strip()
 
     def sizeof_command_reply(self, ty, var, prefix, dst):
         if 'var_out' not in var.attrs:
