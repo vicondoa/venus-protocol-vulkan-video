@@ -11,7 +11,7 @@ vn_sizeof_${ty.name}_tag(const ${ty.name} *val, uint32_t tag)
     switch (tag) {
 % for (i, var) in enumerate(ty.variables):
     case ${i}:
-        ${GEN.sizeof_struct_member(ty, var, 'val->', False, 'size')}
+        ${GEN.sizeof_struct_member(ty, var, 'val->', False, 'size', 2)}
         break;
 % endfor
     default:
