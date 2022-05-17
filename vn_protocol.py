@@ -744,32 +744,37 @@ class Gen:
             code += '%s%s\n' % (indent, stmt)
         return code
 
-    def _encode_variable(self, info):
+    def _encode_variable(self, info, indent_level):
+        indent = '    ' * indent_level
         if info.validity == info.INVALID:
             if info.var.is_dynamic_array():
-                return 'vn_encode_array_size(enc, %s ? %s : 0); /* out */' % (
-                        info._var_name(), info.array_size)
+                return '%svn_encode_array_size(enc, %s ? %s : 0); /* out */' % (
+                        indent, info._var_name(), info.array_size)
             elif info.var.ty.is_pointer():
-                return 'vn_encode_simple_pointer(enc, %s); /* out */' % info._var_name()
+                return '%svn_encode_simple_pointer(enc, %s); /* out */' % (
+                       indent, info._var_name())
             else:
-                return '/* skip %s */' % info._var_name()
+                return '%s/* skip %s */' % (indent, info._var_name())
 
-        code = ''
+        stmts = []
         if info.var.is_dynamic_array():
-            code += 'if (%s) {\n    ' % info._var_name()
-            code += '    %s\n    ' % info.code(2).strip()
-            code += '} else {\n    '
-            code += '    vn_encode_array_size(enc, 0);\n    '
-            code += '}'
+            stmts.append('if (%s) {' % info._var_name())
+            stmts.append('    %s' % info.code(indent_level + 1).strip())
+            stmts.append('} else {')
+            stmts.append('    vn_encode_array_size(enc, 0);')
+            stmts.append('}')
         elif info.var.ty.is_pointer():
-            code += 'if (vn_encode_simple_pointer(enc, %s))\n    ' % info._var_name()
-            code += '    %s' % info.code(2).strip()
+            stmts.append('if (vn_encode_simple_pointer(enc, %s))' % info._var_name())
+            stmts.append('    %s' % info.code(indent_level + 1).strip())
         else:
-            code += info.code(1).strip()
+            stmts.append(info.code(indent_level).strip())
 
         if 'stride' in info.var.attrs:
-            code += '\n    %s = sizeof(%s);' % (info.var.attrs['stride'], info.func_stem)
+            stmts.append('%s = sizeof(%s);' % (info.var.attrs['stride'], info.func_stem))
 
+        code = ''
+        for stmt in stmts:
+            code += '%s%s\n' % (indent, stmt)
         return code
 
     def _decode_variable(self, info):
@@ -1012,10 +1017,10 @@ class Gen:
         info = self._sizeof_variable_info(ty, var, prefix, validity, dst)
         return self._sizeof_variable(info, dst, indent_level).strip()
 
-    def encode_struct_member(self, ty, var, prefix, struct_is_partial):
+    def encode_struct_member(self, ty, var, prefix, struct_is_partial, indent_level=1):
         validity = self._get_variable_validity(ty, var, not struct_is_partial)
         info = self._encode_variable_info(ty, var, prefix, validity)
-        return self._encode_variable(info)
+        return self._encode_variable(info, indent_level).strip()
 
     def decode_struct_member(self, ty, var, prefix, struct_is_partial, alloc_storage):
         validity = self._get_variable_validity(ty, var, not struct_is_partial)
@@ -1035,7 +1040,7 @@ class Gen:
     def encode_command_arg(self, ty, var, prefix):
         validity = self._get_variable_validity(ty, var, 'var_in' in var.attrs)
         info = self._encode_variable_info(ty, var, prefix, validity)
-        return self._encode_variable(info)
+        return self._encode_variable(info, 1).strip()
 
     def decode_command_arg(self, ty, var, prefix):
         validity = self._get_variable_validity(ty, var, 'var_in' in var.attrs)
@@ -1061,7 +1066,7 @@ class Gen:
 
         info = self._encode_variable_info(ty, var, prefix,
                 self.VariableInfo.VALID)
-        return self._encode_variable(info)
+        return self._encode_variable(info, 1).strip()
 
     def decode_command_reply(self, ty, var, prefix):
         if 'var_out' not in var.attrs:

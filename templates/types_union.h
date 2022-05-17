@@ -30,7 +30,7 @@ vn_encode_${ty.name}_tag(struct vn_cs_encoder *enc, const ${ty.name} *val, uint3
     switch (tag) {
 % for (i, var) in enumerate(ty.variables):
     case ${i}:
-        ${GEN.encode_struct_member(ty, var, 'val->', False)}
+        ${GEN.encode_struct_member(ty, var, 'val->', False, 2)}
         break;
 % endfor
     default:
