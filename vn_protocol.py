@@ -124,6 +124,8 @@ VK_XML_EXTENSION_LIST = [
     'VK_EXT_shader_stencil_export',
     'VK_EXT_transform_feedback',
     'VK_EXT_vertex_attribute_divisor',
+    # vendor extensions
+    'VK_VALVE_mutable_descriptor_type',
 ]
 
 class Gen:
