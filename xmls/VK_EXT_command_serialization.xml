@@ -334,20 +334,16 @@ virtualization or remoting, and are not exposed to applications.
         <enum value="193"   name="VK_COMMAND_TYPE_vkGetMemoryFdKHR_EXT"/>
         <enum value="194"   name="VK_COMMAND_TYPE_vkGetMemoryFdPropertiesKHR_EXT"/>
 
-        <comment>VK_KHR_external_fence_fd</comment>
-        <enum value="238"   name="VK_COMMAND_TYPE_vkImportFenceFdKHR_EXT"/>
-        <enum value="239"   name="VK_COMMAND_TYPE_vkGetFenceFdKHR_EXT"/>
-
         <comment>VK_EXT_conditional_rendering</comment>
         <enum value="240"   name="VK_COMMAND_TYPE_vkCmdBeginConditionalRenderingEXT_EXT"/>
         <enum value="241"   name="VK_COMMAND_TYPE_vkCmdEndConditionalRenderingEXT_EXT"/>
 
+        <comment>VK_KHR_external_fence_fd</comment>
+        <enum value="238"   name="VK_COMMAND_TYPE_vkImportFenceFdKHR_EXT"/>
+        <enum value="239"   name="VK_COMMAND_TYPE_vkGetFenceFdKHR_EXT"/>
+
         <comment>VK_EXT_image_drm_format_modifier</comment>
         <enum value="187"   name="VK_COMMAND_TYPE_vkGetImageDrmFormatModifierPropertiesEXT_EXT"/>
-
-        <comment>VK_EXT_extended_dynamic_state2</comment>
-        <enum value="233"   name="VK_COMMAND_TYPE_vkCmdSetPatchControlPointsEXT_EXT"/>
-        <enum value="234"   name="VK_COMMAND_TYPE_vkCmdSetLogicOpEXT_EXT"/>
 
         <comment>VK_EXT_calibrated_timestamps</comment>
         <enum value="235"   name="VK_COMMAND_TYPE_vkGetPhysicalDeviceCalibrateableTimeDomainsEXT_EXT"/>
@@ -355,6 +351,10 @@ virtualization or remoting, and are not exposed to applications.
 
         <comment>VK_EXT_line_rasterization</comment>
         <enum value="237"   name="VK_COMMAND_TYPE_vkCmdSetLineStippleEXT_EXT"/>
+
+        <comment>VK_EXT_extended_dynamic_state2</comment>
+        <enum value="233"   name="VK_COMMAND_TYPE_vkCmdSetPatchControlPointsEXT_EXT"/>
+        <enum value="234"   name="VK_COMMAND_TYPE_vkCmdSetLogicOpEXT_EXT"/>
 
         <comment>VK_MESA_venus_protocol</comment>
         <enum value="178"   name="VK_COMMAND_TYPE_vkSetReplyCommandStreamMESA_EXT"/>

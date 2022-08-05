@@ -1210,6 +1210,7 @@ class GenStructsAndCommands:
             'WaitForFence',
             'ResetFence',
             'GetFence',
+            'ImportFence',
         ],
         'semaphore': [
             'CreateSemaphore',
@@ -1233,6 +1234,7 @@ class GenStructsAndCommands:
             'InvalidateMappedMemory',
             'MapMemory',
             'UnmapMemory',
+            'GetMemory',
         ],
         'image': [
             'BindImage',
