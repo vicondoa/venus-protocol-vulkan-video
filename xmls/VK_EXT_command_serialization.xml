@@ -369,6 +369,9 @@ virtualization or remoting, and are not exposed to applications.
         <enum value="190"   name="VK_COMMAND_TYPE_vkNotifyRingMESA_EXT"/>
         <enum value="191"   name="VK_COMMAND_TYPE_vkWriteRingExtraMESA_EXT"/>
         <enum value="192"   name="VK_COMMAND_TYPE_vkGetMemoryResourcePropertiesMESA_EXT"/>
+        <enum value="244"   name="VK_COMMAND_TYPE_vkResetFenceResource100000MESA_EXT"/>
+        <enum value="245"   name="VK_COMMAND_TYPE_vkWaitSemaphoreResource100000MESA_EXT"/>
+        <enum value="246"   name="VK_COMMAND_TYPE_vkImportSemaphoreResource100000MESA_EXT"/>
         <enum value="195"   name="VK_COMMAND_TYPE_vkGetVenusExperimentalFeatureData100000MESA_EXT"/>
     </enums>
 

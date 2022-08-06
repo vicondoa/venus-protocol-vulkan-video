@@ -64,12 +64,20 @@ renderer, and are not exposed to applications.
             <member><type>VkBool32</type>                         <name>memoryResourceAllocationSize</name></member>
             <member><type>VkBool32</type>                         <name>globalFencing</name></member>
             <member><type>VkBool32</type>                         <name>largeRing</name></member>
+            <member><type>VkBool32</type>                         <name>syncFdFencing</name></member>
         </type>
 
         <type category="struct" name="VkMemoryResourceAllocationSizeProperties100000MESA" structextends="VkMemoryResourcePropertiesMESA">
             <member values="VK_STRUCTURE_TYPE_MEMORY_RESOURCE_ALLOCATION_SIZE_PROPERTIES_100000_MESA"><type>VkStructureType</type> <name>sType</name></member>
             <member optional="true"><type>void</type>*            <name>pNext</name></member>
             <member><type>uint64_t</type>                         <name>allocationSize</name></member>
+        </type>
+
+        <type category="struct" name="VkImportSemaphoreResourceInfo100000MESA">
+            <member values="VK_STRUCTURE_TYPE_IMPORT_SEMAPHORE_RESOURCE_INFO_100000_MESA"><type>VkStructureType</type> <name>sType</name></member>
+            <member optional="true">const <type>void</type>*      <name>pNext</name></member>
+            <member><type>VkSemaphore</type>                      <name>semaphore</name></member>
+            <member><type>uint32_t</type>                         <name>resourceId</name></member>
         </type>
     </types>
 
@@ -128,6 +136,21 @@ renderer, and are not exposed to applications.
             <param><type>VkMemoryResourcePropertiesMESA</type>* <name>pMemoryResourceProperties</name></param>
         </command>
         <command>
+            <proto><type>void</type> <name>vkResetFenceResource100000MESA</name></proto>
+            <param><type>VkDevice</type> <name>device</name></param>
+            <param><type>VkFence</type> <name>fence</name></param>
+        </command>
+        <command>
+            <proto><type>void</type> <name>vkWaitSemaphoreResource100000MESA</name></proto>
+            <param><type>VkDevice</type> <name>device</name></param>
+            <param><type>VkSemaphore</type> <name>semaphore</name></param>
+        </command>
+        <command>
+            <proto><type>void</type> <name>vkImportSemaphoreResource100000MESA</name></proto>
+            <param><type>VkDevice</type> <name>device</name></param>
+            <param>const <type>VkImportSemaphoreResourceInfo100000MESA</type>* <name>pImportSemaphoreResourceInfo</name></param>
+        </command>
+        <command>
             <proto><type>void</type> <name>vkGetVenusExperimentalFeatureData100000MESA</name></proto>
             <param optional="false,true"><type>size_t</type>* <name>pDataSize</name></param>
             <param optional="true" len="pDataSize"><type>void</type>* <name>pData</name></param>
@@ -143,6 +166,7 @@ renderer, and are not exposed to applications.
                 <enum offset="1" extends="VkStructureType"                  name="VK_STRUCTURE_TYPE_MEMORY_RESOURCE_PROPERTIES_MESA"/>
                 <enum offset="2" extends="VkStructureType"                  name="VK_STRUCTURE_TYPE_IMPORT_MEMORY_RESOURCE_INFO_MESA"/>
                 <enum offset="3" extends="VkStructureType"                  name="VK_STRUCTURE_TYPE_MEMORY_RESOURCE_ALLOCATION_SIZE_PROPERTIES_100000_MESA"/>
+                <enum offset="4" extends="VkStructureType"                  name="VK_STRUCTURE_TYPE_IMPORT_SEMAPHORE_RESOURCE_INFO_100000_MESA"/>
                 <type name="VkCommandStreamExecutionFlagBitsMESA"/>
                 <type name="VkCommandStreamExecutionFlagsMESA"/>
                 <type name="VkRingCreateFlagBitsMESA"/>
@@ -156,6 +180,7 @@ renderer, and are not exposed to applications.
                 <type name="VkImportMemoryResourceInfoMESA"/>
                 <type name="VkVenusExperimentalFeatures100000MESA"/>
                 <type name="VkMemoryResourceAllocationSizeProperties100000MESA"/>
+                <type name="VkImportSemaphoreResourceInfo100000MESA"/>
                 <command name="vkSetReplyCommandStreamMESA"/>
                 <command name="vkSeekReplyCommandStreamMESA"/>
                 <command name="vkExecuteCommandStreamsMESA"/>
@@ -164,6 +189,9 @@ renderer, and are not exposed to applications.
                 <command name="vkNotifyRingMESA"/>
                 <command name="vkWriteRingExtraMESA"/>
                 <command name="vkGetMemoryResourcePropertiesMESA"/>
+                <command name="vkResetFenceResource100000MESA"/>
+                <command name="vkWaitSemaphoreResource100000MESA"/>
+                <command name="vkImportSemaphoreResource100000MESA"/>
                 <command name="vkGetVenusExperimentalFeatureData100000MESA"/>
             </require>
         </extension>
