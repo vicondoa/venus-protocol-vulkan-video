@@ -360,6 +360,10 @@ virtualization or remoting, and are not exposed to applications.
         <enum value="233"   name="VK_COMMAND_TYPE_vkCmdSetPatchControlPointsEXT_EXT"/>
         <enum value="234"   name="VK_COMMAND_TYPE_vkCmdSetLogicOpEXT_EXT"/>
 
+        <comment>VK_EXT_multi_draw</comment>
+        <enum value="247"   name="VK_COMMAND_TYPE_vkCmdDrawMultiEXT_EXT"/>
+        <enum value="248"   name="VK_COMMAND_TYPE_vkCmdDrawMultiIndexedEXT_EXT"/>
+
         <comment>VK_MESA_venus_protocol</comment>
         <enum value="178"   name="VK_COMMAND_TYPE_vkSetReplyCommandStreamMESA_EXT"/>
         <enum value="179"   name="VK_COMMAND_TYPE_vkSeekReplyCommandStreamMESA_EXT"/>
