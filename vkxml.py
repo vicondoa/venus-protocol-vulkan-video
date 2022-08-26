@@ -441,6 +441,8 @@ class VkType:
             attrs['optional'] = elem.attrib['optional'].split(',')
         if 'noautovalidity' in elem.attrib:
             attrs['noautovalidity'] = elem.attrib['noautovalidity']
+        if 'stride' in elem.attrib:
+            attrs['stride'] = elem.attrib['stride']
 
         return VkVariable(ty, decl.name, attrs)
 

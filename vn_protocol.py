@@ -769,6 +769,9 @@ class Gen:
         else:
             code += info.code(1).strip()
 
+        if 'stride' in info.var.attrs:
+            code += '\n    %s = sizeof(%s);' % (info.var.attrs['stride'], info.func_stem)
+
         return code
 
     def _decode_variable(self, info):
@@ -894,7 +897,10 @@ class Gen:
         if validity == info.PARTIAL and var.ty.base.category == ty.STRUCT:
             func_name += '_partial'
 
-        stmt = '%s(enc, %s)' % (func_name, info.func_args(False))
+        if 'stride' in var.attrs:
+            stmt = '%s(enc, (void *)%s + %s * %c)' % (func_name, info._var_name(), var.attrs['stride'], loop.iter_name)
+        else:
+            stmt = '%s(enc, %s)' % (func_name, info.func_args(False))
         if validity == info.WA1:
             stmt = '/* WA1: %s */(void)0' % stmt
 
