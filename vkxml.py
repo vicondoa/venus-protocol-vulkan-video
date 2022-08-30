@@ -302,6 +302,12 @@ class VkType:
     def set_attribute(self, key, val):
         ty = self.base
 
+        # Avoid circular reference.
+        # VkBaseOutStructure refers to itself in
+        # VkBaseOutStructure* VkBaseOutStructure::pNext
+        if ty.name == 'VkBaseOutStructure':
+            return
+
         ty.attrs[key] = val
         for var in ty.variables:
             var.ty.set_attribute(key, val)
