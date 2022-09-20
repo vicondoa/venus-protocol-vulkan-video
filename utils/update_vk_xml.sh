@@ -30,6 +30,9 @@ if [ -d "$DOWNLOADED/include" ]; then
     echo "Updating $BASEDIR/include/"
     rm -r "$BASEDIR/include"
     cp -r "$DOWNLOADED/include" "$BASEDIR/include"
+
+    # Remove the c++ headers. They are 10MB and we never use them.
+    rm -f "$BASEDIR"/include/vulkan/*.hpp
 fi
 
 if [ -f "$DOWNLOADED/registry/vk.xml" ]; then
