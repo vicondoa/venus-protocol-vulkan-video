@@ -8,7 +8,7 @@ if [ "$#" -ne 1 ]; then
 fi
 
 BASEDIR="$(dirname "$(dirname "$0")")"
-if [ -d "$BASEDIR/.git" -a \
+if [ -e "$BASEDIR/.git" -a \
      -d "$BASEDIR/include" -a \
      -f "$BASEDIR/xmls/vk.xml" ]; then
     echo "Using $BASEDIR as the base directory"
