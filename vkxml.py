@@ -190,6 +190,7 @@ class VkType:
 
         # for FUNCPOINTER/COMMAND
         self.ret = None
+        self.can_device_lost = False
 
         # for STRUCT/UNION/FUNCPOINTER/COMMAND
         self.variables = []
@@ -580,6 +581,7 @@ class VkType:
         name = None
         params = []
         ret_ty = None
+        errorcodes = []
         for child in command_elem:
             if child.tag == 'proto':
                 c_decl = VkType._get_inner_text(child)
@@ -599,6 +601,10 @@ class VkType:
         ty.variables = params
         if ret_ty:
             ty.ret = VkVariable(ret_ty, 'ret')
+
+        if 'errorcodes' in command_elem.attrib:
+            errorcodes = command_elem.attrib['errorcodes'].split(',')
+            ty.can_device_lost = 'VK_ERROR_DEVICE_LOST' in errorcodes
 
 class VkEnums:
     """Represent a <enums>."""
