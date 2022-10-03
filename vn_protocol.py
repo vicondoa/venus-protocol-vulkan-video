@@ -108,6 +108,7 @@ VK_XML_EXTENSION_LIST = [
     'VK_KHR_external_fence_fd',
     'VK_KHR_external_memory_fd',
     'VK_KHR_external_semaphore_fd',
+    'VK_KHR_push_descriptor',
     # EXT extensions
     'VK_EXT_calibrated_timestamps',
     'VK_EXT_conditional_rendering',

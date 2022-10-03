@@ -338,6 +338,10 @@ virtualization or remoting, and are not exposed to applications.
         <enum value="242"   name="VK_COMMAND_TYPE_vkImportSemaphoreFdKHR_EXT"/>
         <enum value="243"   name="VK_COMMAND_TYPE_vkGetSemaphoreFdKHR_EXT"/>
 
+        <comment>VK_KHR_push_descriptor</comment>
+        <enum value="249"   name="VK_COMMAND_TYPE_vkCmdPushDescriptorSetKHR_EXT"/>
+        <enum value="250"   name="VK_COMMAND_TYPE_vkCmdPushDescriptorSetWithTemplateKHR_EXT"/>
+
         <comment>VK_EXT_conditional_rendering</comment>
         <enum value="240"   name="VK_COMMAND_TYPE_vkCmdBeginConditionalRenderingEXT_EXT"/>
         <enum value="241"   name="VK_COMMAND_TYPE_vkCmdEndConditionalRenderingEXT_EXT"/>
