@@ -123,6 +123,7 @@ VK_XML_EXTENSION_LIST = [
     'VK_EXT_multi_draw',
     'VK_EXT_mutable_descriptor_type',
     'VK_EXT_primitive_topology_list_restart',
+    'VK_EXT_primitives_generated_query',
     'VK_EXT_provoking_vertex',
     'VK_EXT_queue_family_foreign',
     'VK_EXT_robustness2',
