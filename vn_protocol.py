@@ -114,6 +114,7 @@ VK_XML_EXTENSION_LIST = [
     'VK_EXT_conditional_rendering',
     'VK_EXT_conservative_rasterization',
     'VK_EXT_custom_border_color',
+    'VK_EXT_depth_clip_control',
     'VK_EXT_depth_clip_enable',
     'VK_EXT_external_memory_dma_buf',
     'VK_EXT_image_drm_format_modifier',
