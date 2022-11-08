@@ -33,7 +33,7 @@ vn_decode_${ty.name}_lookup(struct vn_cs_decoder *dec, ${ty.name} *val)
 % if '_temp' in variant:
     if (vn_cs_handle_indirect_id(${ty.attrs['c_objtype']})) {
         *val = vn_cs_decoder_alloc_temp(dec, sizeof(vn_object_id));
-        if (!val)
+        if (!*val)
             return;
     }
 % endif
