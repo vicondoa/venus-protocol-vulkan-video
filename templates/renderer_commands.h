@@ -52,6 +52,7 @@ static inline void vn_dispatch_${ty.name}(struct vn_dispatch_context *ctx, VkCom
 % endif
 
 #pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdangling-pointer"
 #pragma GCC diagnostic ignored "-Wpointer-arith"
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 
