@@ -1011,8 +1011,12 @@ class Gen:
             for name in other_var.attrs.get('len_names', []):
                 len_vars = ty.find_variables(name)
                 if var in len_vars:
-                    # TODO replace this by VALID
-                    return self.VariableInfo.WA1
+                    if ty.name == 'VkDrmFormatModifierPropertiesList2EXT':
+                        assert(name == 'drmFormatModifierCount')
+                        return self.VariableInfo.VALID
+                    else:
+                        # TODO replace this by VALID
+                        return self.VariableInfo.WA1
 
         partially_initialized = [ty.HANDLE, ty.STRUCT]
         if var.ty.base.category in partially_initialized:
