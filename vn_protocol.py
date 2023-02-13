@@ -472,8 +472,6 @@ class Gen:
         # driver) or a struct (because it can potentially include handles,
         # sType, or pNext)
         PARTIAL = 2
-        # WA1: VkDrmFormatModifierPropertiesListEXT::drmFormatModifierCount
-        WA1 = 3
 
         def __init__(self, ty, var, prefix, validity):
             self.ty = ty
@@ -871,8 +869,6 @@ class Gen:
             func_name += '_partial'
 
         stmt = '%s += %s(%s);' % (dst, func_name, info.func_args(False))
-        if validity == info.WA1:
-            stmt = '/* WA1: %s */(void)0;' % stmt
 
         info.statements.append(stmt)
 
@@ -912,8 +908,6 @@ class Gen:
             stmt = '%s(enc, (void *)%s + %s * %c);' % (func_name, info._var_name(), var.attrs['stride'], loop.iter_name)
         else:
             stmt = '%s(enc, %s);' % (func_name, info.func_args(False))
-        if validity == info.WA1:
-            stmt = '/* WA1: %s */(void)0;' % stmt
 
         info.statements.append(stmt)
 
@@ -978,8 +972,6 @@ class Gen:
                 func_name += '_temp'
 
         stmt = '%s(dec, %s);' % (func_name, info.func_args(True))
-        if validity == info.WA1:
-            stmt = '/* WA1 */ %s = vn_peek_array_size(dec);' % info._var_name()
 
         info.statements.append(stmt)
 
@@ -1011,12 +1003,7 @@ class Gen:
             for name in other_var.attrs.get('len_names', []):
                 len_vars = ty.find_variables(name)
                 if var in len_vars:
-                    if ty.name == 'VkDrmFormatModifierPropertiesList2EXT':
-                        assert(name == 'drmFormatModifierCount')
-                        return self.VariableInfo.VALID
-                    else:
-                        # TODO replace this by VALID
-                        return self.VariableInfo.WA1
+                    return self.VariableInfo.VALID
 
         partially_initialized = [ty.HANDLE, ty.STRUCT]
         if var.ty.base.category in partially_initialized:
