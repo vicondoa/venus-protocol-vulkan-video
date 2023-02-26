@@ -16,10 +16,12 @@ renderer, and are not exposed to applications.
         <type requires="VkCommandStreamExecutionFlagBitsMESA" category="bitmask">typedef <type>VkFlags</type> <name>VkCommandStreamExecutionFlagsMESA</name>;</type>
         <type requires="VkRingCreateFlagBitsMESA" category="bitmask">typedef <type>VkFlags</type> <name>VkRingCreateFlagsMESA</name>;</type>
         <type requires="VkRingNotifyFlagBitsMESA" category="bitmask">typedef <type>VkFlags</type> <name>VkRingNotifyFlagsMESA</name>;</type>
+        <type requires="VkRingStatusFlagBitsMESA" category="bitmask">typedef <type>VkFlags</type> <name>VkRingStatusFlagsMESA</name>;</type>
 
         <type name="VkCommandStreamExecutionFlagBitsMESA" category="enum"/>
         <type name="VkRingCreateFlagBitsMESA" category="enum"/>
         <type name="VkRingNotifyFlagBitsMESA" category="enum"/>
+        <type name="VkRingStatusFlagBitsMESA" category="enum"/>
 
         <type category="struct" name="VkCommandStreamDescriptionMESA">
             <member><type>uint32_t</type>                         <name>resourceId</name></member>
@@ -92,6 +94,11 @@ renderer, and are not exposed to applications.
     <enums name="VkRingCreateFlagBitsMESA" type="bitmask">
     </enums>
     <enums name="VkRingNotifyFlagBitsMESA" type="bitmask">
+    </enums>
+    <enums name="VkRingStatusFlagBitsMESA" type="bitmask">
+        <enum value="0"   name="VK_RING_STATUS_NONE_MESA"/>
+        <enum bitpos="0"  name="VK_RING_STATUS_IDLE_BIT_MESA"/>
+        <enum bitpos="1"  name="VK_RING_STATUS_FATAL_BIT_MESA"/>
     </enums>
 
     <commands>
@@ -180,6 +187,8 @@ renderer, and are not exposed to applications.
                 <type name="VkRingCreateFlagsMESA"/>
                 <type name="VkRingNotifyFlagBitsMESA"/>
                 <type name="VkRingNotifyFlagsMESA"/>
+                <type name="VkRingStatusFlagBitsMESA"/>
+                <type name="VkRingStatusFlagsMESA"/>
                 <type name="VkCommandStreamDescriptionMESA"/>
                 <type name="VkCommandStreamDependencyMESA"/>
                 <type name="VkRingCreateInfoMESA"/>
