@@ -380,6 +380,9 @@ virtualization or remoting, and are not exposed to applications.
         <enum value="244"   name="VK_COMMAND_TYPE_vkResetFenceResource100000MESA_EXT"/>
         <enum value="245"   name="VK_COMMAND_TYPE_vkWaitSemaphoreResource100000MESA_EXT"/>
         <enum value="246"   name="VK_COMMAND_TYPE_vkImportSemaphoreResource100000MESA_EXT"/>
+        <enum value="251"   name="VK_COMMAND_TYPE_vkSubmitVirtqueueSeqno100000MESA_EXT"/>
+        <enum value="252"   name="VK_COMMAND_TYPE_vkWaitVirtqueueSeqno100000MESA_EXT"/>
+        <enum value="253"   name="VK_COMMAND_TYPE_vkWaitRingSeqno100000MESA_EXT"/>
         <enum value="195"   name="VK_COMMAND_TYPE_vkGetVenusExperimentalFeatureData100000MESA_EXT"/>
     </enums>
 
