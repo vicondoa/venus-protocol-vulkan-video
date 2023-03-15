@@ -50,6 +50,12 @@ renderer, and are not exposed to applications.
             <member><type>size_t</type>                           <name>extraSize</name></member>
         </type>
 
+        <type category="struct" name="VkRingMonitorInfoMESA" structextends="VkRingCreateInfoMESA">
+            <member values="VK_STRUCTURE_TYPE_RING_MONITOR_INFO_MESA"><type>VkStructureType</type> <name>sType</name></member>
+            <member optional="true">const <type>void</type>*      <name>pNext</name></member>
+            <member><type>uint32_t</type> <name>maxReportingPeriodMicroseconds</name></member>
+        </type>
+
         <type category="struct" name="VkMemoryResourcePropertiesMESA">
             <member values="VK_STRUCTURE_TYPE_MEMORY_RESOURCE_PROPERTIES_MESA"><type>VkStructureType</type> <name>sType</name></member>
             <member optional="true"><type>void</type>*            <name>pNext</name></member>
@@ -68,6 +74,7 @@ renderer, and are not exposed to applications.
             <member><type>VkBool32</type>                         <name>largeRing</name></member>
             <member><type>VkBool32</type>                         <name>syncFdFencing</name></member>
             <member><type>VkBool32</type>                         <name>asyncRoundtrip</name></member>
+            <member><type>VkBool32</type>                         <name>ringMonitoring</name></member>
         </type>
 
         <type category="struct" name="VkMemoryResourceAllocationSizeProperties100000MESA" structextends="VkMemoryResourcePropertiesMESA">
@@ -100,6 +107,7 @@ renderer, and are not exposed to applications.
         <enum value="0"   name="VK_RING_STATUS_NONE_MESA"/>
         <enum bitpos="0"  name="VK_RING_STATUS_IDLE_BIT_MESA"/>
         <enum bitpos="1"  name="VK_RING_STATUS_FATAL_BIT_MESA"/>
+        <enum bitpos="2"  name="VK_RING_STATUS_ALIVE_BIT_MESA"/>
     </enums>
 
     <commands>
@@ -196,6 +204,7 @@ renderer, and are not exposed to applications.
                 <enum offset="3" extends="VkStructureType"                  name="VK_STRUCTURE_TYPE_MEMORY_RESOURCE_ALLOCATION_SIZE_PROPERTIES_100000_MESA"/>
                 <enum offset="4" extends="VkStructureType"                  name="VK_STRUCTURE_TYPE_IMPORT_SEMAPHORE_RESOURCE_INFO_100000_MESA"/>
                 <enum offset="5" extends="VkStructureType"                  name="VK_STRUCTURE_TYPE_DEVICE_QUEUE_TIMELINE_INFO_MESA"/>
+                <enum offset="6" extends="VkStructureType"                  name="VK_STRUCTURE_TYPE_RING_MONITOR_INFO_MESA"/>
                 <type name="VkCommandStreamExecutionFlagBitsMESA"/>
                 <type name="VkCommandStreamExecutionFlagsMESA"/>
                 <type name="VkRingCreateFlagBitsMESA"/>
@@ -207,6 +216,7 @@ renderer, and are not exposed to applications.
                 <type name="VkCommandStreamDescriptionMESA"/>
                 <type name="VkCommandStreamDependencyMESA"/>
                 <type name="VkRingCreateInfoMESA"/>
+                <type name="VkRingMonitorInfoMESA"/>
                 <type name="VkMemoryResourcePropertiesMESA"/>
                 <type name="VkImportMemoryResourceInfoMESA"/>
                 <type name="VkVenusExperimentalFeatures100000MESA"/>
