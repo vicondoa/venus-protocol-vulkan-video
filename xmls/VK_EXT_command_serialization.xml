@@ -377,12 +377,12 @@ virtualization or remoting, and are not exposed to applications.
         <enum value="190"   name="VK_COMMAND_TYPE_vkNotifyRingMESA_EXT"/>
         <enum value="191"   name="VK_COMMAND_TYPE_vkWriteRingExtraMESA_EXT"/>
         <enum value="192"   name="VK_COMMAND_TYPE_vkGetMemoryResourcePropertiesMESA_EXT"/>
-        <enum value="244"   name="VK_COMMAND_TYPE_vkResetFenceResource100000MESA_EXT"/>
-        <enum value="245"   name="VK_COMMAND_TYPE_vkWaitSemaphoreResource100000MESA_EXT"/>
-        <enum value="246"   name="VK_COMMAND_TYPE_vkImportSemaphoreResource100000MESA_EXT"/>
-        <enum value="251"   name="VK_COMMAND_TYPE_vkSubmitVirtqueueSeqno100000MESA_EXT"/>
-        <enum value="252"   name="VK_COMMAND_TYPE_vkWaitVirtqueueSeqno100000MESA_EXT"/>
-        <enum value="253"   name="VK_COMMAND_TYPE_vkWaitRingSeqno100000MESA_EXT"/>
+        <enum value="244"   name="VK_COMMAND_TYPE_vkResetFenceResourceMESA_EXT"/>
+        <enum value="245"   name="VK_COMMAND_TYPE_vkWaitSemaphoreResourceMESA_EXT"/>
+        <enum value="246"   name="VK_COMMAND_TYPE_vkImportSemaphoreResourceMESA_EXT"/>
+        <enum value="251"   name="VK_COMMAND_TYPE_vkSubmitVirtqueueSeqnoMESA_EXT"/>
+        <enum value="252"   name="VK_COMMAND_TYPE_vkWaitVirtqueueSeqnoMESA_EXT"/>
+        <enum value="253"   name="VK_COMMAND_TYPE_vkWaitRingSeqnoMESA_EXT"/>
         <enum value="195"   name="VK_COMMAND_TYPE_vkGetVenusExperimentalFeatureData100000MESA_EXT"/>
     </enums>
 

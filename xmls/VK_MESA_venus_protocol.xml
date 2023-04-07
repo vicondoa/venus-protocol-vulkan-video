@@ -77,14 +77,14 @@ renderer, and are not exposed to applications.
             <member><type>VkBool32</type>                         <name>ringMonitoring</name></member>
         </type>
 
-        <type category="struct" name="VkMemoryResourceAllocationSizeProperties100000MESA" structextends="VkMemoryResourcePropertiesMESA">
-            <member values="VK_STRUCTURE_TYPE_MEMORY_RESOURCE_ALLOCATION_SIZE_PROPERTIES_100000_MESA"><type>VkStructureType</type> <name>sType</name></member>
+        <type category="struct" name="VkMemoryResourceAllocationSizePropertiesMESA" structextends="VkMemoryResourcePropertiesMESA">
+            <member values="VK_STRUCTURE_TYPE_MEMORY_RESOURCE_ALLOCATION_SIZE_PROPERTIES_MESA"><type>VkStructureType</type> <name>sType</name></member>
             <member optional="true"><type>void</type>*            <name>pNext</name></member>
             <member><type>uint64_t</type>                         <name>allocationSize</name></member>
         </type>
 
-        <type category="struct" name="VkImportSemaphoreResourceInfo100000MESA">
-            <member values="VK_STRUCTURE_TYPE_IMPORT_SEMAPHORE_RESOURCE_INFO_100000_MESA"><type>VkStructureType</type> <name>sType</name></member>
+        <type category="struct" name="VkImportSemaphoreResourceInfoMESA">
+            <member values="VK_STRUCTURE_TYPE_IMPORT_SEMAPHORE_RESOURCE_INFO_MESA"><type>VkStructureType</type> <name>sType</name></member>
             <member optional="true">const <type>void</type>*      <name>pNext</name></member>
             <member><type>VkSemaphore</type>                      <name>semaphore</name></member>
             <member><type>uint32_t</type>                         <name>resourceId</name></member>
@@ -158,31 +158,31 @@ renderer, and are not exposed to applications.
             <param><type>VkMemoryResourcePropertiesMESA</type>* <name>pMemoryResourceProperties</name></param>
         </command>
         <command>
-            <proto><type>void</type> <name>vkResetFenceResource100000MESA</name></proto>
+            <proto><type>void</type> <name>vkResetFenceResourceMESA</name></proto>
             <param><type>VkDevice</type> <name>device</name></param>
             <param><type>VkFence</type> <name>fence</name></param>
         </command>
         <command>
-            <proto><type>void</type> <name>vkWaitSemaphoreResource100000MESA</name></proto>
+            <proto><type>void</type> <name>vkWaitSemaphoreResourceMESA</name></proto>
             <param><type>VkDevice</type> <name>device</name></param>
             <param><type>VkSemaphore</type> <name>semaphore</name></param>
         </command>
         <command>
-            <proto><type>void</type> <name>vkImportSemaphoreResource100000MESA</name></proto>
+            <proto><type>void</type> <name>vkImportSemaphoreResourceMESA</name></proto>
             <param><type>VkDevice</type> <name>device</name></param>
-            <param>const <type>VkImportSemaphoreResourceInfo100000MESA</type>* <name>pImportSemaphoreResourceInfo</name></param>
+            <param>const <type>VkImportSemaphoreResourceInfoMESA</type>* <name>pImportSemaphoreResourceInfo</name></param>
         </command>
         <command>
-            <proto><type>void</type> <name>vkSubmitVirtqueueSeqno100000MESA</name></proto>
+            <proto><type>void</type> <name>vkSubmitVirtqueueSeqnoMESA</name></proto>
             <param><type>uint64_t</type> <name>ring</name></param>
             <param><type>uint64_t</type> <name>seqno</name></param>
         </command>
         <command>
-            <proto><type>void</type> <name>vkWaitVirtqueueSeqno100000MESA</name></proto>
+            <proto><type>void</type> <name>vkWaitVirtqueueSeqnoMESA</name></proto>
             <param><type>uint64_t</type> <name>seqno</name></param>
         </command>
         <command>
-            <proto><type>void</type> <name>vkWaitRingSeqno100000MESA</name></proto>
+            <proto><type>void</type> <name>vkWaitRingSeqnoMESA</name></proto>
             <param><type>uint64_t</type> <name>ring</name></param>
             <param><type>uint64_t</type> <name>seqno</name></param>
         </command>
@@ -201,8 +201,8 @@ renderer, and are not exposed to applications.
                 <enum offset="0" extends="VkStructureType"                  name="VK_STRUCTURE_TYPE_RING_CREATE_INFO_MESA"/>
                 <enum offset="1" extends="VkStructureType"                  name="VK_STRUCTURE_TYPE_MEMORY_RESOURCE_PROPERTIES_MESA"/>
                 <enum offset="2" extends="VkStructureType"                  name="VK_STRUCTURE_TYPE_IMPORT_MEMORY_RESOURCE_INFO_MESA"/>
-                <enum offset="3" extends="VkStructureType"                  name="VK_STRUCTURE_TYPE_MEMORY_RESOURCE_ALLOCATION_SIZE_PROPERTIES_100000_MESA"/>
-                <enum offset="4" extends="VkStructureType"                  name="VK_STRUCTURE_TYPE_IMPORT_SEMAPHORE_RESOURCE_INFO_100000_MESA"/>
+                <enum offset="3" extends="VkStructureType"                  name="VK_STRUCTURE_TYPE_MEMORY_RESOURCE_ALLOCATION_SIZE_PROPERTIES_MESA"/>
+                <enum offset="4" extends="VkStructureType"                  name="VK_STRUCTURE_TYPE_IMPORT_SEMAPHORE_RESOURCE_INFO_MESA"/>
                 <enum offset="5" extends="VkStructureType"                  name="VK_STRUCTURE_TYPE_DEVICE_QUEUE_TIMELINE_INFO_MESA"/>
                 <enum offset="6" extends="VkStructureType"                  name="VK_STRUCTURE_TYPE_RING_MONITOR_INFO_MESA"/>
                 <type name="VkCommandStreamExecutionFlagBitsMESA"/>
@@ -220,8 +220,8 @@ renderer, and are not exposed to applications.
                 <type name="VkMemoryResourcePropertiesMESA"/>
                 <type name="VkImportMemoryResourceInfoMESA"/>
                 <type name="VkVenusExperimentalFeatures100000MESA"/>
-                <type name="VkMemoryResourceAllocationSizeProperties100000MESA"/>
-                <type name="VkImportSemaphoreResourceInfo100000MESA"/>
+                <type name="VkMemoryResourceAllocationSizePropertiesMESA"/>
+                <type name="VkImportSemaphoreResourceInfoMESA"/>
                 <type name="VkDeviceQueueTimelineInfoMESA"/>
                 <command name="vkSetReplyCommandStreamMESA"/>
                 <command name="vkSeekReplyCommandStreamMESA"/>
@@ -231,12 +231,12 @@ renderer, and are not exposed to applications.
                 <command name="vkNotifyRingMESA"/>
                 <command name="vkWriteRingExtraMESA"/>
                 <command name="vkGetMemoryResourcePropertiesMESA"/>
-                <command name="vkResetFenceResource100000MESA"/>
-                <command name="vkWaitSemaphoreResource100000MESA"/>
-                <command name="vkImportSemaphoreResource100000MESA"/>
-                <command name="vkSubmitVirtqueueSeqno100000MESA"/>
-                <command name="vkWaitVirtqueueSeqno100000MESA"/>
-                <command name="vkWaitRingSeqno100000MESA"/>
+                <command name="vkResetFenceResourceMESA"/>
+                <command name="vkWaitSemaphoreResourceMESA"/>
+                <command name="vkImportSemaphoreResourceMESA"/>
+                <command name="vkSubmitVirtqueueSeqnoMESA"/>
+                <command name="vkWaitVirtqueueSeqnoMESA"/>
+                <command name="vkWaitRingSeqnoMESA"/>
                 <command name="vkGetVenusExperimentalFeatureData100000MESA"/>
             </require>
         </extension>
