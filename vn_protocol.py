@@ -22,9 +22,9 @@ VN_PROTOCOL_PRIVATE_XMLS = [
     VN_PROTOCOL_DIR.joinpath('xmls/VK_MESA_venus_protocol.xml'),
 ]
 
-# this is bumped whenever a backward-incompatible change is made
-# TODO: remove WAs before bumping this up
-VN_WIRE_FORMAT_VERSION = 0
+# This is bumped whenever a backward-incompatible change is made, and please
+# ensure to clean up all the existing WAs before bumping this up.
+VN_WIRE_FORMAT_VERSION = 1
 
 # list of supported extensions
 VK_XML_EXTENSION_LIST = [

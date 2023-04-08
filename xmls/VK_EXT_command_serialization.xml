@@ -383,7 +383,6 @@ virtualization or remoting, and are not exposed to applications.
         <enum value="251"   name="VK_COMMAND_TYPE_vkSubmitVirtqueueSeqnoMESA_EXT"/>
         <enum value="252"   name="VK_COMMAND_TYPE_vkWaitVirtqueueSeqnoMESA_EXT"/>
         <enum value="253"   name="VK_COMMAND_TYPE_vkWaitRingSeqnoMESA_EXT"/>
-        <enum value="195"   name="VK_COMMAND_TYPE_vkGetVenusExperimentalFeatureData100000MESA_EXT"/>
     </enums>
 
     <enums name="VkCommandFlagBitsEXT" type="bitmask">
@@ -393,7 +392,7 @@ virtualization or remoting, and are not exposed to applications.
     <extensions>
         <extension name="VK_EXT_command_serialization" number="384" type="instance" author="EXT" contact="Chia-I Wu @olvaffe1" supported="vulkan">
             <require>
-                <enum value="0"                                             name="VK_EXT_COMMAND_SERIALIZATION_SPEC_VERSION"/>
+                <enum value="1"                                             name="VK_EXT_COMMAND_SERIALIZATION_SPEC_VERSION"/>
                 <enum value="&quot;VK_EXT_command_serialization&quot;"      name="VK_EXT_COMMAND_SERIALIZATION_EXTENSION_NAME"/>
                 <type name="VkCommandTypeEXT"/>
                 <type name="VkCommandFlagsEXT"/>
