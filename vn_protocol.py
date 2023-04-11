@@ -108,6 +108,7 @@ VK_XML_EXTENSION_LIST = [
     'VK_KHR_external_fence_fd',
     'VK_KHR_external_memory_fd',
     'VK_KHR_external_semaphore_fd',
+    'VK_KHR_pipeline_library',
     'VK_KHR_push_descriptor',
     'VK_KHR_shader_clock',
     # EXT extensions
@@ -122,6 +123,7 @@ VK_XML_EXTENSION_LIST = [
     'VK_EXT_dynamic_rendering_unused_attachments',
     'VK_EXT_external_memory_dma_buf',
     'VK_EXT_fragment_shader_interlock',
+    'VK_EXT_graphics_pipeline_library',
     'VK_EXT_image_2d_view_of_3d',
     'VK_EXT_image_drm_format_modifier',
     'VK_EXT_image_view_min_lod',
