@@ -822,9 +822,20 @@ class VkRegistry:
         underscore = "".join([c if c.islower() else '_' + c for c in name])
         return underscore.lstrip('_').upper() + suffix
 
+    @staticmethod
+    def is_vulkansc(child):
+        return 'api' in child.attrib and child.attrib['api'] == 'vulkansc'
+
+    @staticmethod
+    def filter_vulkansc(root):
+        root[:] = [child for child in root if not VkRegistry.is_vulkansc(child)]
+        for child in root:
+            VkRegistry.filter_vulkansc(child)
+
     def _parse_xml(self, xml):
         tree = ET.parse(xml)
         root = tree.getroot()
+        self.filter_vulkansc(root)
         for child in root:
             if child.tag == 'platforms':
                 self._parse_platforms(child)
