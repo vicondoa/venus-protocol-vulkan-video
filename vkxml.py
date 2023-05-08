@@ -761,8 +761,11 @@ class VkExtension:
                     require_elem, type_table, number)
 
             # check if this <require> depends on another extension
-            require_dep = require_elem.attrib.get('extension')
-            if require_dep:
+            require_dep = require_elem.attrib.get('depends')
+            if not require_dep:
+                # fallback to check extension for legacy vk registry
+                require_dep = require_elem.attrib.get('extension')
+            if require_dep and not require_dep.startswith('VK_VERSION'):
                 if require_dep not in ext.optional_types:
                     ext.optional_types[require_dep] = []
                 types = ext.optional_types[require_dep]
