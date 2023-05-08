@@ -736,7 +736,7 @@ class VkExtension:
         """Parse <extension> into a VkExtension."""
         name = elem.attrib['name']
         number = elem.attrib['number']
-        supported = elem.attrib['supported']
+        supported = elem.attrib['supported'].split(',')
 
         ext = VkExtension(name, number, supported)
 
@@ -754,7 +754,7 @@ class VkExtension:
                     ext.version = int(enum_elem.attrib['value'])
                     break
 
-            if ext.supported != 'vulkan':
+            if 'vulkan' not in ext.supported:
                 continue
 
             require_types, require_names = VkFeature.parse_require(
