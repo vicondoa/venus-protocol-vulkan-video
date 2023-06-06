@@ -621,12 +621,11 @@ class Gen:
 
             for level, count in enumerate(alloc_counts):
                 if self.var.is_blob():
-                    size = count
+                    alloc_stmt = '%s = vn_cs_decoder_alloc_temp(dec, %s);' % (
+                            self._var_name(level, level > 0), count)
                 else:
-                    size = 'sizeof(*%s) * %s' % (self._var_name(level), count)
-
-                alloc_stmt = '%s = vn_cs_decoder_alloc_temp(dec, %s);' % (
-                        self._var_name(level, level > 0), size)
+                    alloc_stmt = '%s = vn_cs_decoder_alloc_temp_array(dec, sizeof(*%s), %s);' % (
+                            self._var_name(level, level > 0), self._var_name(level), count)
                 check_stmt = 'if (!%s) return;' % self._var_name(level)
 
                 if level < len(self.loop_info):

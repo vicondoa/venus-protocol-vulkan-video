@@ -77,6 +77,14 @@ vkr_cs_decoder_alloc_temp(struct vkr_cs_decoder *dec, size_t size)
     return NULL;
 }
 
+static inline void *
+vkr_cs_decoder_alloc_temp_array(struct vkr_cs_decoder *dec,
+                                size_t size,
+                                size_t count)
+{
+    return NULL;
+}
+
 static inline bool
 vkr_cs_handle_indirect_id(VkObjectType type)
 {
