@@ -364,6 +364,9 @@ virtualization or remoting, and are not exposed to applications.
         <enum value="233"   name="VK_COMMAND_TYPE_vkCmdSetPatchControlPointsEXT_EXT"/>
         <enum value="234"   name="VK_COMMAND_TYPE_vkCmdSetLogicOpEXT_EXT"/>
 
+        <comment>VK_EXT_color_write_enable</comment>
+        <enum value="254"   name="VK_COMMAND_TYPE_vkCmdSetColorWriteEnableEXT_EXT"/>
+
         <comment>VK_EXT_multi_draw</comment>
         <enum value="247"   name="VK_COMMAND_TYPE_vkCmdDrawMultiEXT_EXT"/>
         <enum value="248"   name="VK_COMMAND_TYPE_vkCmdDrawMultiIndexedEXT_EXT"/>
