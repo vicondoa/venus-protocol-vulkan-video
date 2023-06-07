@@ -116,6 +116,7 @@ VK_XML_EXTENSION_LIST = [
     'VK_EXT_custom_border_color',
     'VK_EXT_depth_clip_control',
     'VK_EXT_depth_clip_enable',
+    'VK_EXT_dynamic_rendering_unused_attachments',
     'VK_EXT_external_memory_dma_buf',
     'VK_EXT_image_2d_view_of_3d',
     'VK_EXT_image_drm_format_modifier',
