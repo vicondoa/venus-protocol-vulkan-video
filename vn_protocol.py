@@ -139,6 +139,7 @@ VK_XML_EXTENSION_LIST = [
     'VK_EXT_rasterization_order_attachment_access',
     'VK_EXT_robustness2',
     'VK_EXT_shader_stencil_export',
+    'VK_EXT_shader_subgroup_ballot',
     'VK_EXT_transform_feedback',
     'VK_EXT_vertex_attribute_divisor',
     # vendor extensions
