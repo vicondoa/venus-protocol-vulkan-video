@@ -126,6 +126,7 @@ VK_XML_EXTENSION_LIST = [
     'VK_EXT_memory_budget',
     'VK_EXT_multi_draw',
     'VK_EXT_mutable_descriptor_type',
+    'VK_EXT_non_seamless_cube_map',
     'VK_EXT_pci_bus_info',
     'VK_EXT_primitive_topology_list_restart',
     'VK_EXT_primitives_generated_query',
