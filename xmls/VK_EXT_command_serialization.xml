@@ -360,6 +360,9 @@ virtualization or remoting, and are not exposed to applications.
         <comment>VK_EXT_line_rasterization</comment>
         <enum value="237"   name="VK_COMMAND_TYPE_vkCmdSetLineStippleEXT_EXT"/>
 
+        <comment>VK_EXT_vertex_input_dynamic_state</comment>
+        <enum value="255"   name="VK_COMMAND_TYPE_vkCmdSetVertexInputEXT_EXT"/>
+
         <comment>VK_EXT_extended_dynamic_state2</comment>
         <enum value="233"   name="VK_COMMAND_TYPE_vkCmdSetPatchControlPointsEXT_EXT"/>
         <enum value="234"   name="VK_COMMAND_TYPE_vkCmdSetLogicOpEXT_EXT"/>

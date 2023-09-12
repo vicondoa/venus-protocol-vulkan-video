@@ -143,6 +143,7 @@ VK_XML_EXTENSION_LIST = [
     'VK_EXT_shader_subgroup_ballot',
     'VK_EXT_transform_feedback',
     'VK_EXT_vertex_attribute_divisor',
+    'VK_EXT_vertex_input_dynamic_state',
     # vendor extensions
     'VK_VALVE_mutable_descriptor_type',
 ]
