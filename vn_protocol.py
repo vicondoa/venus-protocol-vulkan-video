@@ -121,6 +121,7 @@ VK_XML_EXTENSION_LIST = [
     'VK_EXT_depth_clip_control',
     'VK_EXT_depth_clip_enable',
     'VK_EXT_dynamic_rendering_unused_attachments',
+    'VK_EXT_extended_dynamic_state3',
     'VK_EXT_external_memory_dma_buf',
     'VK_EXT_fragment_shader_interlock',
     'VK_EXT_graphics_pipeline_library',
