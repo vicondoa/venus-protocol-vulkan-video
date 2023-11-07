@@ -374,39 +374,6 @@ virtualization or remoting, and are not exposed to applications.
         <enum value="247"   name="VK_COMMAND_TYPE_vkCmdDrawMultiEXT_EXT"/>
         <enum value="248"   name="VK_COMMAND_TYPE_vkCmdDrawMultiIndexedEXT_EXT"/>
 
-        <comment>VK_EXT_extended_dynamic_state3</comment>
-        <enum value="256"   name="VK_COMMAND_TYPE_vkCmdSetTessellationDomainOriginEXT_EXT"/>
-        <enum value="257"   name="VK_COMMAND_TYPE_vkCmdSetDepthClampEnableEXT_EXT"/>
-        <enum value="258"   name="VK_COMMAND_TYPE_vkCmdSetPolygonModeEXT_EXT"/>
-        <enum value="259"   name="VK_COMMAND_TYPE_vkCmdSetRasterizationSamplesEXT_EXT"/>
-        <enum value="260"   name="VK_COMMAND_TYPE_vkCmdSetSampleMaskEXT_EXT"/>
-        <enum value="261"   name="VK_COMMAND_TYPE_vkCmdSetAlphaToCoverageEnableEXT_EXT"/>
-        <enum value="262"   name="VK_COMMAND_TYPE_vkCmdSetAlphaToOneEnableEXT_EXT"/>
-        <enum value="263"   name="VK_COMMAND_TYPE_vkCmdSetLogicOpEnableEXT_EXT"/>
-        <enum value="264"   name="VK_COMMAND_TYPE_vkCmdSetColorBlendEnableEXT_EXT"/>
-        <enum value="265"   name="VK_COMMAND_TYPE_vkCmdSetColorBlendEquationEXT_EXT"/>
-        <enum value="266"   name="VK_COMMAND_TYPE_vkCmdSetColorWriteMaskEXT_EXT"/>
-        <enum value="267"   name="VK_COMMAND_TYPE_vkCmdSetRasterizationStreamEXT_EXT"/>
-        <enum value="268"   name="VK_COMMAND_TYPE_vkCmdSetConservativeRasterizationModeEXT_EXT"/>
-        <enum value="269"   name="VK_COMMAND_TYPE_vkCmdSetExtraPrimitiveOverestimationSizeEXT_EXT"/>
-        <enum value="270"   name="VK_COMMAND_TYPE_vkCmdSetDepthClipEnableEXT_EXT"/>
-        <enum value="271"   name="VK_COMMAND_TYPE_vkCmdSetSampleLocationsEnableEXT_EXT"/>
-        <enum value="272"   name="VK_COMMAND_TYPE_vkCmdSetColorBlendAdvancedEXT_EXT"/>
-        <enum value="273"   name="VK_COMMAND_TYPE_vkCmdSetProvokingVertexModeEXT_EXT"/>
-        <enum value="274"   name="VK_COMMAND_TYPE_vkCmdSetLineRasterizationModeEXT_EXT"/>
-        <enum value="275"   name="VK_COMMAND_TYPE_vkCmdSetLineStippleEnableEXT_EXT"/>
-        <enum value="276"   name="VK_COMMAND_TYPE_vkCmdSetDepthClipNegativeOneToOneEXT_EXT"/>
-        <enum value="277"   name="VK_COMMAND_TYPE_vkCmdSetViewportWScalingEnableNV_EXT"/>
-        <enum value="278"   name="VK_COMMAND_TYPE_vkCmdSetViewportSwizzleNV_EXT"/>
-        <enum value="279"   name="VK_COMMAND_TYPE_vkCmdSetCoverageToColorEnableNV_EXT"/>
-        <enum value="280"   name="VK_COMMAND_TYPE_vkCmdSetCoverageToColorLocationNV_EXT"/>
-        <enum value="281"   name="VK_COMMAND_TYPE_vkCmdSetCoverageModulationModeNV_EXT"/>
-        <enum value="282"   name="VK_COMMAND_TYPE_vkCmdSetCoverageModulationTableEnableNV_EXT"/>
-        <enum value="283"   name="VK_COMMAND_TYPE_vkCmdSetCoverageModulationTableNV_EXT"/>
-        <enum value="284"   name="VK_COMMAND_TYPE_vkCmdSetShadingRateImageEnableNV_EXT"/>
-        <enum value="285"   name="VK_COMMAND_TYPE_vkCmdSetRepresentativeFragmentTestEnableNV_EXT"/>
-        <enum value="286"   name="VK_COMMAND_TYPE_vkCmdSetCoverageReductionModeNV_EXT"/>
-
         <comment>VK_MESA_venus_protocol</comment>
         <enum value="178"   name="VK_COMMAND_TYPE_vkSetReplyCommandStreamMESA_EXT"/>
         <enum value="179"   name="VK_COMMAND_TYPE_vkSeekReplyCommandStreamMESA_EXT"/>
