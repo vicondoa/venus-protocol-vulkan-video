@@ -8,7 +8,7 @@
 <%namespace name="command" file="/types_command.h"/>\
 \
 <%def name="submit_command(ty)">\
-static inline void vn_submit_${ty.name}(struct vn_instance *vn_instance, VkCommandFlagsEXT cmd_flags, ${ty.c_func_params()}, struct vn_instance_submit_command *submit)
+static inline void vn_submit_${ty.name}(struct vn_ring *vn_ring, VkCommandFlagsEXT cmd_flags, ${ty.c_func_params()}, struct vn_ring_submit_command *submit)
 {
     uint8_t local_cmd_data[VN_SUBMIT_LOCAL_CMD_SIZE];
     void *cmd_data = local_cmd_data;
@@ -20,10 +20,10 @@ static inline void vn_submit_${ty.name}(struct vn_instance *vn_instance, VkComma
     }
     const size_t reply_size = cmd_flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT ? vn_sizeof_${ty.name}_reply(${ty.c_func_args()}) : 0;
 
-    struct vn_cs_encoder *enc = vn_instance_submit_command_init(vn_instance, submit, cmd_data, cmd_size, reply_size);
+    struct vn_cs_encoder *enc = vn_ring_submit_command_init(vn_ring, submit, cmd_data, cmd_size, reply_size);
     if (cmd_size) {
         vn_encode_${ty.name}(enc, cmd_flags, ${ty.c_func_args()});
-        vn_instance_submit_command(vn_instance, submit);
+        vn_ring_submit_command(vn_ring, submit);
         if (cmd_data != local_cmd_data)
             free(cmd_data);
     }
@@ -31,17 +31,17 @@ static inline void vn_submit_${ty.name}(struct vn_instance *vn_instance, VkComma
 </%def>\
 \
 <%def name="call_command(ty)">\
-static inline ${ty.c_func_ret()} vn_call_${ty.name}(struct vn_instance *vn_instance, ${ty.c_func_params()})
+static inline ${ty.c_func_ret()} vn_call_${ty.name}(struct vn_ring *vn_ring, ${ty.c_func_params()})
 {
     VN_TRACE_FUNC();
 
-    struct vn_instance_submit_command submit;
-    vn_submit_${ty.name}(vn_instance, VK_COMMAND_GENERATE_REPLY_BIT_EXT, ${ty.c_func_args()}, &submit);
-    struct vn_cs_decoder *dec = vn_instance_get_command_reply(vn_instance, &submit);
+    struct vn_ring_submit_command submit;
+    vn_submit_${ty.name}(vn_ring, VK_COMMAND_GENERATE_REPLY_BIT_EXT, ${ty.c_func_args()}, &submit);
+    struct vn_cs_decoder *dec = vn_ring_get_command_reply(vn_ring, &submit);
 %   if ty.ret:
     if (dec) {
         const ${ty.ret.to_c()} = vn_decode_${ty.name}_reply(dec, ${ty.c_func_args()});
-        vn_instance_free_command_reply(vn_instance, &submit);
+        vn_ring_free_command_reply(vn_ring, &submit);
         return ${ty.ret.name};
     } else {
         return VK_ERROR_OUT_OF_HOST_MEMORY;
@@ -49,17 +49,17 @@ static inline ${ty.c_func_ret()} vn_call_${ty.name}(struct vn_instance *vn_insta
 %   else:
     if (dec) {
         vn_decode_${ty.name}_reply(dec, ${ty.c_func_args()});
-        vn_instance_free_command_reply(vn_instance, &submit);
+        vn_ring_free_command_reply(vn_ring, &submit);
     }
 %   endif
 }
 </%def>\
 \
 <%def name="async_command(ty)">\
-static inline void vn_async_${ty.name}(struct vn_instance *vn_instance, ${ty.c_func_params()})
+static inline void vn_async_${ty.name}(struct vn_ring *vn_ring, ${ty.c_func_params()})
 {
-    struct vn_instance_submit_command submit;
-    vn_submit_${ty.name}(vn_instance, 0, ${ty.c_func_args()}, &submit);
+    struct vn_ring_submit_command submit;
+    vn_submit_${ty.name}(vn_ring, 0, ${ty.c_func_args()}, &submit);
 }
 </%def>\
 \
@@ -69,7 +69,7 @@ static inline void vn_async_${ty.name}(struct vn_instance *vn_instance, ${ty.c_f
 % if GUARD == 'STRUCTS':
 #include "vn_protocol_driver_handles.h"
 % else:
-#include "vn_instance.h"
+#include "vn_ring.h"
 #include "vn_protocol_driver_structs.h"
 % endif
 
