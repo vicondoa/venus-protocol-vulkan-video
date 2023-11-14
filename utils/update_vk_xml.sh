@@ -36,6 +36,9 @@ if [ -d "$DOWNLOADED/include" ]; then
 
     # Remove the c++ headers. They are 10MB and we never use them.
     rm -f "$BASEDIR"/include/vulkan/*.hpp
+
+    # Remove the .cppm files
+    rm -f "$BASEDIR"/include/vulkan/*.cppm
 fi
 
 if [ -f "$DOWNLOADED/registry/vk.xml" ]; then
