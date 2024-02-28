@@ -112,6 +112,7 @@ VK_XML_EXTENSION_LIST = [
     'VK_KHR_push_descriptor',
     'VK_KHR_shader_clock',
     # EXT extensions
+    'VK_EXT_attachment_feedback_loop_layout',
     'VK_EXT_border_color_swizzle',
     'VK_EXT_calibrated_timestamps',
     'VK_EXT_color_write_enable',
