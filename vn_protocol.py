@@ -108,6 +108,7 @@ VK_XML_EXTENSION_LIST = [
     'VK_KHR_external_fence_fd',
     'VK_KHR_external_memory_fd',
     'VK_KHR_external_semaphore_fd',
+    'VK_KHR_fragment_shading_rate',
     'VK_KHR_pipeline_library',
     'VK_KHR_push_descriptor',
     'VK_KHR_shader_clock',
