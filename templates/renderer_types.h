@@ -12,9 +12,13 @@
 
 #include "vn_protocol_renderer_defines.h"
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+
 % for ty in EARLY_SCALAR_TYPES:
 /* ${types.vn_type_descriptive_name(ty)} */
 
+${types.vn_sizeof_type(ty)}
 ${types.vn_encode_type(ty)}
 ${types.vn_decode_type(ty)}
 %   if 'need_array' in ty.attrs:
@@ -31,6 +35,7 @@ ${custom.vn_custom_array_size()}
 % for ty in SCALAR_TYPES:
 /* ${types.vn_type_descriptive_name(ty)} */
 
+${types.vn_sizeof_type(ty)}
 ${types.vn_encode_type(ty)}
 ${types.vn_decode_type(ty)}
 %   if 'need_array' in ty.attrs:
@@ -39,4 +44,6 @@ ${scalar.vn_decode_scalar_array(ty)}
 %   endif
 % endfor
 \
+#pragma GCC diagnostic pop
+
 #endif /* VN_PROTOCOL_RENDERER_TYPES_H */

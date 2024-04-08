@@ -6,14 +6,12 @@
 <%def name="vn_custom_size_t()">\
 /* size_t */
 
-% if GEN.is_driver:
 static inline size_t
 vn_sizeof_size_t(const size_t *val)
 {
     return vn_sizeof_uint64_t(&(uint64_t){ *val });
 }
 
-% endif
 static inline void
 vn_encode_size_t(struct vn_cs_encoder *enc, const size_t *val)
 {
@@ -29,14 +27,12 @@ vn_decode_size_t(struct vn_cs_decoder *dec, size_t *val)
     *val = tmp;
 }
 
-% if GEN.is_driver:
 static inline size_t
 vn_sizeof_size_t_array(const size_t *val, uint32_t count)
 {
     return vn_sizeof_size_t(val) * count;
 }
 
-% endif
 static inline void
 vn_encode_size_t_array(struct vn_cs_encoder *enc, const size_t *val, uint32_t count)
 {
@@ -63,14 +59,12 @@ vn_decode_size_t_array(struct vn_cs_decoder *dec, size_t *val, uint32_t count)
 <%def name="vn_custom_blob()">\
 /* opaque blob */
 
-% if GEN.is_driver:
 static inline size_t
 vn_sizeof_blob_array(const void *val, size_t size)
 {
     return (size + 3) & ~3;
 }
 
-% endif
 static inline void
 vn_encode_blob_array(struct vn_cs_encoder *enc, const void *val, size_t size)
 {
@@ -87,14 +81,12 @@ vn_decode_blob_array(struct vn_cs_decoder *dec, void *val, size_t size)
 <%def name="vn_custom_string()">\
 /* string */
 
-% if GEN.is_driver:
 static inline size_t
 vn_sizeof_char_array(const char *val, size_t size)
 {
     return vn_sizeof_blob_array(val, size);
 }
 
-% endif
 static inline void
 vn_encode_char_array(struct vn_cs_encoder *enc, const char *val, size_t size)
 {
@@ -116,14 +108,12 @@ vn_decode_char_array(struct vn_cs_decoder *dec, char *val, size_t size)
 <%def name="vn_custom_array_size()">\
 /* array size (uint64_t) */
 
-% if GEN.is_driver:
 static inline size_t
 vn_sizeof_array_size(uint64_t size)
 {
     return vn_sizeof_uint64_t(&size);
 }
 
-% endif
 static inline void
 vn_encode_array_size(struct vn_cs_encoder *enc, uint64_t size)
 {
@@ -160,14 +150,12 @@ vn_peek_array_size(struct vn_cs_decoder *dec)
 
 /* non-array pointer */
 
-% if GEN.is_driver:
 static inline size_t
 vn_sizeof_simple_pointer(const void *val)
 {
     return vn_sizeof_array_size(val ? 1 : 0);
 }
 
-% endif
 static inline bool
 vn_encode_simple_pointer(struct vn_cs_encoder *enc, const void *val)
 {
