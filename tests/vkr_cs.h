@@ -96,6 +96,18 @@ vkr_cs_decoder_alloc_temp_array(struct vkr_cs_decoder *dec,
     return NULL;
 }
 
+static inline void *
+vkr_cs_decoder_get_blob_storage(struct vkr_cs_decoder *dec, size_t size)
+{
+   return NULL;
+}
+
+static inline void *
+vkr_cs_encoder_get_blob_storage(struct vkr_cs_encoder *enc, size_t offset, size_t size)
+{
+   return NULL;
+}
+
 static inline bool
 vkr_cs_handle_indirect_id(VkObjectType type)
 {

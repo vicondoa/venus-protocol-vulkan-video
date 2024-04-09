@@ -17,7 +17,16 @@ static inline void vn_dispatch_${ty.name}(struct vn_dispatch_context *ctx, VkCom
         return;
     }
 
+% if 'need_blob_encode' in ty.attrs:
+    if (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT) {
+        if (!vn_cs_encoder_acquire(ctx->encoder))
+           return;
+    }
+
+    vn_decode_${ty.name}_args_temp(ctx->decoder, ctx->encoder, &args);
+% else:
     vn_decode_${ty.name}_args_temp(ctx->decoder, &args);
+% endif
 % if ty.variables and ty.variables[0].ty.base.dispatchable:
     if (!args.${ty.variables[0].name}) {
         vn_cs_decoder_set_fatal(ctx->decoder);
@@ -38,20 +47,30 @@ static inline void vn_dispatch_${ty.name}(struct vn_dispatch_context *ctx, VkCom
 % if ty.can_device_lost:
     if (flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT) {
         if (!vn_cs_decoder_get_fatal(ctx->decoder)) {
+%   if 'need_blob_encode' in ty.attrs:
+            vn_encode_${ty.name}_reply(ctx->encoder, &args);
+            vn_cs_encoder_release(ctx->encoder);
+%   else:
             if (vn_cs_encoder_acquire(ctx->encoder)) {
                 vn_encode_${ty.name}_reply(ctx->encoder, &args);
                 vn_cs_encoder_release(ctx->encoder);
             }
+%   endif
         }
     } else if (args.${ty.ret.name} == VK_ERROR_DEVICE_LOST) {
         vn_cs_decoder_set_fatal(ctx->decoder);
     }
 % else:
     if ((flags & VK_COMMAND_GENERATE_REPLY_BIT_EXT) && !vn_cs_decoder_get_fatal(ctx->decoder)) {
+%   if 'need_blob_encode' in ty.attrs:
+        vn_encode_${ty.name}_reply(ctx->encoder, &args);
+        vn_cs_encoder_release(ctx->encoder);
+%   else:
         if (vn_cs_encoder_acquire(ctx->encoder)) {
             vn_encode_${ty.name}_reply(ctx->encoder, &args);
             vn_cs_encoder_release(ctx->encoder);
         }
+%   endif
     }
 % endif
 

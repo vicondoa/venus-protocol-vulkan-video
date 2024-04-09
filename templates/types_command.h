@@ -33,12 +33,28 @@ static inline void vn_encode_${ty.name}(struct vn_cs_encoder *enc, VkCommandFlag
 </%def>
 
 <%def name="vn_decode_command_args_temp(ty)">\
+% if 'need_blob_encode' in ty.attrs:
+static inline void vn_decode_${ty.name}_args_temp(struct vn_cs_decoder *dec, struct vn_cs_encoder *enc, struct vn_command_${ty.name} *args)
+{
+    const VkCommandTypeEXT cmd_type = ${ty.attrs['c_type']};
+    size_t offset = vn_sizeof_VkCommandTypeEXT(&cmd_type);
+%   if ty.ret:
+
+    ${ty.ret.to_c()};
+    ${GEN.sizeof_command_reply(ty, ty.ret, '', 'offset')}
+% endif
+%   for var in ty.variables:
+    ${GEN.decode_command_arg(ty, var, 'args->')}
+%   endfor
+}
+% else:
 static inline void vn_decode_${ty.name}_args_temp(struct vn_cs_decoder *dec, struct vn_command_${ty.name} *args)
 {
-% for var in ty.variables:
+%   for var in ty.variables:
     ${GEN.decode_command_arg(ty, var, 'args->')}
-% endfor
+%   endfor
 }
+% endif
 </%def>
 
 <%def name="vn_sizeof_command_reply(ty)">\

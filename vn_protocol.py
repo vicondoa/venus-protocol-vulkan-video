@@ -214,6 +214,8 @@ class Gen:
                 else:
                     var.ty.set_attribute('need_partial', True)
                     var.ty.set_attribute('need_encode', True)
+                    if var.is_blob():
+                        ty.set_attribute('need_blob_encode', True)
 
         if ty.ret:
             if ty.ret.ty.is_pointer() or ty.ret.ty.is_static_array():
@@ -633,8 +635,11 @@ class Gen:
                 return
 
             for level, count in enumerate(alloc_counts):
-                if self.var.is_blob():
-                    alloc_stmt = '%s = vn_cs_decoder_alloc_temp(dec, %s);' % (
+                if 'var_out' in self.var.attrs and self.var.is_blob():
+                    alloc_stmt = '%s = vn_cs_encoder_get_blob_storage(enc, offset, %s);' % (
+                            self._var_name(level, level > 0), count)
+                elif self.var.is_blob():
+                    alloc_stmt = '%s = vn_cs_decoder_get_blob_storage(dec, %s);' % (
                             self._var_name(level, level > 0), count)
                 else:
                     alloc_stmt = '%s = vn_cs_decoder_alloc_temp_array(dec, sizeof(*%s), %s);' % (
@@ -792,7 +797,7 @@ class Gen:
             code += '%s%s\n' % (indent, stmt)
         return code
 
-    def _decode_variable(self, info, indent_level):
+    def _decode_variable(self, ty, info, indent_level):
         indent = '    ' * indent_level
         if info.validity == info.INVALID:
             if not info.var.ty.is_pointer():
@@ -801,7 +806,13 @@ class Gen:
         stmts = []
         if info.var.is_dynamic_array():
             stmts.append('if (vn_peek_array_size(dec)) {')
+            if 'need_blob_encode' in ty.attrs and 'var_out' in info.var.attrs:
+                stmts.append('    offset += vn_sizeof_array_size(%s);' % \
+                        (info.dynamic_array_size))
             stmts.append('    %s' % info.code(indent_level + 1).strip())
+            if 'need_blob_encode' in ty.attrs and 'var_out' in info.var.attrs:
+                stmts.append('    offset += vn_sizeof_%s(%s);' % \
+                        (info.func_stem, info.func_args(False)))
             stmts.append('} else {')
             if not self.is_driver and not info.var.is_optional() and \
                     info.var.can_validate() and info.dynamic_array_size:
@@ -812,7 +823,13 @@ class Gen:
             stmts.append('}')
         elif info.var.ty.is_pointer():
             stmts.append('if (vn_decode_simple_pointer(dec)) {')
+            if 'need_blob_encode' in ty.attrs and 'var_out' in info.var.attrs:
+                stmts.append('    offset += vn_sizeof_simple_pointer(%s);' % \
+                        (info._var_name()))
             stmts.append('    %s' % info.code(indent_level + 1).strip())
+            if 'need_blob_encode' in ty.attrs and 'var_out' in info.var.attrs:
+                stmts.append('    offset += vn_sizeof_%s(%s);' % \
+                        (info.func_stem, info.func_args(False)))
             stmts.append('} else {')
             stmts.append('    %s = NULL;' % info._var_name())
             if not self.is_driver and not info.var.is_optional() and \
@@ -825,6 +842,7 @@ class Gen:
             stmts.append('}')
         else:
             stmts.append(info.code(indent_level).strip())
+
 
         code = ''
         for stmt in stmts:
@@ -1040,7 +1058,7 @@ class Gen:
     def decode_struct_member(self, ty, var, prefix, struct_is_partial, alloc_storage, indent_level=1):
         validity = self._get_variable_validity(ty, var, not struct_is_partial)
         info = self._decode_variable_info(ty, var, prefix, validity, alloc_storage)
-        return self._decode_variable(info, indent_level).strip()
+        return self._decode_variable(ty, info, indent_level).strip()
 
     def replace_struct_member_handle(self, ty, var, prefix):
         validity = self._get_variable_validity(ty, var, True)
@@ -1060,7 +1078,7 @@ class Gen:
     def decode_command_arg(self, ty, var, prefix):
         validity = self._get_variable_validity(ty, var, 'var_in' in var.attrs)
         info = self._decode_variable_info(ty, var, prefix, validity, True)
-        return self._decode_variable(info, 1).strip()
+        return self._decode_variable(ty, info, 1).strip()
 
     def replace_command_arg_handle(self, ty, var, prefix):
         validity = self._get_variable_validity(ty, var, 'var_in' in var.attrs)
@@ -1089,7 +1107,7 @@ class Gen:
 
         info = self._decode_variable_info(ty, var, prefix,
                 self.VariableInfo.VALID, False)
-        return self._decode_variable(info, 1).strip()
+        return self._decode_variable(ty, info, 1).strip()
 
 class GenCS:
     def __init__(self, gen):
