@@ -23,6 +23,17 @@ struct vkr_object {
     } handle;
 };
 
+static inline bool
+vkr_cs_encoder_acquire(struct vkr_cs_encoder *enc)
+{
+   return true;
+}
+
+static inline void
+vkr_cs_encoder_release(struct vkr_cs_encoder *enc)
+{
+}
+
 static inline void
 vkr_cs_encoder_write(struct vkr_cs_encoder *enc,
                      size_t size,
