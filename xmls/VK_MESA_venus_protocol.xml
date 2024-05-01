@@ -56,6 +56,12 @@ renderer, and are not exposed to applications.
             <member><type>uint32_t</type> <name>maxReportingPeriodMicroseconds</name></member>
         </type>
 
+        <type category="struct" name="VkRingPriorityInfoMESA" structextends="VkRingCreateInfoMESA">
+            <member values="VK_STRUCTURE_TYPE_RING_PRIORITY_INFO_MESA"><type>VkStructureType</type> <name>sType</name></member>
+            <member optional="true">const <type>void</type>*      <name>pNext</name></member>
+            <member><type>int32_t</type> <name>priority</name></member>
+        </type>
+
         <type category="struct" name="VkMemoryResourcePropertiesMESA">
             <member values="VK_STRUCTURE_TYPE_MEMORY_RESOURCE_PROPERTIES_MESA"><type>VkStructureType</type> <name>sType</name></member>
             <member optional="true"><type>void</type>*            <name>pNext</name></member>
@@ -182,7 +188,7 @@ renderer, and are not exposed to applications.
     <extensions>
         <extension name="VK_MESA_venus_protocol" number="385" type="instance" author="MESA" contact="Chia-I Wu @olvaffe1" supported="vulkan">
             <require>
-                <enum value="1"                                             name="VK_MESA_VENUS_PROTOCOL_SPEC_VERSION"/>
+                <enum value="2"                                             name="VK_MESA_VENUS_PROTOCOL_SPEC_VERSION"/>
                 <enum value="&quot;VK_MESA_venus_protocol&quot;"            name="VK_MESA_VENUS_PROTOCOL_EXTENSION_NAME"/>
                 <enum offset="0" extends="VkStructureType"                  name="VK_STRUCTURE_TYPE_RING_CREATE_INFO_MESA"/>
                 <enum offset="1" extends="VkStructureType"                  name="VK_STRUCTURE_TYPE_MEMORY_RESOURCE_PROPERTIES_MESA"/>
@@ -191,6 +197,7 @@ renderer, and are not exposed to applications.
                 <enum offset="4" extends="VkStructureType"                  name="VK_STRUCTURE_TYPE_IMPORT_SEMAPHORE_RESOURCE_INFO_MESA"/>
                 <enum offset="5" extends="VkStructureType"                  name="VK_STRUCTURE_TYPE_DEVICE_QUEUE_TIMELINE_INFO_MESA"/>
                 <enum offset="6" extends="VkStructureType"                  name="VK_STRUCTURE_TYPE_RING_MONITOR_INFO_MESA"/>
+                <enum offset="7" extends="VkStructureType"                  name="VK_STRUCTURE_TYPE_RING_PRIORITY_INFO_MESA"/>
                 <type name="VkCommandStreamExecutionFlagBitsMESA"/>
                 <type name="VkCommandStreamExecutionFlagsMESA"/>
                 <type name="VkRingCreateFlagBitsMESA"/>
@@ -203,6 +210,7 @@ renderer, and are not exposed to applications.
                 <type name="VkCommandStreamDependencyMESA"/>
                 <type name="VkRingCreateInfoMESA"/>
                 <type name="VkRingMonitorInfoMESA"/>
+                <type name="VkRingPriorityInfoMESA"/>
                 <type name="VkMemoryResourcePropertiesMESA"/>
                 <type name="VkImportMemoryResourceInfoMESA"/>
                 <type name="VkMemoryResourceAllocationSizePropertiesMESA"/>
