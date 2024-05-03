@@ -401,6 +401,13 @@ virtualization or remoting, and are not exposed to applications.
         <enum value="275"   name="VK_COMMAND_TYPE_vkCmdSetLineStippleEnableEXT_EXT"/>
         <enum value="276"   name="VK_COMMAND_TYPE_vkCmdSetDepthClipNegativeOneToOneEXT_EXT"/>
 
+        <comment>VK_KHR_maintenance5</comment>
+        <enum value="279"   name="VK_COMMAND_TYPE_vkCmdBindIndexBuffer2KHR_EXT"/>
+        <enum value="280"   name="VK_COMMAND_TYPE_vkGetRenderingAreaGranularityKHR_EXT"/>
+        <enum value="281"   name="VK_COMMAND_TYPE_vkGetDeviceImageSubresourceLayoutKHR_EXT"/>
+        <enum value="282"   name="VK_COMMAND_TYPE_vkGetImageSubresourceLayout2KHR_EXT"/>
+        <enum               name="VK_COMMAND_TYPE_vkGetImageSubresourceLayout2EXT_EXT" alias="VK_COMMAND_TYPE_vkGetImageSubresourceLayout2KHR_EXT"/>
+
         <comment>VK_MESA_venus_protocol</comment>
         <enum value="178"   name="VK_COMMAND_TYPE_vkSetReplyCommandStreamMESA_EXT"/>
         <enum value="179"   name="VK_COMMAND_TYPE_vkSeekReplyCommandStreamMESA_EXT"/>
