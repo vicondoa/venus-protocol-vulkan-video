@@ -6,6 +6,7 @@
 import argparse
 import copy
 from pathlib import Path
+from typing import NamedTuple
 
 from mako.lookup import TemplateLookup
 from mako.template import Template
@@ -154,6 +155,11 @@ VK_XML_EXTENSION_LIST = [
     'VK_VALVE_mutable_descriptor_type',
 ]
 
+class Ignorable(NamedTuple):
+    struct: str
+    var: str
+    condition: str
+
 class Gen:
     PRIMITIVE_TYPES = {
         'float': 4,
@@ -171,6 +177,29 @@ class Gen:
         'VkClearValue': 0,
         'VkPipelineExecutableStatisticValueKHR': 2,
     }
+
+    IGNORABLE_LIST = [
+        Ignorable(
+            'VkImageCreateInfo',
+            'pQueueFamilyIndices',
+            'val->sharingMode == VK_SHARING_MODE_CONCURRENT',
+        ),
+        Ignorable(
+            'VkBufferCreateInfo',
+            'pQueueFamilyIndices',
+            'val->sharingMode == VK_SHARING_MODE_CONCURRENT',
+        ),
+        Ignorable(
+            'VkPhysicalDeviceImageDrmFormatModifierInfoEXT',
+            'pQueueFamilyIndices',
+            'val->sharingMode == VK_SHARING_MODE_CONCURRENT',
+        ),
+        Ignorable(
+            'VkFramebufferCreateInfo',
+            'pAttachments',
+            '!(val->flags & VK_FRAMEBUFFER_CREATE_IMAGELESS_BIT)',
+        ),
+    ]
 
     def __init__(self, is_driver, reg):
         self.is_driver = is_driver
@@ -217,6 +246,11 @@ class Gen:
                     var.ty.set_attribute('need_encode', True)
                     if var.is_blob():
                         ty.set_attribute('need_blob_encode', True)
+
+            # check ignored args to conditionally skip
+            for ignore in self.IGNORABLE_LIST:
+                if ignore.struct == ty.name and ignore.var == var.name:
+                    var.attrs['condition'] = ignore.condition
 
         if ty.ret:
             if ty.ret.ty.is_pointer() or ty.ret.ty.is_static_array():
@@ -746,9 +780,13 @@ class Gen:
             else:
                 return '%s/* skip %s */' % (indent, info._var_name())
 
+        condition = info._var_name()
+        if 'condition' in info.var.attrs:
+            condition = info.var.attrs['condition']
+
         stmts = []
         if info.var.is_dynamic_array():
-            stmts.append('if (%s) {' % info._var_name())
+            stmts.append('if (%s) {' % condition)
             stmts.append('    %s' % info.code(indent_level + 1).strip())
             stmts.append('} else {')
             stmts.append('    %s += vn_sizeof_array_size(0);' % dst)
@@ -777,9 +815,13 @@ class Gen:
             else:
                 return '%s/* skip %s */' % (indent, info._var_name())
 
+        condition = info._var_name()
+        if 'condition' in info.var.attrs:
+            condition = info.var.attrs['condition']
+
         stmts = []
         if info.var.is_dynamic_array():
-            stmts.append('if (%s) {' % info._var_name())
+            stmts.append('if (%s) {' % condition)
             stmts.append('    %s' % info.code(indent_level + 1).strip())
             stmts.append('} else {')
             stmts.append('    vn_encode_array_size(enc, 0);')
