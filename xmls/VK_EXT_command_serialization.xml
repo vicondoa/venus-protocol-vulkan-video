@@ -350,6 +350,10 @@ virtualization or remoting, and are not exposed to applications.
         <enum value="238"   name="VK_COMMAND_TYPE_vkImportFenceFdKHR_EXT"/>
         <enum value="239"   name="VK_COMMAND_TYPE_vkGetFenceFdKHR_EXT"/>
 
+        <comment>VK_EXT_sample_locations</comment>
+        <enum value="283"   name="VK_COMMAND_TYPE_vkCmdSetSampleLocationsEXT_EXT"/>
+        <enum value="284"   name="VK_COMMAND_TYPE_vkGetPhysicalDeviceMultisamplePropertiesEXT_EXT"/>
+
         <comment>VK_EXT_image_drm_format_modifier</comment>
         <enum value="187"   name="VK_COMMAND_TYPE_vkGetImageDrmFormatModifierPropertiesEXT_EXT"/>
 

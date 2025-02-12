@@ -116,6 +116,7 @@ VK_XML_EXTENSION_LIST = [
     'VK_KHR_shader_clock',
     # EXT extensions
     'VK_EXT_attachment_feedback_loop_layout',
+    'VK_EXT_blend_operation_advanced',
     'VK_EXT_border_color_swizzle',
     'VK_EXT_calibrated_timestamps',
     'VK_EXT_color_write_enable',
@@ -147,6 +148,7 @@ VK_XML_EXTENSION_LIST = [
     'VK_EXT_queue_family_foreign',
     'VK_EXT_rasterization_order_attachment_access',
     'VK_EXT_robustness2',
+    'VK_EXT_sample_locations',
     'VK_EXT_shader_stencil_export',
     'VK_EXT_shader_subgroup_ballot',
     'VK_EXT_transform_feedback',
