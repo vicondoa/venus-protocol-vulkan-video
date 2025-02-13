@@ -635,7 +635,7 @@ class Gen:
         def _init_loop_info(self):
             self.loop_info = Gen.LoopInfo()
 
-            if 'len_exprs' not in self.var.attrs:
+            if 'wa_require_static_len' in self.var.attrs or 'len_exprs' not in self.var.attrs:
                 if self.var.ty.is_static_array():
                     iter_count = self.var.ty.static_array_size()
                     self.loop_info.add_loop('uint32_t', iter_count)
@@ -1099,10 +1099,11 @@ class Gen:
         for other_var in ty.variables:
             if var == other_var:
                 continue
-            for name in other_var.attrs.get('len_names', []):
-                len_vars = ty.find_variables(name)
-                if var in len_vars:
-                    return self.VariableInfo.VALID
+            if 'wa_require_static_len' not in other_var.attrs:
+                for name in other_var.attrs.get('len_names', []):
+                    len_vars = ty.find_variables(name)
+                    if var in len_vars:
+                        return self.VariableInfo.VALID
 
         partially_initialized = [ty.HANDLE, ty.STRUCT]
         if var.ty.base.category in partially_initialized:

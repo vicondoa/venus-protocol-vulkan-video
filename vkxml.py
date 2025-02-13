@@ -449,6 +449,9 @@ class VkType:
             attrs['noautovalidity'] = elem.attrib['noautovalidity']
         if 'stride' in elem.attrib:
             attrs['stride'] = elem.attrib['stride']
+        # workaround for backcompat of static array with API constant size
+        if enum_elem is not None:
+            attrs['wa_require_static_len'] = enum_elem.text
 
         return VkVariable(ty, decl.name, attrs)
 
