@@ -732,6 +732,40 @@ class VkExtension:
         self.optional_types = {}
 
     @staticmethod
+    def filter_depends(deps):
+        if not deps:
+            return None
+
+        if not '+' in deps and not ',' in deps:
+            if deps.startswith('VK_VERSION'):
+                return None
+            elif not deps.startswith('VK_'):
+                # Not needed if it's an extension feature requirement
+                return None
+            return deps
+
+        or_dep_list = []
+        for dep in deps.split(','):
+            dep = dep.strip("()")
+            # Skip the "OR" dep that only requires core version
+            if not '+' in dep and dep.startswith('VK_VERSION'):
+                continue
+
+            and_dep_list = []
+            for and_dep in dep.split('+'):
+                and_dep = and_dep.strip("()")
+                filtered_sub_dep = VkExtension.filter_depends(and_dep)
+                if filtered_sub_dep:
+                    and_dep_list.append(filtered_sub_dep)
+
+            if and_dep_list:
+                or_dep_list.append('+'.join(and_dep_list))
+            else:
+                return None
+
+        return ','.join(or_dep_list)
+
+    @staticmethod
     def parse_extension(elem, type_table):
         """Parse <extension> into a VkExtension."""
         name = elem.attrib['name']
@@ -761,11 +795,8 @@ class VkExtension:
                     require_elem, type_table, number)
 
             # check if this <require> depends on another extension
-            require_dep = require_elem.attrib.get('depends')
-            if not require_dep:
-                # fallback to check extension for legacy vk registry
-                require_dep = require_elem.attrib.get('extension')
-            if require_dep and not require_dep.startswith('VK_VERSION'):
+            require_dep = VkExtension.filter_depends(require_elem.attrib.get('depends'))
+            if require_dep:
                 if require_dep not in ext.optional_types:
                     ext.optional_types[require_dep] = []
                 types = ext.optional_types[require_dep]

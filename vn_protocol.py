@@ -295,6 +295,25 @@ class Gen:
 
             self._set_type_needs(ty)
 
+    @staticmethod
+    def support_type_depends(deps):
+        if not '+' in deps and not ',' in deps:
+            return True if deps in VK_XML_EXTENSION_LIST else False
+
+        for or_dep in deps.split(','):
+            if not '+' in or_dep and or_dep in VK_XML_EXTENSION_LIST:
+                return True
+
+            support_or_dep = True
+            for and_dep in or_dep.split('+'):
+                if not Gen.support_type_depends(and_dep):
+                    support_or_dep = False
+                    break
+            if support_or_dep:
+                return True
+
+        return False
+
     def _get_supported_types(self):
         # collect types from features and extensions
         types = []
@@ -306,7 +325,7 @@ class Gen:
 
             types.extend(ext.types)
             for key in ext.optional_types:
-                if key in VK_XML_EXTENSION_LIST:
+                if Gen.support_type_depends(key):
                     types.extend(ext.optional_types[key])
 
         types_with_deps = set()
@@ -441,7 +460,7 @@ class Gen:
                 cond = COND_EXT
             elif ext.optional_types:
                 for key in ext.optional_types:
-                    if key in ext_map and ty in ext.optional_types[key]:
+                    if Gen.support_type_depends(key) and ty in ext.optional_types[key]:
                         ext_pairs.append((ext, ext_map[key]))
                         cond = COND_EXT
                         break
@@ -1591,8 +1610,15 @@ class GenUtil:
                     cmd_feat = feat
                     break
             for ext in self.gen.reg.extensions:
-                if ext.name in VK_XML_EXTENSION_LIST and cmd in ext.types:
-                    cmd_exts.append(ext)
+                if ext.name in VK_XML_EXTENSION_LIST:
+                    if cmd in ext.types:
+                        cmd_exts.append(ext)
+                        continue
+
+                    for key in ext.optional_types:
+                        if (cmd in ext.optional_types[key] and
+                            Gen.support_type_depends(key)):
+                            cmd_exts.append(ext)
 
             assert cmd_feat or cmd_exts
             entry = (cmd, cmd_feat, cmd_exts)
