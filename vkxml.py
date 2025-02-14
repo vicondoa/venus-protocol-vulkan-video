@@ -309,6 +309,11 @@ class VkType:
         if ty.name == 'VkBaseOutStructure':
             return
 
+        # Avoid circular reference.
+        # VkPhysicalDeviceLayeredApiVulkanPropertiesKHR::properties
+        if ty.name == 'VkPhysicalDeviceLayeredApiVulkanPropertiesKHR':
+            return
+
         ty.attrs[key] = val
         for var in ty.variables:
             var.ty.set_attribute(key, val)
