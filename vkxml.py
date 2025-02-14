@@ -909,7 +909,7 @@ class VkRegistry:
 
     def _parse_enums(self, enums_elem):
         """Parse <enums>.  There is one for each enumerated type."""
-        if 'type' in enums_elem.attrib:
+        if 'type' in enums_elem.attrib and enums_elem.attrib['type'] != 'constants':
             VkEnums.parse_enums(enums_elem, self.type_table)
 
     def _parse_commands(self, commands_elem):
