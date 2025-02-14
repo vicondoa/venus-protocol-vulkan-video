@@ -358,15 +358,18 @@ virtualization or remoting, and are not exposed to applications.
         <enum value="187"   name="VK_COMMAND_TYPE_vkGetImageDrmFormatModifierPropertiesEXT_EXT"/>
 
         <comment>VK_EXT_calibrated_timestamps</comment>
-        <enum value="235"   name="VK_COMMAND_TYPE_vkGetPhysicalDeviceCalibrateableTimeDomainsEXT_EXT"/>
-        <enum value="236"   name="VK_COMMAND_TYPE_vkGetCalibratedTimestampsEXT_EXT"/>
+        <enum value="235"   name="VK_COMMAND_TYPE_vkGetPhysicalDeviceCalibrateableTimeDomainsKHR_EXT"/>
+        <enum               name="VK_COMMAND_TYPE_vkGetPhysicalDeviceCalibrateableTimeDomainsEXT_EXT" alias="VK_COMMAND_TYPE_vkGetPhysicalDeviceCalibrateableTimeDomainsKHR_EXT"/>
+        <enum value="236"   name="VK_COMMAND_TYPE_vkGetCalibratedTimestampsKHR_EXT"/>
+        <enum               name="VK_COMMAND_TYPE_vkGetCalibratedTimestampsEXT_EXT" alias="VK_COMMAND_TYPE_vkGetCalibratedTimestampsKHR_EXT"/>
 
         <comment>VK_KHR_fragment_shading_rate</comment>
         <enum value="277"   name="VK_COMMAND_TYPE_vkGetPhysicalDeviceFragmentShadingRatesKHR_EXT"/>
         <enum value="278"   name="VK_COMMAND_TYPE_vkCmdSetFragmentShadingRateKHR_EXT"/>
 
         <comment>VK_EXT_line_rasterization</comment>
-        <enum value="237"   name="VK_COMMAND_TYPE_vkCmdSetLineStippleEXT_EXT"/>
+        <enum value="237"   name="VK_COMMAND_TYPE_vkCmdSetLineStippleKHR_EXT"/>
+        <enum               name="VK_COMMAND_TYPE_vkCmdSetLineStippleEXT_EXT" alias="VK_COMMAND_TYPE_vkCmdSetLineStippleKHR_EXT"/>
 
         <comment>VK_EXT_vertex_input_dynamic_state</comment>
         <enum value="255"   name="VK_COMMAND_TYPE_vkCmdSetVertexInputEXT_EXT"/>
@@ -383,7 +386,6 @@ virtualization or remoting, and are not exposed to applications.
         <enum value="248"   name="VK_COMMAND_TYPE_vkCmdDrawMultiIndexedEXT_EXT"/>
 
         <comment>VK_EXT_extended_dynamic_state3</comment>
-        <enum value="256"   name="VK_COMMAND_TYPE_vkCmdSetTessellationDomainOriginEXT_EXT"/>
         <enum value="257"   name="VK_COMMAND_TYPE_vkCmdSetDepthClampEnableEXT_EXT"/>
         <enum value="258"   name="VK_COMMAND_TYPE_vkCmdSetPolygonModeEXT_EXT"/>
         <enum value="259"   name="VK_COMMAND_TYPE_vkCmdSetRasterizationSamplesEXT_EXT"/>
@@ -394,6 +396,7 @@ virtualization or remoting, and are not exposed to applications.
         <enum value="264"   name="VK_COMMAND_TYPE_vkCmdSetColorBlendEnableEXT_EXT"/>
         <enum value="265"   name="VK_COMMAND_TYPE_vkCmdSetColorBlendEquationEXT_EXT"/>
         <enum value="266"   name="VK_COMMAND_TYPE_vkCmdSetColorWriteMaskEXT_EXT"/>
+        <enum value="256"   name="VK_COMMAND_TYPE_vkCmdSetTessellationDomainOriginEXT_EXT"/>
         <enum value="267"   name="VK_COMMAND_TYPE_vkCmdSetRasterizationStreamEXT_EXT"/>
         <enum value="268"   name="VK_COMMAND_TYPE_vkCmdSetConservativeRasterizationModeEXT_EXT"/>
         <enum value="269"   name="VK_COMMAND_TYPE_vkCmdSetExtraPrimitiveOverestimationSizeEXT_EXT"/>

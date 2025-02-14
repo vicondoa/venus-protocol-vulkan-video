@@ -31,9 +31,6 @@ if [ -d "$DOWNLOADED/include" ]; then
     rm -r "$BASEDIR/include"
     cp -r "$DOWNLOADED/include" "$BASEDIR/include"
 
-    # Remove the vulkan video headers for now.
-    rm -rf "$BASEDIR"/include/vk_video
-
     # Remove the c++ headers. They are 10MB and we never use them.
     rm -f "$BASEDIR"/include/vulkan/*.hpp
 
