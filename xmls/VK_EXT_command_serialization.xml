@@ -322,6 +322,48 @@ virtualization or remoting, and are not exposed to applications.
         <enum value="232"   name="VK_COMMAND_TYPE_vkGetDeviceImageSparseMemoryRequirements_EXT"/>
         <enum               name="VK_COMMAND_TYPE_vkGetDeviceImageSparseMemoryRequirementsKHR_EXT" alias="VK_COMMAND_TYPE_vkGetDeviceImageSparseMemoryRequirements_EXT"/>
 
+        <comment>VK_VERSION_1_4</comment>
+        <enum value="237"   name="VK_COMMAND_TYPE_vkCmdSetLineStipple_EXT"/>
+        <enum               name="VK_COMMAND_TYPE_vkCmdSetLineStippleKHR_EXT" alias="VK_COMMAND_TYPE_vkCmdSetLineStipple_EXT"/>
+        <enum               name="VK_COMMAND_TYPE_vkCmdSetLineStippleEXT_EXT" alias="VK_COMMAND_TYPE_vkCmdSetLineStipple_EXT"/>
+        <enum value="285"   name="VK_COMMAND_TYPE_vkMapMemory2_EXT"/>
+        <enum               name="VK_COMMAND_TYPE_vkMapMemory2KHR_EXT" alias="VK_COMMAND_TYPE_vkMapMemory2_EXT"/>
+        <enum value="286"   name="VK_COMMAND_TYPE_vkUnmapMemory2_EXT"/>
+        <enum               name="VK_COMMAND_TYPE_vkUnmapMemory2KHR_EXT" alias="VK_COMMAND_TYPE_vkUnmapMemory2_EXT"/>
+        <enum value="279"   name="VK_COMMAND_TYPE_vkCmdBindIndexBuffer2_EXT"/>
+        <enum               name="VK_COMMAND_TYPE_vkCmdBindIndexBuffer2KHR_EXT" alias="VK_COMMAND_TYPE_vkCmdBindIndexBuffer2_EXT"/>
+        <enum value="280"   name="VK_COMMAND_TYPE_vkGetRenderingAreaGranularity_EXT"/>
+        <enum               name="VK_COMMAND_TYPE_vkGetRenderingAreaGranularityKHR_EXT" alias="VK_COMMAND_TYPE_vkGetRenderingAreaGranularity_EXT"/>
+        <enum value="281"   name="VK_COMMAND_TYPE_vkGetDeviceImageSubresourceLayout_EXT"/>
+        <enum               name="VK_COMMAND_TYPE_vkGetDeviceImageSubresourceLayoutKHR_EXT" alias="VK_COMMAND_TYPE_vkGetDeviceImageSubresourceLayout_EXT"/>
+        <enum value="282"   name="VK_COMMAND_TYPE_vkGetImageSubresourceLayout2_EXT"/>
+        <enum               name="VK_COMMAND_TYPE_vkGetImageSubresourceLayout2KHR_EXT" alias="VK_COMMAND_TYPE_vkGetImageSubresourceLayout2_EXT"/>
+        <enum               name="VK_COMMAND_TYPE_vkGetImageSubresourceLayout2EXT_EXT" alias="VK_COMMAND_TYPE_vkGetImageSubresourceLayout2_EXT"/>
+        <enum value="249"   name="VK_COMMAND_TYPE_vkCmdPushDescriptorSet_EXT"/>
+        <enum               name="VK_COMMAND_TYPE_vkCmdPushDescriptorSetKHR_EXT" alias="VK_COMMAND_TYPE_vkCmdPushDescriptorSet_EXT"/>
+        <enum value="250"   name="VK_COMMAND_TYPE_vkCmdPushDescriptorSetWithTemplate_EXT"/>
+        <enum               name="VK_COMMAND_TYPE_vkCmdPushDescriptorSetWithTemplateKHR_EXT" alias="VK_COMMAND_TYPE_vkCmdPushDescriptorSetWithTemplate_EXT"/>
+        <enum value="287"   name="VK_COMMAND_TYPE_vkCmdSetRenderingAttachmentLocations_EXT"/>
+        <enum               name="VK_COMMAND_TYPE_vkCmdSetRenderingAttachmentLocationsKHR_EXT" alias="VK_COMMAND_TYPE_vkCmdSetRenderingAttachmentLocations_EXT"/>
+        <enum value="288"   name="VK_COMMAND_TYPE_vkCmdSetRenderingInputAttachmentIndices_EXT"/>
+        <enum               name="VK_COMMAND_TYPE_vkCmdSetRenderingInputAttachmentIndicesKHR_EXT" alias="VK_COMMAND_TYPE_vkCmdSetRenderingInputAttachmentIndices_EXT"/>
+        <enum value="289"   name="VK_COMMAND_TYPE_vkCmdBindDescriptorSets2_EXT"/>
+        <enum               name="VK_COMMAND_TYPE_vkCmdBindDescriptorSets2KHR_EXT" alias="VK_COMMAND_TYPE_vkCmdBindDescriptorSets2_EXT"/>
+        <enum value="290"   name="VK_COMMAND_TYPE_vkCmdPushConstants2_EXT"/>
+        <enum               name="VK_COMMAND_TYPE_vkCmdPushConstants2KHR_EXT" alias="VK_COMMAND_TYPE_vkCmdPushConstants2_EXT"/>
+        <enum value="291"   name="VK_COMMAND_TYPE_vkCmdPushDescriptorSet2_EXT"/>
+        <enum               name="VK_COMMAND_TYPE_vkCmdPushDescriptorSet2KHR_EXT" alias="VK_COMMAND_TYPE_vkCmdPushDescriptorSet2_EXT"/>
+        <enum value="292"   name="VK_COMMAND_TYPE_vkCmdPushDescriptorSetWithTemplate2_EXT"/>
+        <enum               name="VK_COMMAND_TYPE_vkCmdPushDescriptorSetWithTemplate2KHR_EXT" alias="VK_COMMAND_TYPE_vkCmdPushDescriptorSetWithTemplate2_EXT"/>
+        <enum value="293"   name="VK_COMMAND_TYPE_vkCopyMemoryToImage_EXT"/>
+        <enum               name="VK_COMMAND_TYPE_vkCopyMemoryToImageEXT_EXT" alias="VK_COMMAND_TYPE_vkCopyMemoryToImage_EXT"/>
+        <enum value="294"   name="VK_COMMAND_TYPE_vkCopyImageToMemory_EXT"/>
+        <enum               name="VK_COMMAND_TYPE_vkCopyImageToMemoryEXT_EXT" alias="VK_COMMAND_TYPE_vkCopyImageToMemory_EXT"/>
+        <enum value="295"   name="VK_COMMAND_TYPE_vkCopyImageToImage_EXT"/>
+        <enum               name="VK_COMMAND_TYPE_vkCopyImageToImageEXT_EXT" alias="VK_COMMAND_TYPE_vkCopyImageToImage_EXT"/>
+        <enum value="296"   name="VK_COMMAND_TYPE_vkTransitionImageLayout_EXT"/>
+        <enum               name="VK_COMMAND_TYPE_vkTransitionImageLayoutEXT_EXT" alias="VK_COMMAND_TYPE_vkTransitionImageLayout_EXT"/>
+
         <comment>VK_EXT_transform_feedback</comment>
         <enum value="181"   name="VK_COMMAND_TYPE_vkCmdBindTransformFeedbackBuffersEXT_EXT"/>
         <enum value="182"   name="VK_COMMAND_TYPE_vkCmdBeginTransformFeedbackEXT_EXT"/>
@@ -337,10 +379,6 @@ virtualization or remoting, and are not exposed to applications.
         <comment>VK_KHR_external_semaphore_fd</comment>
         <enum value="242"   name="VK_COMMAND_TYPE_vkImportSemaphoreFdKHR_EXT"/>
         <enum value="243"   name="VK_COMMAND_TYPE_vkGetSemaphoreFdKHR_EXT"/>
-
-        <comment>VK_KHR_push_descriptor</comment>
-        <enum value="249"   name="VK_COMMAND_TYPE_vkCmdPushDescriptorSetKHR_EXT"/>
-        <enum value="250"   name="VK_COMMAND_TYPE_vkCmdPushDescriptorSetWithTemplateKHR_EXT"/>
 
         <comment>VK_EXT_conditional_rendering</comment>
         <enum value="240"   name="VK_COMMAND_TYPE_vkCmdBeginConditionalRenderingEXT_EXT"/>
@@ -366,10 +404,6 @@ virtualization or remoting, and are not exposed to applications.
         <comment>VK_KHR_fragment_shading_rate</comment>
         <enum value="277"   name="VK_COMMAND_TYPE_vkGetPhysicalDeviceFragmentShadingRatesKHR_EXT"/>
         <enum value="278"   name="VK_COMMAND_TYPE_vkCmdSetFragmentShadingRateKHR_EXT"/>
-
-        <comment>VK_EXT_line_rasterization</comment>
-        <enum value="237"   name="VK_COMMAND_TYPE_vkCmdSetLineStippleKHR_EXT"/>
-        <enum               name="VK_COMMAND_TYPE_vkCmdSetLineStippleEXT_EXT" alias="VK_COMMAND_TYPE_vkCmdSetLineStippleKHR_EXT"/>
 
         <comment>VK_EXT_vertex_input_dynamic_state</comment>
         <enum value="255"   name="VK_COMMAND_TYPE_vkCmdSetVertexInputEXT_EXT"/>
@@ -407,13 +441,6 @@ virtualization or remoting, and are not exposed to applications.
         <enum value="274"   name="VK_COMMAND_TYPE_vkCmdSetLineRasterizationModeEXT_EXT"/>
         <enum value="275"   name="VK_COMMAND_TYPE_vkCmdSetLineStippleEnableEXT_EXT"/>
         <enum value="276"   name="VK_COMMAND_TYPE_vkCmdSetDepthClipNegativeOneToOneEXT_EXT"/>
-
-        <comment>VK_KHR_maintenance5</comment>
-        <enum value="279"   name="VK_COMMAND_TYPE_vkCmdBindIndexBuffer2KHR_EXT"/>
-        <enum value="280"   name="VK_COMMAND_TYPE_vkGetRenderingAreaGranularityKHR_EXT"/>
-        <enum value="281"   name="VK_COMMAND_TYPE_vkGetDeviceImageSubresourceLayoutKHR_EXT"/>
-        <enum value="282"   name="VK_COMMAND_TYPE_vkGetImageSubresourceLayout2KHR_EXT"/>
-        <enum               name="VK_COMMAND_TYPE_vkGetImageSubresourceLayout2EXT_EXT" alias="VK_COMMAND_TYPE_vkGetImageSubresourceLayout2KHR_EXT"/>
 
         <comment>VK_MESA_venus_protocol</comment>
         <enum value="178"   name="VK_COMMAND_TYPE_vkSetReplyCommandStreamMESA_EXT"/>
