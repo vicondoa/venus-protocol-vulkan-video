@@ -92,6 +92,41 @@ renderer, and are not exposed to applications.
             <member optional="true">const <type>void</type>*      <name>pNext</name></member>
             <member><type>uint32_t</type>                         <name>ringIdx</name></member>
         </type>
+
+        <type category="struct" name="VkCopyImageToMemoryInfoMESA">
+            <member values="VK_STRUCTURE_TYPE_COPY_IMAGE_TO_MEMORY_INFO_MESA"><type>VkStructureType</type> <name>sType</name></member>
+            <member optional="true">const <type>void</type>*                         <name>pNext</name></member>
+            <member optional="true"><type>VkHostImageCopyFlags</type>                <name>flags</name></member>
+            <member><type>VkImage</type>                                             <name>srcImage</name></member>
+            <member><type>VkImageLayout</type>                                       <name>srcImageLayout</name></member>
+            <member><type>uint32_t</type>                                            <name>memoryRowLength</name></member>
+            <member><type>uint32_t</type>                                            <name>memoryImageHeight</name></member>
+            <member><type>VkImageSubresourceLayers</type>                            <name>imageSubresource</name></member>
+            <member><type>VkOffset3D</type>                                          <name>imageOffset</name></member>
+            <member><type>VkExtent3D</type>                                          <name>imageExtent</name></member>
+        </type>
+
+        <type category="struct" name="VkMemoryToImageCopyMESA">
+            <member values="VK_STRUCTURE_TYPE_MEMORY_TO_IMAGE_COPY_MESA"><type>VkStructureType</type> <name>sType</name></member>
+            <member optional="true">const <type>void</type>*                         <name>pNext</name></member>
+            <member><type>size_t</type>                                              <name>dataSize</name></member>
+            <member len="dataSize">const <type>void</type>*                          <name>pData</name></member>
+            <member><type>uint32_t</type>                                            <name>memoryRowLength</name></member>
+            <member><type>uint32_t</type>                                            <name>memoryImageHeight</name></member>
+            <member><type>VkImageSubresourceLayers</type>                            <name>imageSubresource</name></member>
+            <member><type>VkOffset3D</type>                                          <name>imageOffset</name></member>
+            <member><type>VkExtent3D</type>                                          <name>imageExtent</name></member>
+        </type>
+
+        <type category="struct" name="VkCopyMemoryToImageInfoMESA">
+            <member values="VK_STRUCTURE_TYPE_COPY_MEMORY_TO_IMAGE_INFO_MESA"><type>VkStructureType</type> <name>sType</name></member>
+            <member optional="true">const <type>void</type>*                         <name>pNext</name></member>
+            <member optional="true"><type>VkHostImageCopyFlags</type>                <name>flags</name></member>
+            <member><type>VkImage</type>                                             <name>dstImage</name></member>
+            <member><type>VkImageLayout</type>                                       <name>dstImageLayout</name></member>
+            <member><type>uint32_t</type>                                            <name>regionCount</name></member>
+            <member len="regionCount">const <type>VkMemoryToImageCopyMESA</type>*    <name>pRegions</name></member>
+        </type>
     </types>
 
     <enums name="VkCommandStreamExecutionFlagBitsMESA" type="bitmask">
@@ -183,13 +218,27 @@ renderer, and are not exposed to applications.
             <param><type>uint64_t</type> <name>ring</name></param>
             <param><type>uint64_t</type> <name>seqno</name></param>
         </command>
+        <command>
+            <proto><type>VkResult</type> <name>vkCopyImageToMemoryMESA</name></proto>
+            <param><type>VkDevice</type> <name>device</name></param>
+            <param>const <type>VkCopyImageToMemoryInfoMESA</type>* <name>pCopyImageToMemoryInfo</name></param>
+            <param><type>size_t</type> <name>dataSize</name></param>
+            <param len="dataSize"><type>void</type>* <name>pData</name></param>
+        </command>
+        <command>
+            <proto><type>VkResult</type> <name>vkCopyMemoryToImageMESA</name></proto>
+            <param><type>VkDevice</type> <name>device</name></param>
+            <param>const <type>VkCopyMemoryToImageInfoMESA</type>* <name>pCopyMemoryToImageInfo</name></param>
+        </command>
     </commands>
 
     <extensions>
-        <extension name="VK_MESA_venus_protocol" number="385" type="instance" author="MESA" contact="Chia-I Wu @olvaffe1" supported="vulkan">
+        <extension name="VK_MESA_venus_protocol" number="385" type="instance" author="MESA" contact="Chia-I Wu @olvaffe1, Yiwei Zhang @zhangyiwei" supported="vulkan">
             <require>
-                <enum value="2"                                             name="VK_MESA_VENUS_PROTOCOL_SPEC_VERSION"/>
+                <enum value="3"                                             name="VK_MESA_VENUS_PROTOCOL_SPEC_VERSION"/>
                 <enum value="&quot;VK_MESA_venus_protocol&quot;"            name="VK_MESA_VENUS_PROTOCOL_EXTENSION_NAME"/>
+
+                <comment>VK_MESA_VENUS_PROTOCOL_SPEC_VERSION 1</comment>
                 <enum offset="0" extends="VkStructureType"                  name="VK_STRUCTURE_TYPE_RING_CREATE_INFO_MESA"/>
                 <enum offset="1" extends="VkStructureType"                  name="VK_STRUCTURE_TYPE_MEMORY_RESOURCE_PROPERTIES_MESA"/>
                 <enum offset="2" extends="VkStructureType"                  name="VK_STRUCTURE_TYPE_IMPORT_MEMORY_RESOURCE_INFO_MESA"/>
@@ -197,7 +246,6 @@ renderer, and are not exposed to applications.
                 <enum offset="4" extends="VkStructureType"                  name="VK_STRUCTURE_TYPE_IMPORT_SEMAPHORE_RESOURCE_INFO_MESA"/>
                 <enum offset="5" extends="VkStructureType"                  name="VK_STRUCTURE_TYPE_DEVICE_QUEUE_TIMELINE_INFO_MESA"/>
                 <enum offset="6" extends="VkStructureType"                  name="VK_STRUCTURE_TYPE_RING_MONITOR_INFO_MESA"/>
-                <enum offset="7" extends="VkStructureType"                  name="VK_STRUCTURE_TYPE_RING_PRIORITY_INFO_MESA"/>
                 <type name="VkCommandStreamExecutionFlagBitsMESA"/>
                 <type name="VkCommandStreamExecutionFlagsMESA"/>
                 <type name="VkRingCreateFlagBitsMESA"/>
@@ -210,7 +258,6 @@ renderer, and are not exposed to applications.
                 <type name="VkCommandStreamDependencyMESA"/>
                 <type name="VkRingCreateInfoMESA"/>
                 <type name="VkRingMonitorInfoMESA"/>
-                <type name="VkRingPriorityInfoMESA"/>
                 <type name="VkMemoryResourcePropertiesMESA"/>
                 <type name="VkImportMemoryResourceInfoMESA"/>
                 <type name="VkMemoryResourceAllocationSizePropertiesMESA"/>
@@ -230,6 +277,20 @@ renderer, and are not exposed to applications.
                 <command name="vkSubmitVirtqueueSeqnoMESA"/>
                 <command name="vkWaitVirtqueueSeqnoMESA"/>
                 <command name="vkWaitRingSeqnoMESA"/>
+
+                <comment>VK_MESA_VENUS_PROTOCOL_SPEC_VERSION 2</comment>
+                <enum offset="7" extends="VkStructureType"                  name="VK_STRUCTURE_TYPE_RING_PRIORITY_INFO_MESA"/>
+                <type name="VkRingPriorityInfoMESA"/>
+
+                <comment>VK_MESA_VENUS_PROTOCOL_SPEC_VERSION 3</comment>
+                <enum offset="8" extends="VkStructureType"                  name="VK_STRUCTURE_TYPE_COPY_IMAGE_TO_MEMORY_INFO_MESA"/>
+                <enum offset="9" extends="VkStructureType"                  name="VK_STRUCTURE_TYPE_MEMORY_TO_IMAGE_COPY_MESA"/>
+                <enum offset="10" extends="VkStructureType"                 name="VK_STRUCTURE_TYPE_COPY_MEMORY_TO_IMAGE_INFO_MESA"/>
+                <type name="VkCopyImageToMemoryInfoMESA"/>
+                <type name="VkMemoryToImageCopyMESA"/>
+                <type name="VkCopyMemoryToImageInfoMESA"/>
+                <command name="vkCopyImageToMemoryMESA"/>
+                <command name="vkCopyMemoryToImageMESA"/>
             </require>
         </extension>
     </extensions>

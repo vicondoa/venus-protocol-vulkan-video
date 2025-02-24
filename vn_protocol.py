@@ -1375,10 +1375,6 @@ class GenStructsAndCommands:
             'DestroyImage',
             'GetImage',
             'GetDeviceImage',
-            'CopyImageToImage',
-            'CopyImageToMemory',
-            'CopyMemoryToImage',
-            'TransitionImageLayout',
         ],
         'image_view': [
             'CreateImageView',
@@ -1476,6 +1472,12 @@ class GenStructsAndCommands:
             'DestroyPrivateDataSlot',
             'GetPrivateData',
             'SetPrivateData',
+        ],
+        'host_copy': [
+            'CopyImageToImage',
+            'CopyImageToMemory',
+            'CopyMemoryToImage',
+            'TransitionImageLayout',
         ],
     }
 
