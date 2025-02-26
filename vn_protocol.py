@@ -710,12 +710,16 @@ class Gen:
                 return
 
             for level, count in enumerate(alloc_counts):
-                if 'var_out' in self.var.attrs and self.var.is_blob():
-                    alloc_stmt = '%s = vn_cs_encoder_get_blob_storage(enc, offset, %s);' % (
-                            self._var_name(level, level > 0), count)
-                elif self.var.is_blob():
-                    alloc_stmt = '%s = vn_cs_decoder_get_blob_storage(dec, %s);' % (
-                            self._var_name(level, level > 0), count)
+                if self.var.is_blob():
+                    if 'var_out' in self.var.attrs:
+                        alloc_stmt = '%s = vn_cs_encoder_get_blob_storage(enc, offset, %s);' % (
+                                self._var_name(level, level > 0), count)
+                    elif self.var.ty.is_const_pointer():
+                        alloc_stmt = '%s = vn_cs_decoder_get_blob_storage(dec, %s);' % (
+                                self._var_name(level, level > 0), count)
+                    else:
+                        alloc_stmt = '%s = vn_cs_decoder_alloc_temp(dec, %s);' % (
+                                self._var_name(level, level > 0), count)
                 else:
                     alloc_stmt = '%s = vn_cs_decoder_alloc_temp_array(dec, sizeof(*%s), %s);' % (
                             self._var_name(level, level > 0), self._var_name(level), count)
