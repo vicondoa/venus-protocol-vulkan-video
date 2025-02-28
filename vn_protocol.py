@@ -216,8 +216,19 @@ class Gen:
     UNION_DEFAULT_TAGS = {
         'VkClearColorValue': 2,
         'VkClearValue': 0,
+        'VkDeviceOrHostAddressKHR': 0,
+        'VkDeviceOrHostAddressConstKHR': 0,
         'VkPipelineExecutableStatisticValueKHR': 2,
     }
+
+    COMMAND_BLOCK_LIST = [
+        # Most VK_KHR_acceleration_structure host commands are blocked since
+        # VkDeviceOrHostAddressKHR and VkDeviceOrHostAddressConstKHR have been
+        # redirected to VkDeviceAddress. This avoids invalid helpers.
+        'vkBuildAccelerationStructuresKHR',
+        'vkCopyAccelerationStructureToMemoryKHR',
+        'vkCopyMemoryToAccelerationStructureKHR',
+    ]
 
     IGNORABLE_LIST = [
         Ignorable(
@@ -424,7 +435,9 @@ class Gen:
             if ty.name in ['VkBaseInStructure', 'VkBaseOutStructure']:
                 return False
         elif ty.category == ty.COMMAND:
-            if ty.ret and not self.is_serializable(ty.ret):
+            if ty.name in self.COMMAND_BLOCK_LIST:
+                return False
+            elif ty.ret and not self.is_serializable(ty.ret):
                 return False
 
         for var in ty.variables:
@@ -982,7 +995,8 @@ class Gen:
     def _sizeof_variable_info(self, ty, var, prefix, validity, dst):
         info = self.VariableInfo(ty, var, prefix, validity)
         if not self.is_serializable(var):
-            assert var.maybe_null()
+            # okay if part of a union with default tags since not selected
+            assert var.maybe_null() or ty.name in self.UNION_DEFAULT_TAGS
             info.statements.append('assert(false);')
             return info
 
@@ -1018,7 +1032,8 @@ class Gen:
     def _encode_variable_info(self, ty, var, prefix, validity):
         info = self.VariableInfo(ty, var, prefix, validity)
         if not self.is_serializable(var):
-            assert var.maybe_null()
+            # okay if part of a union with default tags since not selected
+            assert var.maybe_null() or ty.name in self.UNION_DEFAULT_TAGS
             info.statements.append('assert(false);')
             return info
 
@@ -1057,7 +1072,8 @@ class Gen:
     def _decode_variable_info(self, ty, var, prefix, validity, alloc_storage):
         info = self.VariableInfo(ty, var, prefix, validity)
         if not self.is_serializable(var):
-            assert var.maybe_null()
+            # okay if part of a union with default tags since not selected
+            assert var.maybe_null() or ty.name in self.UNION_DEFAULT_TAGS
             if self.is_driver:
                 stmt = 'assert(false);'
             else:
