@@ -405,6 +405,13 @@ virtualization or remoting, and are not exposed to applications.
         <enum value="277"   name="VK_COMMAND_TYPE_vkGetPhysicalDeviceFragmentShadingRatesKHR_EXT"/>
         <enum value="278"   name="VK_COMMAND_TYPE_vkCmdSetFragmentShadingRateKHR_EXT"/>
 
+        <comment>VK_KHR_deferred_host_operations</comment>
+        <enum value="299"   name="VK_COMMAND_TYPE_vkCreateDeferredOperationKHR_EXT"/>
+        <enum value="300"   name="VK_COMMAND_TYPE_vkDestroyDeferredOperationKHR_EXT"/>
+        <enum value="301"   name="VK_COMMAND_TYPE_vkGetDeferredOperationMaxConcurrencyKHR_EXT"/>
+        <enum value="302"   name="VK_COMMAND_TYPE_vkGetDeferredOperationResultKHR_EXT"/>
+        <enum value="303"   name="VK_COMMAND_TYPE_vkDeferredOperationJoinKHR_EXT"/>
+
         <comment>VK_EXT_vertex_input_dynamic_state</comment>
         <enum value="255"   name="VK_COMMAND_TYPE_vkCmdSetVertexInputEXT_EXT"/>
 
