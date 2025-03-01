@@ -392,6 +392,24 @@ virtualization or remoting, and are not exposed to applications.
         <enum value="283"   name="VK_COMMAND_TYPE_vkCmdSetSampleLocationsEXT_EXT"/>
         <enum value="284"   name="VK_COMMAND_TYPE_vkGetPhysicalDeviceMultisamplePropertiesEXT_EXT"/>
 
+        <comment>VK_KHR_acceleration_structure</comment>
+        <enum value="304"   name="VK_COMMAND_TYPE_vkCreateAccelerationStructureKHR_EXT"/>
+        <enum value="305"   name="VK_COMMAND_TYPE_vkDestroyAccelerationStructureKHR_EXT"/>
+        <enum value="306"   name="VK_COMMAND_TYPE_vkCmdBuildAccelerationStructuresKHR_EXT"/>
+        <enum value="307"   name="VK_COMMAND_TYPE_vkCmdBuildAccelerationStructuresIndirectKHR_EXT"/>
+        <enum value="308"   name="VK_COMMAND_TYPE_vkBuildAccelerationStructuresKHR_EXT"/>
+        <enum value="309"   name="VK_COMMAND_TYPE_vkCopyAccelerationStructureKHR_EXT"/>
+        <enum value="310"   name="VK_COMMAND_TYPE_vkCopyAccelerationStructureToMemoryKHR_EXT"/>
+        <enum value="311"   name="VK_COMMAND_TYPE_vkCopyMemoryToAccelerationStructureKHR_EXT"/>
+        <enum value="312"   name="VK_COMMAND_TYPE_vkWriteAccelerationStructuresPropertiesKHR_EXT"/>
+        <enum value="313"   name="VK_COMMAND_TYPE_vkCmdCopyAccelerationStructureKHR_EXT"/>
+        <enum value="314"   name="VK_COMMAND_TYPE_vkCmdCopyAccelerationStructureToMemoryKHR_EXT"/>
+        <enum value="315"   name="VK_COMMAND_TYPE_vkCmdCopyMemoryToAccelerationStructureKHR_EXT"/>
+        <enum value="316"   name="VK_COMMAND_TYPE_vkGetAccelerationStructureDeviceAddressKHR_EXT"/>
+        <enum value="317"   name="VK_COMMAND_TYPE_vkCmdWriteAccelerationStructuresPropertiesKHR_EXT"/>
+        <enum value="318"   name="VK_COMMAND_TYPE_vkGetDeviceAccelerationStructureCompatibilityKHR_EXT"/>
+        <enum value="319"   name="VK_COMMAND_TYPE_vkGetAccelerationStructureBuildSizesKHR_EXT"/>
+
         <comment>VK_EXT_image_drm_format_modifier</comment>
         <enum value="187"   name="VK_COMMAND_TYPE_vkGetImageDrmFormatModifierPropertiesEXT_EXT"/>
 
