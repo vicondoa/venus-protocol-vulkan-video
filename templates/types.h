@@ -50,9 +50,7 @@ ${chain.vn_sizeof_chain_body(ty)}\
 </%def>
 
 <%def name="vn_sizeof_type_helpers(ty, variant='')">\
-% if ty.category == ty.UNION:
-${union.vn_sizeof_union_tag(ty)}
-% elif ty.category == ty.STRUCT and ty.s_type:
+% if ty.category == ty.STRUCT and ty.s_type:
 ${chain.vn_sizeof_chain_pnext(ty, variant)}
 ${chain.vn_sizeof_chain_self(ty, variant)}
 % endif
@@ -79,9 +77,7 @@ ${chain.vn_encode_chain_body(ty)}\
 </%def>
 
 <%def name="vn_encode_type_helpers(ty, variant='')">\
-% if ty.category == ty.UNION:
-${union.vn_encode_union_tag(ty)}
-% elif ty.category == ty.STRUCT and ty.s_type:
+% if ty.category == ty.STRUCT and ty.s_type:
 ${chain.vn_encode_chain_pnext(ty, variant)}
 ${chain.vn_encode_chain_self(ty, variant)}
 % endif
