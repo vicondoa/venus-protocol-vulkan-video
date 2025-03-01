@@ -198,6 +198,9 @@ class VkType:
         # for DERIVED
         self.decor = None
 
+        # selector type for UNION
+        self.sty = None
+
     def init(self, name, category):
         assert name and self.name is None
         assert category < self.CATEGORY_COUNT and self.category is None
@@ -255,6 +258,25 @@ class VkType:
         This does not include char arrays or arrays of C-strings.
         """
         return self.base.name == 'char' and self.indirection_depth() == 1
+
+    def is_valid_union(self):
+        if self.category != self.UNION:
+            return False
+
+        for var in self.variables:
+            if not 'selection' in var.attrs:
+                return False
+        return True
+
+    def get_union_cases(self):
+        if not self.is_valid_union():
+            return enumerate(self.variables)
+
+        cases = []
+        for var in self.variables:
+            for s in var.attrs['selection']:
+                cases.append((s, var))
+        return cases
 
     def find_variables(self, len_name):
         names = len_name.split('->')
@@ -449,6 +471,10 @@ class VkType:
             attrs['noautovalidity'] = elem.attrib['noautovalidity']
         if 'stride' in elem.attrib:
             attrs['stride'] = elem.attrib['stride']
+        if 'selector' in elem.attrib:
+            attrs['selector'] = elem.attrib['selector']
+        if 'selection' in elem.attrib:
+            attrs['selection'] = elem.attrib['selection'].split(',')
         # workaround for backcompat of static array with API constant size
         if enum_elem is not None:
             attrs['wa_require_static_len'] = enum_elem.text
@@ -498,6 +524,14 @@ class VkType:
         for member_elem in type_elem.iterfind('member'):
             var = VkType._parse_variable(member_elem, type_table)
             members.append(var)
+
+        # union type only has selection info, so we find the selector type info here
+        for var in members:
+            if 'selector' in var.attrs:
+                for s in members:
+                    if s.name == var.attrs['selector']:
+                        var.ty.sty = s.ty
+                        break
 
         s_type = None
         if members[0].name == 'sType' and 'values' in members[0].attrs:

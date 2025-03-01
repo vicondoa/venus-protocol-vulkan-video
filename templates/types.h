@@ -31,7 +31,11 @@ struct ${ty.name}${" chain" if ty.s_type else ""}\
 
 <%def name="vn_sizeof_type(ty)">\
 static inline size_t
+% if ty.is_valid_union():
+vn_sizeof_${ty.name}(const ${ty.name} *val, ${ty.sty.name} tag)
+% else:
 vn_sizeof_${ty.name}(const ${ty.name} *val)
+% endif
 {
 % if ty.category in [ty.DEFAULT, ty.BASETYPE, ty.ENUM]:
 ${scalar.vn_sizeof_scalar_body(ty)}\
@@ -58,7 +62,11 @@ ${chain.vn_sizeof_chain_self(ty, variant)}
 
 <%def name="vn_encode_type(ty)">\
 static inline void
+% if ty.is_valid_union():
+vn_encode_${ty.name}(struct vn_cs_encoder *enc, const ${ty.name} *val, ${ty.sty.name} tag)
+% else:
 vn_encode_${ty.name}(struct vn_cs_encoder *enc, const ${ty.name} *val)
+% endif
 {
 % if ty.category in [ty.DEFAULT, ty.BASETYPE, ty.ENUM]:
 ${scalar.vn_encode_scalar_body(ty)}\
@@ -143,7 +151,7 @@ ${scalar.vn_sizeof_scalar_body(ty)}\
 % elif ty.category == ty.HANDLE:
 ${handle.vn_sizeof_handle_body(ty)}\
 % elif ty.category == ty.UNION:
-${union.vn_sizeof_union_body(ty, '_partial')}\
+    assert(false); /* no user? */
 % elif ty.category == ty.STRUCT and not ty.s_type:
 ${struct.vn_sizeof_struct_body(ty, '_partial')}\
 % elif ty.category == ty.STRUCT and ty.s_type:

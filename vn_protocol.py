@@ -428,7 +428,7 @@ class Gen:
         elif ty.category in [ty.HANDLE, ty.ENUM, ty.BITMASK]:
             return True
         elif ty.category == ty.UNION:
-            return ty.name in self.UNION_DEFAULT_TAGS
+            return ty.is_valid_union() or ty.name in self.UNION_DEFAULT_TAGS
 
         assert ty.category in [ty.STRUCT, ty.COMMAND]
         if ty.category == ty.STRUCT:
@@ -622,6 +622,15 @@ class Gen:
                 else:
                     self.dynamic_array_size = loop.iter_count
 
+            # union that has a selector
+            #
+            # For example, for member var foo with type foo_type and selector s:
+            #
+            #     statements = [
+            #         'vn_sizeof_foo_type(val->foo, val->s)',
+            #     ]
+            self.selector = None
+
             # Try to unroll the inner most loop and save its iter_count to
             # array_size.
             #
@@ -784,6 +793,8 @@ class Gen:
             args = '%s%s' % (deref, self._var_name(loop_level, const_cast))
             if self.array_size:
                 args += ', ' + self.array_size
+            elif self.selector:
+                args += ', ' + self.prefix + self.selector
 
             return args
 
@@ -1000,6 +1011,10 @@ class Gen:
             info.statements.append('assert(false);')
             return info
 
+        # for passing selector as a second func arg
+        if 'selector' in var.attrs:
+            info.selector = var.attrs['selector']
+
         # save strlen result to a temp
         if var.has_c_string():
             assert info.array_size.startswith('strlen')
@@ -1036,6 +1051,10 @@ class Gen:
             assert var.maybe_null() or ty.name in self.UNION_DEFAULT_TAGS
             info.statements.append('assert(false);')
             return info
+
+        # for passing selector as a second func arg
+        if 'selector' in var.attrs:
+            info.selector = var.attrs['selector']
 
         # save strlen result to a temp
         if var.has_c_string():
