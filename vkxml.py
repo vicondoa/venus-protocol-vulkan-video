@@ -280,6 +280,11 @@ class VkType:
 
     def find_variables(self, len_name):
         names = len_name.split('->')
+
+        # TODO: formalize the handling of ppBuildRangeInfos
+        if '[i].' in len_name:
+            names = len_name.split('[i].')
+
         var_list = []
         for name in names:
             if var_list:
@@ -434,6 +439,12 @@ class VkType:
             else:
                 lens = elem.attrib['len'].split(',')
 
+                # TODO: drop the workaround after registry has nested array info
+                # Ideally, pInfos[].geometryCount is good so the gen script here
+                # can fill the iter dynamically instead of hard-coding an 'i'.
+                if decl.name == 'ppBuildRangeInfos':
+                    lens.append('pInfos[i].geometryCount')
+
             len_exprs = []
             len_names = []
             for l in lens:
@@ -457,6 +468,9 @@ class VkType:
                         end += 1
                     elif l[end:end + 2] == '->':
                         end += 2
+                    elif l[end:end + 4] == '[i].':
+                        # TODO formalize the handling of ppBuildRangeInfos
+                        end += 4
                     else:
                         break
 

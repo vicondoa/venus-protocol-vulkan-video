@@ -716,8 +716,10 @@ class Gen:
 
                     assert len(loop_vars) <= 2
                     if len(loop_vars) > 1 or loop_vars[-1].ty.is_pointer():
-                        iter_count = '(%s%s ? %s : 0)' % (self.prefix,
-                                loop_vars[0].name, iter_count)
+                        # TODO: formalize the handling of ppBuildRangeInfos
+                        if self.var.name != 'ppBuildRangeInfos':
+                            iter_count = '(%s%s ? %s : 0)' % (self.prefix,
+                                    loop_vars[0].name, iter_count)
                 else:
                     iter_type = 'uint32_t'
                     iter_count = expr
