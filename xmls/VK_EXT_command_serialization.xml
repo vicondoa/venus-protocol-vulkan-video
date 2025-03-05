@@ -410,6 +410,16 @@ virtualization or remoting, and are not exposed to applications.
         <enum value="318"   name="VK_COMMAND_TYPE_vkGetDeviceAccelerationStructureCompatibilityKHR_EXT"/>
         <enum value="319"   name="VK_COMMAND_TYPE_vkGetAccelerationStructureBuildSizesKHR_EXT"/>
 
+        <comment>VK_KHR_ray_tracing_pipeline</comment>
+        <enum value="320"   name="VK_COMMAND_TYPE_vkCmdTraceRaysKHR_EXT"/>
+        <enum value="321"   name="VK_COMMAND_TYPE_vkCreateRayTracingPipelinesKHR_EXT"/>
+        <enum value="322"   name="VK_COMMAND_TYPE_vkGetRayTracingShaderGroupHandlesKHR_EXT"/>
+        <enum               name="VK_COMMAND_TYPE_vkGetRayTracingShaderGroupHandlesNV_EXT" alias="VK_COMMAND_TYPE_vkGetRayTracingShaderGroupHandlesKHR_EXT"/>
+        <enum value="323"   name="VK_COMMAND_TYPE_vkGetRayTracingCaptureReplayShaderGroupHandlesKHR_EXT"/>
+        <enum value="324"   name="VK_COMMAND_TYPE_vkCmdTraceRaysIndirectKHR_EXT"/>
+        <enum value="325"   name="VK_COMMAND_TYPE_vkGetRayTracingShaderGroupStackSizeKHR_EXT"/>
+        <enum value="326"   name="VK_COMMAND_TYPE_vkCmdSetRayTracingPipelineStackSizeKHR_EXT"/>
+
         <comment>VK_EXT_image_drm_format_modifier</comment>
         <enum value="187"   name="VK_COMMAND_TYPE_vkGetImageDrmFormatModifierPropertiesEXT_EXT"/>
 
