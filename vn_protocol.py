@@ -1727,10 +1727,6 @@ class GenUtil:
             entry = (cmd, cmd_feat, cmd_exts)
 
             if dispatch_handle.name == 'VkPhysicalDevice':
-                # we require Vulkan 1.1 and do not need to use
-                # vkGetInstanceProcAddr
-                if feat.number in ['1.0', '1.1']:
-                    continue
                 self.physical_device_commands.append(entry)
             else:
                 # it is faster to use the pointers returned by
