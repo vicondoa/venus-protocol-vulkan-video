@@ -23,9 +23,10 @@ struct vn_device_proc_table {
 
 static inline void
 vn_util_init_physical_device_proc_table(VkInstance instance,
+                                        PFN_vkGetInstanceProcAddr get_proc_addr,
                                         struct vn_physical_device_proc_table *proc_table)
 {
-#define VN_GIPA(instance, cmd) (PFN_ ## cmd)vkGetInstanceProcAddr(instance, #cmd)
+#define VN_GIPA(instance, cmd) (PFN_ ## cmd)get_proc_addr(instance, #cmd)
 % for ty, _, _ in PHYSICAL_DEVICE_COMMANDS:
    proc_table->${ty.name[2:]} = VN_GIPA(instance, ${ty.name});
 %   for alias in ty.aliases:
@@ -39,11 +40,12 @@ vn_util_init_physical_device_proc_table(VkInstance instance,
 <%def name="feature_api_version(feat)">VK_API_VERSION_${feat.number.replace('.', '_')}</%def>
 static inline void
 vn_util_init_device_proc_table(VkDevice dev,
+                               PFN_vkGetDeviceProcAddr get_proc_addr,
                                uint32_t api_version,
                                const struct vn_info_extension_table *ext_table,
                                struct vn_device_proc_table *proc_table)
 {
-#define VN_GDPA(dev, cmd) (PFN_ ## cmd)vkGetDeviceProcAddr(dev, #cmd)
+#define VN_GDPA(dev, cmd) (PFN_ ## cmd)get_proc_addr(dev, #cmd)
 % for ty, feat, exts in DEVICE_COMMANDS:
 %   if feat and feat.number == '1.0':
    proc_table->${ty.name[2:]} = VN_GDPA(dev, ${ty.name});
