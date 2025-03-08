@@ -9,6 +9,18 @@
 
 #include "vn_protocol_renderer_info.h"
 
+struct vn_global_proc_table {
+% for ty, _, _ in GLOBAL_COMMANDS:
+   PFN_${ty.name} ${ty.name[2:]};
+% endfor
+};
+
+struct vn_instance_proc_table {
+% for ty, _, _ in INSTANCE_COMMANDS:
+   PFN_${ty.name} ${ty.name[2:]};
+% endfor
+};
+
 struct vn_physical_device_proc_table {
 % for ty, _, _ in PHYSICAL_DEVICE_COMMANDS:
    PFN_${ty.name} ${ty.name[2:]};
@@ -20,6 +32,33 @@ struct vn_device_proc_table {
    PFN_${ty.name} ${ty.name[2:]};
 % endfor
 };
+
+static inline void
+vn_util_init_global_proc_table(PFN_vkGetInstanceProcAddr get_proc_addr,
+                               struct vn_global_proc_table *proc_table)
+{
+#define VN_GIPA(cmd) (PFN_ ## cmd)get_proc_addr(VK_NULL_HANDLE, #cmd)
+% for ty, _, _ in GLOBAL_COMMANDS:
+   proc_table->${ty.name[2:]} = VN_GIPA(${ty.name});
+% endfor
+#undef VN_GIPA
+}
+
+static inline void
+vn_util_init_instance_proc_table(VkInstance instance,
+                                 PFN_vkGetInstanceProcAddr get_proc_addr,
+                                 struct vn_instance_proc_table *proc_table)
+{
+#define VN_GIPA(instance, cmd) (PFN_ ## cmd)get_proc_addr(instance, #cmd)
+% for ty, _, _ in INSTANCE_COMMANDS:
+   proc_table->${ty.name[2:]} = VN_GIPA(instance, ${ty.name});
+%   for alias in ty.aliases:
+   if (!proc_table->${ty.name[2:]})
+      proc_table->${ty.name[2:]} = VN_GIPA(instance, ${alias});
+%   endfor
+% endfor
+#undef VN_GIPA
+}
 
 static inline void
 vn_util_init_physical_device_proc_table(VkInstance instance,

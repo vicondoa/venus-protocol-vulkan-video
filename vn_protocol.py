@@ -1692,19 +1692,19 @@ class GenStructsAndCommands:
 class GenUtil:
     def __init__(self, gen):
         self.gen = gen
+        self.global_commands = []
+        self.instance_commands = []
         self.physical_device_commands = []
         self.device_commands = []
 
         cmds = self.gen.supported_types[VkType.COMMAND]
         for cmd in cmds:
-            if cmd.is_private or not cmd.variables:
+            if (cmd.name == 'vkGetInstanceProcAddr' or
+                cmd.is_private or not
+                cmd.variables):
                 continue
 
             dispatch_handle = cmd.variables[0].ty
-            if (dispatch_handle.category != cmd.HANDLE or not
-                dispatch_handle.dispatchable or
-                dispatch_handle.name == 'VkInstance'):
-                continue
 
             cmd_feat = None
             cmd_exts = []
@@ -1726,7 +1726,14 @@ class GenUtil:
             assert cmd_feat or cmd_exts
             entry = (cmd, cmd_feat, cmd_exts)
 
-            if (dispatch_handle.name == 'VkPhysicalDevice' or
+            assert(dispatch_handle.category != cmd.HANDLE or
+                dispatch_handle.dispatchable)
+
+            if dispatch_handle.category != cmd.HANDLE:
+                self.global_commands.append(entry)
+            elif dispatch_handle.name == 'VkInstance':
+                self.instance_commands.append(entry)
+            elif (dispatch_handle.name == 'VkPhysicalDevice' or
                 cmd.name == 'vkGetDeviceProcAddr'):
                 self.physical_device_commands.append(entry)
             else:
@@ -1737,6 +1744,10 @@ class GenUtil:
     def generate(self, template):
         return template.render(
                 GEN=self.gen,
+                GLOBAL_COMMANDS=sorted(self.global_commands,
+                    key=lambda entry: entry[0].name),
+                INSTANCE_COMMANDS=sorted(self.instance_commands,
+                    key=lambda entry: entry[0].name),
                 PHYSICAL_DEVICE_COMMANDS=sorted(self.physical_device_commands,
                     key=lambda entry: entry[0].name),
                 DEVICE_COMMANDS=sorted(self.device_commands,
