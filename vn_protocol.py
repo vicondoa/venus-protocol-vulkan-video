@@ -1726,7 +1726,8 @@ class GenUtil:
             assert cmd_feat or cmd_exts
             entry = (cmd, cmd_feat, cmd_exts)
 
-            if dispatch_handle.name == 'VkPhysicalDevice':
+            if (dispatch_handle.name == 'VkPhysicalDevice' or
+                cmd.name == 'vkGetDeviceProcAddr'):
                 self.physical_device_commands.append(entry)
             else:
                 # it is faster to use the pointers returned by
