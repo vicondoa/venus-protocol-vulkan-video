@@ -140,6 +140,15 @@ class VkVariable:
     def to_c(self):
         return VkDecl(self.name, self.ty.base.name, self.ty.decor).to_c(False)
 
+TYPE_BLOCK_LIST = [
+    # Block layering structs from VK_KHR_maintenance7 as the driver will
+    # fill those with core property structs.
+    'VkPhysicalDeviceLayeredApiPropertiesListKHR',
+    'VkPhysicalDeviceLayeredApiPropertiesKHR',
+    'VkPhysicalDeviceLayeredApiKHR',
+    'VkPhysicalDeviceLayeredApiVulkanPropertiesKHR',
+]
+
 class VkType:
     INCLUDE        = 0
     DEFINE         = 1
@@ -334,11 +343,6 @@ class VkType:
         # VkBaseOutStructure refers to itself in
         # VkBaseOutStructure* VkBaseOutStructure::pNext
         if ty.name == 'VkBaseOutStructure':
-            return
-
-        # Avoid circular reference.
-        # VkPhysicalDeviceLayeredApiVulkanPropertiesKHR::properties
-        if ty.name == 'VkPhysicalDeviceLayeredApiVulkanPropertiesKHR':
             return
 
         ty.attrs[key] = val
@@ -622,6 +626,9 @@ class VkType:
         else:
             name = type_elem.find('name').text
 
+        if name in TYPE_BLOCK_LIST:
+            return
+
         ty = VkType._get_type(name, type_table)
         ty.init(name, category)
         if parse_func:
@@ -711,6 +718,8 @@ class VkEnums:
     def parse_enums(enums_elem, type_table):
         """Parse <enums> and update the corresponding VkType."""
         name = enums_elem.attrib['name']
+        if name in TYPE_BLOCK_LIST:
+            return
 
         bitwidth = 32
         if 'bitwidth' in enums_elem.attrib:
@@ -741,13 +750,16 @@ class VkFeature:
         types = []
         names = []
         for child in require_elem:
+            name = child.attrib['name'] if 'name' in child.attrib else ''
+            if name in TYPE_BLOCK_LIST:
+                continue
+
             if child.tag == 'enum':
                 if 'extends' not in child.attrib:
                     continue
                 ty = type_table[child.attrib['extends']]
                 ty.enums.extend_value(child, ext_number)
             elif child.tag in ['type', 'command']:
-                name = child.attrib['name']
                 ty = type_table[name]
                 types.append(ty)
                 names.append(name)

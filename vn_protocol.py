@@ -133,6 +133,7 @@ VK_XML_EXTENSION_LIST = [
     'VK_KHR_external_semaphore_fd',
     'VK_KHR_fragment_shader_barycentric',
     'VK_KHR_fragment_shading_rate',
+    'VK_KHR_maintenance7',
     'VK_KHR_pipeline_library',
     'VK_KHR_ray_query',
     'VK_KHR_ray_tracing_maintenance1',
