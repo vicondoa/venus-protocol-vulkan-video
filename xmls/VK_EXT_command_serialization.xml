@@ -440,6 +440,9 @@ virtualization or remoting, and are not exposed to applications.
         <enum value="302"   name="VK_COMMAND_TYPE_vkGetDeferredOperationResultKHR_EXT"/>
         <enum value="303"   name="VK_COMMAND_TYPE_vkDeferredOperationJoinKHR_EXT"/>
 
+        <comment>VK_EXT_depth_bias_control</comment>
+        <enum value="328"   name="VK_COMMAND_TYPE_vkCmdSetDepthBias2EXT_EXT"/>
+
         <comment>VK_EXT_vertex_input_dynamic_state</comment>
         <enum value="255"   name="VK_COMMAND_TYPE_vkCmdSetVertexInputEXT_EXT"/>
 
@@ -479,6 +482,12 @@ virtualization or remoting, and are not exposed to applications.
         <enum value="274"   name="VK_COMMAND_TYPE_vkCmdSetLineRasterizationModeEXT_EXT"/>
         <enum value="275"   name="VK_COMMAND_TYPE_vkCmdSetLineStippleEnableEXT_EXT"/>
         <enum value="276"   name="VK_COMMAND_TYPE_vkCmdSetDepthClipNegativeOneToOneEXT_EXT"/>
+
+        <comment>VK_EXT_attachment_feedback_loop_dynamic_state</comment>
+        <enum value="329"   name="VK_COMMAND_TYPE_vkCmdSetAttachmentFeedbackLoopEnableEXT_EXT"/>
+
+        <comment>VK_EXT_depth_clamp_control</comment>
+        <enum value="330"   name="VK_COMMAND_TYPE_vkCmdSetDepthClampRangeEXT_EXT"/>
 
         <comment>VK_MESA_venus_protocol</comment>
         <enum value="178"   name="VK_COMMAND_TYPE_vkSetReplyCommandStreamMESA_EXT"/>
