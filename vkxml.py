@@ -200,6 +200,7 @@ class VkType:
         # for FUNCPOINTER/COMMAND
         self.ret = None
         self.can_device_lost = False
+        self.has_out_ty = False
 
         # for STRUCT/UNION/FUNCPOINTER/COMMAND
         self.variables = []

@@ -299,6 +299,7 @@ class Gen:
                 if self.is_driver:
                     var.ty.set_attribute('need_partial', True)
                     var.ty.set_attribute('need_decode', True)
+                    ty.has_out_ty = True
                 else:
                     var.ty.set_attribute('need_partial', True)
                     var.ty.set_attribute('need_encode', True)
@@ -318,6 +319,7 @@ class Gen:
 
             if self.is_driver:
                 ty.ret.ty.set_attribute('need_decode', True)
+                ty.has_out_ty = True
             else:
                 ty.ret.ty.set_attribute('need_encode', True)
 

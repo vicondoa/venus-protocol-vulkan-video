@@ -139,7 +139,9 @@ ${command.vn_decode_command_reply(ty)}
 ${submit_command(ty)}
 % endfor
 % for ty in COMMAND_TYPES:
+%   if ty.has_out_ty:
 ${call_command(ty)}
+%   endif
 ${async_command(ty)}
 % endfor
 \
