@@ -446,7 +446,7 @@ class VkType:
                 # TODO: drop the workaround after registry has nested array info
                 # Ideally, pInfos[].geometryCount is good so the gen script here
                 # can fill the iter dynamically instead of hard-coding an 'i'.
-                if decl.name == 'ppBuildRangeInfos':
+                if decl.name in ['ppBuildRangeInfos', 'ppMaxPrimitiveCounts']:
                     lens.append('pInfos[i].geometryCount')
 
             len_exprs = []
