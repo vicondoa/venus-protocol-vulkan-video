@@ -142,6 +142,7 @@ VK_XML_EXTENSION_LIST = [
     'VK_KHR_shader_clock',
     'VK_KHR_shader_maximal_reconvergence',
     'VK_KHR_shader_quad_control',
+    'VK_KHR_shader_relaxed_extended_instruction',
     'VK_KHR_shader_subgroup_uniform_control_flow',
     'VK_KHR_workgroup_memory_explicit_layout',
     # EXT extensions
@@ -149,6 +150,7 @@ VK_XML_EXTENSION_LIST = [
     'VK_EXT_attachment_feedback_loop_layout',
     'VK_EXT_blend_operation_advanced',
     'VK_EXT_border_color_swizzle',
+    'VK_EXT_buffer_device_address',
     'VK_EXT_calibrated_timestamps',
     'VK_EXT_color_write_enable',
     'VK_EXT_conditional_rendering',
@@ -180,6 +182,7 @@ VK_XML_EXTENSION_LIST = [
     'VK_EXT_load_store_op_none',
     'VK_EXT_memory_budget',
     'VK_EXT_multi_draw',
+    'VK_EXT_multisampled_render_to_single_sampled',
     'VK_EXT_mutable_descriptor_type',
     'VK_EXT_nested_command_buffer',
     'VK_EXT_non_seamless_cube_map',
