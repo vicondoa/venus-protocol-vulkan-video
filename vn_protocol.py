@@ -139,6 +139,7 @@ VK_XML_EXTENSION_LIST = [
     'VK_KHR_ray_tracing_maintenance1',
     'VK_KHR_ray_tracing_pipeline',
     'VK_KHR_ray_tracing_position_fetch',
+    'VK_KHR_robustness2',
     'VK_KHR_shader_clock',
     'VK_KHR_shader_maximal_reconvergence',
     'VK_KHR_shader_quad_control',
