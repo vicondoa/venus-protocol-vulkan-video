@@ -513,6 +513,9 @@ virtualization or remoting, and are not exposed to applications.
         <enum value="275"   name="VK_COMMAND_TYPE_vkCmdSetLineStippleEnableEXT_EXT"/>
         <enum value="276"   name="VK_COMMAND_TYPE_vkCmdSetDepthClipNegativeOneToOneEXT_EXT"/>
 
+        <comment>VK_KHR_cooperative_matrix</comment>
+        <enum value="331"   name="VK_COMMAND_TYPE_vkGetPhysicalDeviceCooperativeMatrixPropertiesKHR_EXT"/>
+
         <comment>VK_EXT_attachment_feedback_loop_dynamic_state</comment>
         <enum value="329"   name="VK_COMMAND_TYPE_vkCmdSetAttachmentFeedbackLoopEnableEXT_EXT"/>
 
