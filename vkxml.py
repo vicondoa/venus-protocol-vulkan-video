@@ -1039,11 +1039,13 @@ class VkRegistry:
                 self.type_table['VK_HEADER_VERSION'],
                 self.type_table['VK_HEADER_VERSION_COMPLETE'])
 
-        max_val = 0
-        command_type_enums = self.type_table['VkCommandTypeEXT'].enums.values
-        for val in command_type_enums.values():
-            max_val = max(max_val, int(val))
-        self.max_vk_command_type_value = max_val
+        # sort the VkCommandTypeEXT dict, so that the driver and renderer
+        # defines headers are more stable against spec registry changes
+        sorted_command_type_enums = sorted(
+                self.type_table['VkCommandTypeEXT'].enums.values.items(),
+                key=lambda item: int(item[1]))
+        self.type_table['VkCommandTypeEXT'].enums.values = dict(sorted_command_type_enums)
+        self.max_vk_command_type_value = int(sorted_command_type_enums[-1][1])
 
     def _validate(self):
         """Sanity check."""
