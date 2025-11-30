@@ -185,6 +185,7 @@ VK_XML_EXTENSION_LIST = [
     'VK_EXT_line_rasterization',
     'VK_EXT_load_store_op_none',
     'VK_EXT_memory_budget',
+    'VK_EXT_mesh_shader',
     'VK_EXT_multi_draw',
     'VK_EXT_multisampled_render_to_single_sampled',
     'VK_EXT_mutable_descriptor_type',

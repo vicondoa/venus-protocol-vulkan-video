@@ -473,6 +473,11 @@ virtualization or remoting, and are not exposed to applications.
         <comment>VK_EXT_depth_bias_control</comment>
         <enum value="328"   name="VK_COMMAND_TYPE_vkCmdSetDepthBias2EXT_EXT"/>
 
+        <comment>VK_EXT_mesh_shader</comment>
+        <enum value="332"   name="VK_COMMAND_TYPE_vkCmdDrawMeshTasksEXT_EXT"/>
+        <enum value="333"   name="VK_COMMAND_TYPE_vkCmdDrawMeshTasksIndirectEXT_EXT"/>
+        <enum value="334"   name="VK_COMMAND_TYPE_vkCmdDrawMeshTasksIndirectCountEXT_EXT"/>
+
         <comment>VK_EXT_vertex_input_dynamic_state</comment>
         <enum value="255"   name="VK_COMMAND_TYPE_vkCmdSetVertexInputEXT_EXT"/>
 
