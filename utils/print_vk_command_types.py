@@ -10,7 +10,7 @@ VN_PROTOCOL_DIR = Path(__file__).resolve().parent.parent
 sys.path.append(str(VN_PROTOCOL_DIR))
 
 from vkxml import VkRegistry
-from vn_protocol import VK_XML_EXTENSION_LIST, VN_PROTOCOL_VK_XML, VN_PROTOCOL_PRIVATE_XMLS
+from vn_protocol import VK_XML_EXTENSION_LIST, VN_PROTOCOL_VK_XML, VN_PROTOCOL_PRIVATE_XMLS, Gen
 
 class Command:
     def __init__(self, ty):
@@ -72,7 +72,7 @@ def get_commands(reg):
                 commands.append(Command(ty))
                 all_commands.add(ty)
         for opt in ext.optional_types:
-            if opt not in VK_XML_EXTENSION_LIST:
+            if not Gen.support_type_depends(opt):
                 continue
             for ty in ext.optional_types[opt]:
                 if ty.category == ty.COMMAND and ty not in all_commands:
