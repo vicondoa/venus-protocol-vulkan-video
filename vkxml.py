@@ -593,7 +593,7 @@ class VkType:
             ty.ret = VkVariable(ret_ty, 'ret')
 
     @staticmethod
-    def _parse_type_funcpointer(ty, type_elem, type_table):
+    def _parse_legacy_funcpointer(ty, type_elem, type_table):
         c_decls = VkType._get_inner_text(type_elem).splitlines()
 
         # clean up the first line to abuse VkDecl
@@ -622,6 +622,13 @@ class VkType:
             ty.ret = VkVariable(ret_ty, 'ret')
 
     @staticmethod
+    def _parse_type_funcpointer(ty, type_elem, type_table):
+        if type_elem.find('proto') is None:
+            VkType._parse_legacy_funcpointer(ty, type_elem, type_table)
+        else:
+            VkType._parse_command_decls(ty, type_elem, type_table)
+
+    @staticmethod
     def parse_type(type_elem, type_table):
         """Parse <type> into a VkType."""
         if 'alias' in type_elem.attrib:
@@ -643,8 +650,11 @@ class VkType:
 
         if 'name' in type_elem.attrib:
             name = type_elem.attrib['name']
-        else:
+        elif type_elem.find('name') is not None:
             name = type_elem.find('name').text
+        else:
+            assert type_elem.attrib['category'] == 'funcpointer'
+            name = type_elem.find('proto').find('name').text
 
         if name in TYPE_BLOCK_LIST:
             return
