@@ -574,6 +574,25 @@ class VkType:
         VkType._parse_type_struct(ty, type_elem, type_table)
 
     @staticmethod
+    def _parse_command_decls(ty, elem, type_table):
+        params = []
+        ret_ty = None
+        for child in elem:
+            if child.tag == 'proto':
+                c_decl = VkType._get_inner_text(child)
+                decl = VkDecl.from_c(c_decl)
+                ret_ty = VkType._get_type(decl, type_table)
+                if ret_ty.name == 'void':
+                    ret_ty = None
+            elif child.tag == 'param':
+                var = VkType._parse_variable(child, type_table)
+                params.append(var)
+
+        ty.variables = params
+        if ret_ty:
+            ty.ret = VkVariable(ret_ty, 'ret')
+
+    @staticmethod
     def _parse_type_funcpointer(ty, type_elem, type_table):
         c_decls = VkType._get_inner_text(type_elem).splitlines()
 
@@ -642,29 +661,11 @@ class VkType:
             VkType._parse_alias(command_elem, type_table)
             return
 
-        name = None
-        params = []
-        ret_ty = None
-        errorcodes = []
-        for child in command_elem:
-            if child.tag == 'proto':
-                c_decl = VkType._get_inner_text(child)
-                decl = VkDecl.from_c(c_decl)
-                name = decl.name
-                ret_ty = VkType._get_type(decl, type_table)
-                if ret_ty.name == 'void':
-                    ret_ty = None
-            elif child.tag == 'param':
-                var = VkType._parse_variable(child, type_table)
-                params.append(var)
-
-        assert name == command_elem.find('proto').find('name').text
-
+        name = command_elem.find('proto').find('name').text
         ty = VkType._get_type(name, type_table)
         ty.init(name, ty.COMMAND)
-        ty.variables = params
-        if ret_ty:
-            ty.ret = VkVariable(ret_ty, 'ret')
+
+        VkType._parse_command_decls(ty, command_elem, type_table)
 
         if 'errorcodes' in command_elem.attrib:
             errorcodes = command_elem.attrib['errorcodes'].split(',')
