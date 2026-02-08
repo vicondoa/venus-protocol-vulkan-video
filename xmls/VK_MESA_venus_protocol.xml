@@ -233,7 +233,7 @@ renderer, and are not exposed to applications.
     </commands>
 
     <extensions>
-        <extension name="VK_MESA_venus_protocol" number="385" type="instance" author="MESA" contact="Chia-I Wu @olvaffe1, Yiwei Zhang @zhangyiwei" supported="vulkan">
+        <extension name="VK_MESA_venus_protocol" number="385" type="instance" author="MESA" contact="Chia-I Wu @olvaffe1, Yiwei Zhang @zzyiwei" supported="vulkan">
             <require>
                 <enum value="3"                                             name="VK_MESA_VENUS_PROTOCOL_SPEC_VERSION"/>
                 <enum value="&quot;VK_MESA_venus_protocol&quot;"            name="VK_MESA_VENUS_PROTOCOL_EXTENSION_NAME"/>
