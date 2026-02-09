@@ -118,12 +118,12 @@ ${types.vn_decode_type_helpers(ty, '_temp')}\
 ${types.vn_decode_type_temp(ty)}
 %   endif
 \
-%   if 'need_partial' in ty.attrs and ty.category == ty.STRUCT:
+%   if 'need_partial' in ty.attrs and ty.might_contain_handle():
 ${types.vn_decode_type_helpers(ty, '_partial_temp')}\
 ${types.vn_decode_type_partial_temp(ty)}
 %   endif
 \
-%   if 'need_decode' in ty.attrs and ty.category == ty.STRUCT:
+%   if 'need_decode' in ty.attrs and ty.might_contain_handle():
 ${types.vn_replace_type_handle_helpers(ty)}\
 ${types.vn_replace_type_handle(ty)}
 %   endif

@@ -1014,9 +1014,9 @@ class Gen:
 
     def _replace_variable_handle(self, info, indent_level):
         indent = '    ' * indent_level
-        if info.validity != info.VALID or \
-                info.var.ty.base.category not in [VkType.HANDLE, VkType.STRUCT] or \
-                not self.is_serializable(info.var):
+        if (info.validity != info.VALID or
+            not info.var.ty.base.might_contain_handle() or
+            not self.is_serializable(info.var)):
             return '%s/* skip %s */' % (indent, info._var_name())
 
         stmts = []
@@ -1189,9 +1189,8 @@ class Gen:
         info = self.VariableInfo(ty, var, prefix, validity)
 
         # nothing to replace
-        might_contain_handle = [ty.HANDLE, ty.STRUCT]
         if (validity != info.VALID or
-            var.ty.base.category not in might_contain_handle or
+            not var.ty.base.might_contain_handle() or
             not self.is_serializable(var)):
             return info
 

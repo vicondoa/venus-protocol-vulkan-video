@@ -288,6 +288,10 @@ class VkType:
                 cases.append((s, var))
         return cases
 
+    def might_contain_handle(self):
+        return (self.category == VkType.HANDLE or
+                self.category == VkType.STRUCT)
+
     def find_variables(self, len_name):
         names = len_name.split('->')
 
