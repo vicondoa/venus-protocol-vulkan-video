@@ -290,7 +290,8 @@ class VkType:
 
     def might_contain_handle(self):
         return (self.category == VkType.HANDLE or
-                self.category == VkType.STRUCT)
+                self.category == VkType.STRUCT or
+                self.is_valid_union())
 
     def find_variables(self, len_name):
         names = len_name.split('->')

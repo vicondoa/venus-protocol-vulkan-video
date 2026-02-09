@@ -204,10 +204,16 @@ ${chain.vn_decode_chain_body(ty, '_partial_temp')}\
 
 <%def name="vn_replace_type_handle(ty)">\
 static inline void
+% if ty.is_valid_union():
+vn_replace_${ty.name}_handle(${ty.name} *val, ${ty.sty.name} tag)
+% else:
 vn_replace_${ty.name}_handle(${ty.name} *val)
+% endif
 {
 % if ty.category == ty.HANDLE:
 ${handle.vn_replace_handle_handle_body(ty)}\
+% elif ty.is_valid_union():
+${union.vn_replace_union_handle_body(ty)}\
 % elif ty.category == ty.STRUCT and not ty.s_type:
 ${struct.vn_replace_struct_handle_body(ty)}\
 % elif ty.category == ty.STRUCT and ty.s_type:

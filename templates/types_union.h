@@ -63,3 +63,16 @@
         break;
     }
 </%def>
+
+<%def name="vn_replace_union_handle_body(ty, variant='')">\
+    switch (tag) {
+% for (i, var) in ty.get_union_cases():
+    case ${i}:
+        ${GEN.replace_struct_member_handle(ty, var, 'val->', 2)}
+        break;
+% endfor
+    default:
+        assert(false);
+        break;
+    }
+</%def>

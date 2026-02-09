@@ -1194,6 +1194,10 @@ class Gen:
             not self.is_serializable(var)):
             return info
 
+        # for passing selector as a second func arg
+        if 'selector' in var.attrs:
+            info.selector = var.attrs['selector']
+
         stmt = 'vn_replace_%s_handle(%s);' % (info.func_stem,
                 info.func_args(True))
         info.statements.append(stmt)
@@ -1234,10 +1238,10 @@ class Gen:
         info = self._decode_variable_info(ty, var, prefix, validity, alloc_storage)
         return self._decode_variable(ty, info, indent_level).strip()
 
-    def replace_struct_member_handle(self, ty, var, prefix):
+    def replace_struct_member_handle(self, ty, var, prefix, indent_level=1):
         validity = self._get_variable_validity(ty, var, True)
         info = self._replace_variable_handle_info(ty, var, prefix, validity)
-        return self._replace_variable_handle(info, 1).strip()
+        return self._replace_variable_handle(info, indent_level).strip()
 
     def sizeof_command_arg(self, ty, var, prefix, dst):
         validity = self._get_variable_validity(ty, var, 'var_in' in var.attrs)
