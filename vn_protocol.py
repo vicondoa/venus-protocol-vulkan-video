@@ -166,6 +166,7 @@ VK_XML_EXTENSION_LIST = [
     'VK_EXT_depth_clip_control',
     'VK_EXT_depth_clip_enable',
     'VK_EXT_depth_range_unrestricted',
+    'VK_EXT_descriptor_heap',
     'VK_EXT_dynamic_rendering_unused_attachments',
     'VK_EXT_extended_dynamic_state3',
     'VK_EXT_external_memory_acquire_unmodified',
@@ -256,6 +257,10 @@ class Gen:
         'vkBuildAccelerationStructuresKHR',
         'vkCopyAccelerationStructureToMemoryKHR',
         'vkCopyMemoryToAccelerationStructureKHR',
+        # vkWriteSamplerDescriptorMESA and vkWriteResourceDescriptorMESA are
+        # used instead of adding complicated var_in_out support.
+        'vkWriteSamplerDescriptorsEXT',
+        'vkWriteResourceDescriptorsEXT',
     ]
 
     IGNORABLE_LIST = [
@@ -1587,6 +1592,13 @@ class GenStructsAndCommands:
             'CopyAccelerationStructure',
             'CopyMemoryToAccelerationStructure',
             'WriteAccelerationStructure',
+        ],
+        'descriptor_heap': [
+            'WriteResourceDescriptor',
+            'WriteSamplerDescriptor',
+            'GetImageOpaqueCaptureData',
+            'RegisterCustomBorderColor',
+            'UnregisterCustomBorderColor',
         ],
     }
 

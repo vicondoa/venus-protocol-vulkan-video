@@ -418,6 +418,17 @@ virtualization or remoting, and are not exposed to applications.
         <enum value="238"   name="VK_COMMAND_TYPE_vkImportFenceFdKHR_EXT"/>
         <enum value="239"   name="VK_COMMAND_TYPE_vkGetFenceFdKHR_EXT"/>
 
+        <comment>VK_EXT_descriptor_heap</comment>
+        <enum value="337"   name="VK_COMMAND_TYPE_vkWriteSamplerDescriptorsEXT_EXT"/>
+        <enum value="338"   name="VK_COMMAND_TYPE_vkWriteResourceDescriptorsEXT_EXT"/>
+        <enum value="339"   name="VK_COMMAND_TYPE_vkCmdBindSamplerHeapEXT_EXT"/>
+        <enum value="340"   name="VK_COMMAND_TYPE_vkCmdBindResourceHeapEXT_EXT"/>
+        <enum value="341"   name="VK_COMMAND_TYPE_vkCmdPushDataEXT_EXT"/>
+        <enum value="342"   name="VK_COMMAND_TYPE_vkGetImageOpaqueCaptureDataEXT_EXT"/>
+        <enum value="343"   name="VK_COMMAND_TYPE_vkGetPhysicalDeviceDescriptorSizeEXT_EXT"/>
+        <enum value="344"   name="VK_COMMAND_TYPE_vkRegisterCustomBorderColorEXT_EXT"/>
+        <enum value="345"   name="VK_COMMAND_TYPE_vkUnregisterCustomBorderColorEXT_EXT"/>
+
         <comment>VK_EXT_sample_locations</comment>
         <enum value="283"   name="VK_COMMAND_TYPE_vkCmdSetSampleLocationsEXT_EXT"/>
         <enum value="284"   name="VK_COMMAND_TYPE_vkGetPhysicalDeviceMultisamplePropertiesEXT_EXT"/>
