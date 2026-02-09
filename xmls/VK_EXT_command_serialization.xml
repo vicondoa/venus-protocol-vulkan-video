@@ -544,6 +544,8 @@ virtualization or remoting, and are not exposed to applications.
         <enum value="253"   name="VK_COMMAND_TYPE_vkWaitRingSeqnoMESA_EXT"/>
         <enum value="297"   name="VK_COMMAND_TYPE_vkCopyImageToMemoryMESA_EXT"/>
         <enum value="298"   name="VK_COMMAND_TYPE_vkCopyMemoryToImageMESA_EXT"/>
+        <enum value="335"   name="VK_COMMAND_TYPE_vkWriteSamplerDescriptorMESA_EXT"/>
+        <enum value="336"   name="VK_COMMAND_TYPE_vkWriteResourceDescriptorMESA_EXT"/>
     </enums>
 
     <enums name="VkCommandFlagBitsEXT" type="bitmask">

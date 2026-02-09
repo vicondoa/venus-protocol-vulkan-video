@@ -230,12 +230,26 @@ renderer, and are not exposed to applications.
             <param><type>VkDevice</type> <name>device</name></param>
             <param>const <type>VkCopyMemoryToImageInfoMESA</type>* <name>pCopyMemoryToImageInfo</name></param>
         </command>
+        <command>
+            <proto><type>VkResult</type> <name>vkWriteSamplerDescriptorMESA</name></proto>
+            <param><type>VkDevice</type> <name>device</name></param>
+            <param>const <type>VkSamplerCreateInfo</type>* <name>pSampler</name></param>
+            <param><type>size_t</type> <name>dataSize</name></param>
+            <param len="dataSize"><type>void</type>* <name>pData</name></param>
+        </command>
+        <command>
+            <proto><type>VkResult</type> <name>vkWriteResourceDescriptorMESA</name></proto>
+            <param><type>VkDevice</type> <name>device</name></param>
+            <param>const <type>VkResourceDescriptorInfoEXT</type>* <name>pResource</name></param>
+            <param><type>size_t</type> <name>dataSize</name></param>
+            <param len="dataSize"><type>void</type>* <name>pData</name></param>
+        </command>
     </commands>
 
     <extensions>
         <extension name="VK_MESA_venus_protocol" number="385" type="instance" author="MESA" contact="Chia-I Wu @olvaffe1, Yiwei Zhang @zzyiwei" supported="vulkan">
             <require>
-                <enum value="3"                                             name="VK_MESA_VENUS_PROTOCOL_SPEC_VERSION"/>
+                <enum value="4"                                             name="VK_MESA_VENUS_PROTOCOL_SPEC_VERSION"/>
                 <enum value="&quot;VK_MESA_venus_protocol&quot;"            name="VK_MESA_VENUS_PROTOCOL_EXTENSION_NAME"/>
 
                 <comment>VK_MESA_VENUS_PROTOCOL_SPEC_VERSION 1</comment>
@@ -291,6 +305,10 @@ renderer, and are not exposed to applications.
                 <type name="VkCopyMemoryToImageInfoMESA"/>
                 <command name="vkCopyImageToMemoryMESA"/>
                 <command name="vkCopyMemoryToImageMESA"/>
+
+                <comment>VK_MESA_VENUS_PROTOCOL_SPEC_VERSION 4</comment>
+                <command name="vkWriteSamplerDescriptorMESA"/>
+                <command name="vkWriteResourceDescriptorMESA"/>
             </require>
         </extension>
     </extensions>
