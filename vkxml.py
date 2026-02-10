@@ -543,6 +543,38 @@ class VkType:
         ty.requires = requires_ty
 
     @staticmethod
+    def _sort_struct_members(members):
+        """Ensures dynamic array length is reordered before the array.
+
+        VkHostAddressRangeEXT and VkHostAddressRangeConstEXT have placed size
+        member after address. With this helper, the dynamic array size can be
+        validated properly.
+        """
+        sorted_members = []
+        for var in members:
+            # skip reordered len_var
+            if var in sorted_members:
+                continue
+            if 'len_names' not in var.attrs:
+                sorted_members.append(var)
+                continue
+            for len_name in var.attrs['len_names']:
+                # consider nested dynamic array
+                len_name = len_name.split('[')[0]
+                len_var_found = False
+                for sorted_var in sorted_members:
+                    if sorted_var.name == len_name:
+                        len_var_found = True
+                        break
+                if not len_var_found:
+                   for len_var in members:
+                       if len_var.name == len_name:
+                           sorted_members.append(len_var)
+                           break
+            sorted_members.append(var)
+        return sorted_members
+
+    @staticmethod
     def _parse_type_struct(ty, type_elem, type_table):
         members = []
         for member_elem in type_elem.iterfind('member'):
@@ -568,7 +600,7 @@ class VkType:
         returnedonly = type_elem.attrib.get(
                 'returnedonly', 'false') != 'false'
 
-        ty.variables = members
+        ty.variables = VkType._sort_struct_members(members)
         ty.s_type = s_type
         ty._struct_extends = struct_extends
         if returnedonly:
