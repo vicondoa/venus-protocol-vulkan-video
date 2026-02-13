@@ -368,6 +368,13 @@ class Gen:
                         if v and 'var_out' in v.attrs:
                             v.attrs['var_in'] = var
                             v.attrs['var_out'] = var
+
+                # vkRegisterCustomBorderColorEXT::pIndex is in/out
+                if ty.name == 'vkRegisterCustomBorderColorEXT':
+                    for var in ty.variables:
+                        if var.name == 'pIndex':
+                            var.attrs['var_in'] = True
+
             elif ty.category == ty.HANDLE:
                 objtype = 'VK_OBJECT_TYPE_' + self.reg.upper_name(ty.name[2:])
                 ty.attrs['c_objtype'] = objtype
