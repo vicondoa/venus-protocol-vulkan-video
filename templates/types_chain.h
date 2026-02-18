@@ -29,7 +29,7 @@ vn_sizeof_${ty.name}_pnext${variant}(const void *val)
 %       endif
             size += vn_sizeof_simple_pointer(pnext);
             size += vn_sizeof_VkStructureType(&pnext->sType);
-            size += vn_sizeof_${ty.name}_pnext${variant}(pnext->pNext);
+            size += vn_sizeof_${ty.name}_pnext${variant}(((const ${next_ty.name} *)pnext)->pNext);
             size += vn_sizeof_${next_ty.name}_self${variant}((const ${next_ty.name} *)pnext);
             return size;
 %   endfor
@@ -73,7 +73,7 @@ vn_encode_${ty.name}_pnext${variant}(struct vn_cs_encoder *enc, const void *val)
 %       endif
             vn_encode_simple_pointer(enc, pnext);
             vn_encode_VkStructureType(enc, &pnext->sType);
-            vn_encode_${ty.name}_pnext${variant}(enc, pnext->pNext);
+            vn_encode_${ty.name}_pnext${variant}(enc, ((const ${next_ty.name} *)pnext)->pNext);
             vn_encode_${next_ty.name}_self${variant}(enc, (const ${next_ty.name} *)pnext);
             return;
 %   endfor
@@ -120,7 +120,7 @@ vn_decode_${ty.name}_pnext(struct vn_cs_decoder *dec, const void *val)
     switch ((int32_t)pnext->sType) {
 %   for next_ty in next_types:
     case ${next_ty.s_type}:
-        vn_decode_${ty.name}_pnext(dec, pnext->pNext);
+        vn_decode_${ty.name}_pnext(dec, ((${next_ty.name} *)pnext)->pNext);
         vn_decode_${next_ty.name}_self(dec, (${next_ty.name} *)pnext);
         break;
 %   endfor
@@ -160,7 +160,7 @@ vn_decode_${ty.name}_pnext${variant}_temp(struct vn_cs_decoder *dec)
         pnext = vn_cs_decoder_alloc_temp(dec, sizeof(${next_ty.name}));
         if (pnext) {
             pnext->sType = stype;
-            pnext->pNext = vn_decode_${ty.name}_pnext${variant}_temp(dec);
+            ((${next_ty.name} *)pnext)->pNext = vn_decode_${ty.name}_pnext${variant}_temp(dec);
             vn_decode_${next_ty.name}_self${variant}_temp(dec, (${next_ty.name} *)pnext);
         }
         break;
