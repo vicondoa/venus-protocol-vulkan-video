@@ -642,6 +642,50 @@ encode_add_info_sps_n(unsigned n)
    return rt_encode_h264_add_info(&v);
 }
 
+static struct rt_encoded
+encode_add_info_pps_n(unsigned n)
+{
+   static StdVideoH264PictureParameterSet *big;
+   free(big);
+   big = malloc(sizeof(*big) * (n ? n : 1));
+   for (unsigned i = 0; i < n; i++)
+      big[i] = pps[0];
+
+   VkVideoDecodeH264SessionParametersAddInfoKHR v = {
+      .sType =
+         VK_STRUCTURE_TYPE_VIDEO_DECODE_H264_SESSION_PARAMETERS_ADD_INFO_KHR,
+      .pNext = NULL,
+      .stdSPSCount = 0,
+      .pStdSPSs = NULL,
+      .stdPPSCount = n,
+      .pStdPPSs = big,
+   };
+   return rt_encode_h264_add_info(&v);
+}
+
+/* The scalar-array path. The generator emits caps from two different places --
+ * an `iter_count` guard for element loops and an `array_size` guard for scalar
+ * blob arrays -- so covering only the loop path would leave half the emission
+ * logic unproven. pSliceOffsets is the scalar one. */
+static struct rt_encoded
+encode_picture_slices_n(unsigned n)
+{
+   static uint32_t *big;
+   free(big);
+   big = malloc(sizeof(*big) * (n ? n : 1));
+   for (unsigned i = 0; i < n; i++)
+      big[i] = 0x1000u * (i + 1);
+
+   VkVideoDecodeH264PictureInfoKHR v = {
+      .sType = VK_STRUCTURE_TYPE_VIDEO_DECODE_H264_PICTURE_INFO_KHR,
+      .pNext = NULL,
+      .pStdPictureInfo = &dec_pic,
+      .sliceCount = n,
+      .pSliceOffsets = big,
+   };
+   return rt_encode_h264_picture(&v);
+}
+
 static void
 test_cap(const struct cap_case *c)
 {
@@ -808,6 +852,13 @@ main(void)
    {
       VkVideoProfileListInfoKHR pl_out;
       VkVideoDecodeH264SessionParametersAddInfoKHR add_out;
+      VkVideoDecodeH264PictureInfoKHR pic_out;
+      /* Both emission paths are covered: pProfiles/pStdSPSs/pStdPPSs take the
+       * `iter_count` loop guard, pSliceOffsets takes the `array_size` scalar
+       * guard. Exhaustive coverage of the cap *set* is the job of the lab's
+       * video-array-cap-audit gate, which enumerates every video-reachable
+       * allocation in the generated renderer; T7's job is to prove the two
+       * emission shapes actually behave at runtime. */
       const struct cap_case caps[] = {
          { "VkVideoProfileListInfoKHR.pProfiles", 16,
            sizeof(VkVideoProfileInfoKHR), encode_profile_list_n,
@@ -815,6 +866,11 @@ main(void)
          { "H264SessionParametersAddInfo.pStdSPSs", 32,
            sizeof(StdVideoH264SequenceParameterSet), encode_add_info_sps_n,
            add_info_dec, &add_out, sizeof(add_out) },
+         { "H264SessionParametersAddInfo.pStdPPSs", 256,
+           sizeof(StdVideoH264PictureParameterSet), encode_add_info_pps_n,
+           add_info_dec, &add_out, sizeof(add_out) },
+         { "H264PictureInfo.pSliceOffsets (scalar)", 65536, sizeof(uint32_t),
+           encode_picture_slices_n, picture_dec, &pic_out, sizeof(pic_out) },
       };
       for (size_t i = 0; i < sizeof(caps) / sizeof(caps[0]); i++)
          test_cap(&caps[i]);
