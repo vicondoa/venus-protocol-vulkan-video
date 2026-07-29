@@ -299,6 +299,29 @@ class Gen:
         'StdVideoH264ScalingLists',
     ]
 
+    # Maximum element counts for guest-controlled arrays, keyed by member name.
+    #
+    # vn_decode_array_size() only checks that the declared count and the encoded
+    # size AGREE, and vkr_cs_decoder_alloc_temp_array() only checks for integer
+    # overflow. Neither imposes a cap, so a guest that declares a huge count and
+    # sends a consistently-sized array can still drive a very large temp-pool
+    # allocation before any element is validated.
+    #
+    # The H.264 limits below come from the codec itself, so they cost nothing
+    # for legitimate streams:
+    #   pStdSPSs           seq_parameter_set_id is 0..31  -> at most 32 distinct
+    #   pStdPPSs           pic_parameter_set_id is 0..255 -> at most 256 distinct
+    #   pOffsetForRefFrame length is num_ref_frames_in_pic_order_cnt_cycle,
+    #                      a uint8_t, so already bounded by its own type
+    #   pSliceOffsets      no small spec constant; 64K slices is far above any
+    #                      real picture while bounding the allocation to 256 KiB
+    ARRAY_COUNT_LIMITS = {
+        'pStdSPSs': 32,
+        'pStdPPSs': 256,
+        'pOffsetForRefFrame': 255,
+        'pSliceOffsets': 65536,
+    }
+
     UNION_DEFAULT_TAGS = {
         'VkClearColorValue': 2,
         'VkClearValue': 0,
@@ -1216,6 +1239,21 @@ class Gen:
             stmt = 'const %s %s = vn_decode_array_size(dec, %s);' % \
                     (loop.iter_type, temp_name, loop.iter_count)
             loop.statements.append(stmt)
+
+            # Cap guest-controlled counts BEFORE the allocation below.
+            # vn_decode_array_size() only proves the declared count and the
+            # encoded size agree; it does not bound either, so without this a
+            # consistent-but-enormous count still reaches
+            # vn_cs_decoder_alloc_temp_array().
+            limit = self.ARRAY_COUNT_LIMITS.get(var.name)
+            if limit is not None:
+                loop.statements.append(
+                    'if (%s > %d) {' % (temp_name, limit))
+                loop.statements.append(
+                    '    vn_cs_decoder_set_fatal(dec);')
+                loop.statements.append('    return;')
+                loop.statements.append('}')
+
             loop.iter_count = temp_name
 
         # decode the encoded array size
@@ -1231,6 +1269,18 @@ class Gen:
                         % info.array_size
                 info.statements.append(stmt)
                 info.array_size = 'array_size'
+
+                # Same cap as the loop path above, for scalar arrays. This is
+                # the one that matters most: pSliceOffsets is bounded only by a
+                # uint32_t count, so without a cap a guest can request a 16 GiB
+                # allocation that vn_decode_array_size() would happily accept as
+                # self-consistent.
+                limit = self.ARRAY_COUNT_LIMITS.get(var.name)
+                if limit is not None:
+                    info.statements.append('if (array_size > %d) {' % limit)
+                    info.statements.append('    vn_cs_decoder_set_fatal(dec);')
+                    info.statements.append('    return;')
+                    info.statements.append('}')
 
         if alloc_storage and var.ty.is_pointer():
             info.init_alloc_stmts()
