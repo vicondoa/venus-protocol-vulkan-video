@@ -329,6 +329,16 @@ class Gen:
     #                            maxDpbSlots is around 17
     #   pBindSessionMemoryInfos  one per memory requirement the driver reports,
     #                            which is a single-digit count in practice
+    #
+    # The last two are OUTPUT arrays: the guest supplies the capacity it wants
+    # filled, so the count is guest-controlled even though the data flows the
+    # other way. They are easy to miss for exactly that reason, which is why
+    # the lab's video-array-cap-audit gate now enumerates every video-reachable
+    # allocation mechanically instead of trusting an audit by eye.
+    #   pVideoFormatProperties   format entries a driver reports for a profile;
+    #                            a handful in practice (NV12, P010, ...)
+    #   pMemoryRequirements      memory requirements for one video session,
+    #                            again a single-digit count
     ARRAY_COUNT_LIMITS = {
         'pStdSPSs': 32,
         'pStdPPSs': 256,
@@ -337,6 +347,8 @@ class Gen:
         'pProfiles': 16,
         'pReferenceSlots': 64,
         'pBindSessionMemoryInfos': 64,
+        'pVideoFormatProperties': 256,
+        'pMemoryRequirements': 64,
     }
 
     UNION_DEFAULT_TAGS = {
