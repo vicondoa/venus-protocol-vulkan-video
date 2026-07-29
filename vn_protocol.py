@@ -1274,8 +1274,14 @@ class Gen:
             # encoded size agree; it does not bound either, so without this a
             # consistent-but-enormous count still reaches
             # vn_cs_decoder_alloc_temp_array().
+            #
+            # Only where storage is actually allocated. The other path is the
+            # driver decoding a reply from the renderer into a buffer the guest
+            # itself supplied: there is no allocation to bound, the count comes
+            # from the host rather than the guest, and those reply helpers
+            # return VkResult, so a bare `return` would not even compile.
             limit = self.ARRAY_COUNT_LIMITS.get(var.name)
-            if limit is not None:
+            if limit is not None and alloc_storage:
                 loop.statements.append(
                     'if (%s > %d) {' % (temp_name, limit))
                 loop.statements.append(
@@ -1303,9 +1309,9 @@ class Gen:
                 # the one that matters most: pSliceOffsets is bounded only by a
                 # uint32_t count, so without a cap a guest can request a 16 GiB
                 # allocation that vn_decode_array_size() would happily accept as
-                # self-consistent.
+                # self-consistent. Gated on alloc_storage for the same reason.
                 limit = self.ARRAY_COUNT_LIMITS.get(var.name)
-                if limit is not None:
+                if limit is not None and alloc_storage:
                     info.statements.append('if (array_size > %d) {' % limit)
                     info.statements.append('    vn_cs_decoder_set_fatal(dec);')
                     info.statements.append('    return;')
