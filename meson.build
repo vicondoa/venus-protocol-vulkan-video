@@ -24,6 +24,11 @@ vn_xml_files = files(
   'xmls/vk.xml',
   'xmls/VK_EXT_command_serialization.xml',
   'xmls/VK_MESA_venus_protocol.xml',
+  # Field-level definitions for the StdVideo H.264 types, which vk.xml only
+  # declares by name. This must stay in the dependency list: without it a
+  # change to the wire schema does not trigger regeneration, and the build
+  # silently compiles stale serializers against the new schema.
+  'xmls/VK_VIDEO_std_h264.xml',
 )
 
 vn_template_banner = vcs_tag(
