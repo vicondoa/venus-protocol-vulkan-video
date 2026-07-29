@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<registry>
+    <comment>
+Copyright 2026 the Venus Vulkan Video lab contributors
+
+SPDX-License-Identifier: Apache-2.0 OR MIT
+    </comment>
+
+    <comment>
+This file, VK_VIDEO_std_h264.xml, gives the Venus protocol generator
+field-level definitions for the StdVideo H.264 decode types.
+
+WHY THIS FILE EXISTS
+
+vk.xml declares these types by name only, because they are defined in the
+Khronos video headers rather than in the Vulkan registry:
+
+    &lt;type requires="vk_video/vulkan_video_codec_h264std_decode.h"
+          name="StdVideoDecodeH264PictureInfo"/&gt;
+
+With no members, Gen.is_serializable() rejects them, and
+_init_supported_types() then filters every struct that points at them out of
+the pNext chains. The effect is silent: generation succeeds and the video
+commands look complete, but the codec payload never crosses the wire.
+
+Describing the members here lets the existing generator emit field-level
+encode/decode/size functions, so there is no hand-written serialization to
+review and no path by which a raw struct copy could creep in.
+
+BITFIELDS ARE NOT DESCRIBED HERE
+
+The StdVideo *Flags types are C bitfields. They are deliberately NOT expressed
+as members, because the generator's scalar helpers take pointers
+(vn_encode_uint32_t(enc, const uint32_t *val)) and taking the address of a
+bitfield is illegal C. Describing them as one opaque uint32_t and copying it
+would compile but would depend on implementation-defined bitfield allocation
+order, which guest and host are not guaranteed to agree on.
+
+Instead each *Flags struct is carried as a single uint32_t whose bit
+assignments are fixed by explicit shifts over named fields in
+vn_protocol_video_h264_flags.h. The shift assignments are part of the wire
+contract: reordering them silently corrupts decode parameters.
+    </comment>
+
+    <types>
+        <comment>
+Array extents, mirroring the STD_VIDEO_* macros in
+vk_video/vulkan_video_codec_h264std{,_decode}.h. These bound every array below,
+so a guest cannot describe an oversized list.
+        </comment>
+
+        <comment>StdVideoDecodeH264PictureInfo, minus its bitfield flags.</comment>
+        <type category="struct" name="StdVideoDecodeH264PictureInfoMESA">
+            <member><type>uint32_t</type> <name>flags</name></member>
+            <member><type>uint8_t</type>  <name>seq_parameter_set_id</name></member>
+            <member><type>uint8_t</type>  <name>pic_parameter_set_id</name></member>
+            <member><type>uint16_t</type> <name>frame_num</name></member>
+            <member><type>uint16_t</type> <name>idr_pic_id</name></member>
+            <member><type>int32_t</type>  <name>PicOrderCnt</name>[2]</member>
+        </type>
+
+        <comment>StdVideoDecodeH264ReferenceInfo, minus its bitfield flags.</comment>
+        <type category="struct" name="StdVideoDecodeH264ReferenceInfoMESA">
+            <member><type>uint32_t</type> <name>flags</name></member>
+            <member><type>uint16_t</type> <name>FrameNum</name></member>
+            <member><type>int32_t</type>  <name>PicOrderCnt</name>[2]</member>
+        </type>
+    </types>
+</registry>
