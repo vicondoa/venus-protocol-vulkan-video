@@ -57,3 +57,13 @@ RT_DECODER(rt_decode_h264_picture,
 RT_DECODER(rt_decode_h264_dpb_slot,
            VkVideoDecodeH264DpbSlotInfoKHR,
            VkVideoDecodeH264DpbSlotInfoKHR)
+
+size_t
+rt_last_temp_used(void)
+{
+   return rt_dec.temp_used;
+}
+
+RT_DECODER(rt_decode_video_profile_list,
+           VkVideoProfileListInfoKHR,
+           VkVideoProfileListInfoKHR)

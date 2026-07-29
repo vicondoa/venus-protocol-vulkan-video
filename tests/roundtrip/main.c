@@ -573,6 +573,105 @@ test_influence(const struct influence_case *c)
    rt_encoded_free(&ref);
 }
 
+/* T7: array-count caps.
+ *
+ * The decoder caps every guest-controlled array length before allocating. The
+ * caps are decode-side only, so the encoder will happily produce an over-cap
+ * payload -- which is exactly what a hostile guest does, and exactly what this
+ * test sends.
+ *
+ * Asserting "decode failed" alone would not distinguish a cap that fires
+ * before the allocation from one that fires after. So the budget is left
+ * unlimited and the temp pool is measured: if the cap fired first, the pool
+ * never grew to hold the oversized array.
+ */
+struct cap_case {
+   const char *name;
+   unsigned cap;
+   size_t elem_size;
+   struct rt_encoded (*encode_n)(unsigned n);
+   bool (*decode)(const void *, size_t, size_t, void *);
+   void *out;
+   size_t out_size;
+};
+
+static VkVideoProfileInfoKHR profile_pool[64];
+static VkVideoProfileListInfoKHR profile_list;
+
+static struct rt_encoded
+encode_profile_list_n(unsigned n)
+{
+   for (unsigned i = 0; i < n && i < 64; i++) {
+      profile_pool[i] = (VkVideoProfileInfoKHR){
+         .sType = VK_STRUCTURE_TYPE_VIDEO_PROFILE_INFO_KHR,
+         .videoCodecOperation = VK_VIDEO_CODEC_OPERATION_DECODE_H264_BIT_KHR,
+         .chromaSubsampling = VK_VIDEO_CHROMA_SUBSAMPLING_420_BIT_KHR,
+         .lumaBitDepth = VK_VIDEO_COMPONENT_BIT_DEPTH_8_BIT_KHR,
+         .chromaBitDepth = VK_VIDEO_COMPONENT_BIT_DEPTH_8_BIT_KHR,
+      };
+   }
+   profile_list = (VkVideoProfileListInfoKHR){
+      .sType = VK_STRUCTURE_TYPE_VIDEO_PROFILE_LIST_INFO_KHR,
+      .pNext = NULL,
+      .profileCount = n,
+      .pProfiles = profile_pool,
+   };
+   return rt_encode_video_profile_list(&profile_list);
+}
+
+static struct rt_encoded
+encode_add_info_sps_n(unsigned n)
+{
+   /* sps[] has 3 entries; the over-cap case re-points the array at a larger
+    * heap block so the encoder is not the thing reading out of bounds. */
+   static StdVideoH264SequenceParameterSet *big;
+   free(big);
+   big = malloc(sizeof(*big) * (n ? n : 1));
+   for (unsigned i = 0; i < n; i++)
+      big[i] = sps[0];
+
+   VkVideoDecodeH264SessionParametersAddInfoKHR v = {
+      .sType =
+         VK_STRUCTURE_TYPE_VIDEO_DECODE_H264_SESSION_PARAMETERS_ADD_INFO_KHR,
+      .pNext = NULL,
+      .stdSPSCount = n,
+      .pStdSPSs = big,
+      .stdPPSCount = 0,
+      .pStdPPSs = NULL,
+   };
+   return rt_encode_h264_add_info(&v);
+}
+
+static void
+test_cap(const struct cap_case *c)
+{
+   /* At the cap: must decode. One past it: must not. */
+   struct rt_encoded ok_enc = c->encode_n(c->cap);
+   bool ok = c->decode(ok_enc.data, ok_enc.written, 0, c->out);
+   CHECK(ok, "%s: a payload exactly at the cap (%u) was rejected", c->name,
+         c->cap);
+   rt_decode_release();
+   rt_encoded_free(&ok_enc);
+
+   struct rt_encoded over = c->encode_n(c->cap + 1);
+   bool over_ok = c->decode(over.data, over.written, 0, c->out);
+   CHECK(!over_ok, "%s: a payload one past the cap (%u) was accepted", c->name,
+         c->cap + 1);
+
+   size_t used = rt_last_temp_used();
+   size_t oversized = c->elem_size * (size_t)(c->cap + 1);
+   CHECK(used < oversized,
+         "%s: temp pool grew to %zu bytes, enough to hold the oversized array "
+         "(%zu). The cap fired after the allocation, not before it.",
+         c->name, used, oversized);
+
+   printf("  %-34s cap %5u ok, %5u rejected, temp %zu B\n", c->name, c->cap,
+          c->cap + 1, used);
+
+   rt_decode_release();
+   rt_encoded_free(&over);
+}
+
 static void
 test_allocation_cap(void)
 {
@@ -615,6 +714,8 @@ RT_SHIM(sp_create, VkVideoDecodeH264SessionParametersCreateInfoKHR,
         rt_encode_h264_sp_create, rt_decode_h264_sp_create)
 RT_SHIM(picture, VkVideoDecodeH264PictureInfoKHR, rt_encode_h264_picture,
         rt_decode_h264_picture)
+RT_SHIM(profile_list, VkVideoProfileListInfoKHR, rt_encode_video_profile_list,
+        rt_decode_video_profile_list)
 RT_SHIM(dpb_slot, VkVideoDecodeH264DpbSlotInfoKHR, rt_encode_h264_dpb_slot,
         rt_decode_h264_dpb_slot)
 
@@ -632,6 +733,13 @@ main(void)
    VkVideoDecodeH264PictureInfoKHR pic = mk_picture();
    VkVideoDecodeH264DpbSlotInfoKHR dpb = mk_dpb_slot();
 
+   /* A profile list is not H.264 payload, but it chains onto
+    * VkImageCreateInfo and VkBufferCreateInfo, which existing commands
+    * already decode -- so it is reachable the moment the video extensions
+    * enter the protocol, whether or not video is advertised. */
+   struct rt_encoded pl_seed = encode_profile_list_n(2);
+   rt_encoded_free(&pl_seed);
+
    const struct payload payloads[] = {
       { "VkVideoDecodeH264ProfileInfoKHR", profile_enc, profile_dec, &profile,
         sizeof(profile), sizeof(profile) },
@@ -643,6 +751,8 @@ main(void)
         sizeof(pic), sizeof(pic) },
       { "VkVideoDecodeH264DpbSlotInfoKHR", dpb_slot_enc, dpb_slot_dec, &dpb,
         sizeof(dpb), sizeof(dpb) },
+      { "VkVideoProfileListInfoKHR", profile_list_enc, profile_list_dec,
+        &profile_list, sizeof(profile_list), sizeof(profile_list) },
    };
    const size_t n = sizeof(payloads) / sizeof(payloads[0]);
 
@@ -693,6 +803,22 @@ main(void)
 
    printf("T6 allocation cap\n");
    test_allocation_cap();
+
+   printf("T7 array-count caps\n");
+   {
+      VkVideoProfileListInfoKHR pl_out;
+      VkVideoDecodeH264SessionParametersAddInfoKHR add_out;
+      const struct cap_case caps[] = {
+         { "VkVideoProfileListInfoKHR.pProfiles", 16,
+           sizeof(VkVideoProfileInfoKHR), encode_profile_list_n,
+           profile_list_dec, &pl_out, sizeof(pl_out) },
+         { "H264SessionParametersAddInfo.pStdSPSs", 32,
+           sizeof(StdVideoH264SequenceParameterSet), encode_add_info_sps_n,
+           add_info_dec, &add_out, sizeof(add_out) },
+      };
+      for (size_t i = 0; i < sizeof(caps) / sizeof(caps[0]); i++)
+         test_cap(&caps[i]);
+   }
 
    printf("\n%d checks, %d failures\n", checks, failures);
    return failures ? 1 : 0;

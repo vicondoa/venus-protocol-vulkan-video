@@ -315,11 +315,28 @@ class Gen:
     #                      a uint8_t, so already bounded by its own type
     #   pSliceOffsets      no small spec constant; 64K slices is far above any
     #                      real picture while bounding the allocation to 256 KiB
+    #
+    # The three below are not H.264 payload but are reachable the moment the
+    # video extensions enter the protocol, so they are capped in the same wave
+    # rather than when the commands that use them land. pProfiles in particular
+    # chains onto VkImageCreateInfo and VkBufferCreateInfo, which existing
+    # commands already decode: the renderer will decode that pNext if a guest
+    # sends the sType, whether or not video is advertised.
+    #   pProfiles                a profile list enumerates the codecs a resource
+    #                            must be usable with; real lists hold one or two
+    #   pReferenceSlots          DPB slots. H.264 caps max_num_ref_frames at 16;
+    #                            with field pairs and the current picture, real
+    #                            maxDpbSlots is around 17
+    #   pBindSessionMemoryInfos  one per memory requirement the driver reports,
+    #                            which is a single-digit count in practice
     ARRAY_COUNT_LIMITS = {
         'pStdSPSs': 32,
         'pStdPPSs': 256,
         'pOffsetForRefFrame': 255,
         'pSliceOffsets': 65536,
+        'pProfiles': 16,
+        'pReferenceSlots': 64,
+        'pBindSessionMemoryInfos': 64,
     }
 
     UNION_DEFAULT_TAGS = {

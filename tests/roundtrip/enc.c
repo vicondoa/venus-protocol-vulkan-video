@@ -61,3 +61,7 @@ RT_ENCODER(rt_encode_h264_picture,
 RT_ENCODER(rt_encode_h264_dpb_slot,
            VkVideoDecodeH264DpbSlotInfoKHR,
            VkVideoDecodeH264DpbSlotInfoKHR)
+
+RT_ENCODER(rt_encode_video_profile_list,
+           VkVideoProfileListInfoKHR,
+           VkVideoProfileListInfoKHR)

@@ -65,4 +65,13 @@ bool rt_decode_h264_dpb_slot(const void *data, size_t len, size_t budget,
 /* Frees the temp pool used by the most recent successful decode. */
 void rt_decode_release(void);
 
+/* Bytes handed out by the decoder temp pool during the last decode. Used to
+ * prove an array cap fires BEFORE the allocation rather than after it: with
+ * no budget set, an uncapped over-large count would really allocate. */
+size_t rt_last_temp_used(void);
+
+struct rt_encoded rt_encode_video_profile_list(const VkVideoProfileListInfoKHR *val);
+bool rt_decode_video_profile_list(const void *data, size_t len, size_t budget,
+                                  VkVideoProfileListInfoKHR *out);
+
 #endif /* VN_ROUNDTRIP_HARNESS_H */
