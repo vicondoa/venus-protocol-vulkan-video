@@ -171,7 +171,7 @@ SPS::pOffsetForRefFrame, whose length is num_ref_frames_in_pic_order_cnt_cycle
             <member><type>uint32_t</type> <name>frame_crop_top_offset</name></member>
             <member><type>uint32_t</type> <name>frame_crop_bottom_offset</name></member>
             <member><type>uint32_t</type> <name>reserved2</name></member>
-            <member optional="true" len="num_ref_frames_in_pic_order_cnt_cycle">const <type>int32_t</type>* <name>pOffsetForRefFrame</name></member>
+            <member len="num_ref_frames_in_pic_order_cnt_cycle">const <type>int32_t</type>* <name>pOffsetForRefFrame</name></member>
             <member optional="true">const <type>StdVideoH264ScalingLists</type>* <name>pScalingLists</name></member>
             <member optional="true">const <type>StdVideoH264SequenceParameterSetVui</type>* <name>pSequenceParameterSetVui</name></member>
         </type>
