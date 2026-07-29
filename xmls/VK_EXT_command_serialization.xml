@@ -394,6 +394,23 @@ virtualization or remoting, and are not exposed to applications.
 
         <comment>VK_VERSION_1_4</comment>
 
+        <comment>VK_KHR_video_queue</comment>
+        <enum value="346"   name="VK_COMMAND_TYPE_vkGetPhysicalDeviceVideoCapabilitiesKHR_EXT"/>
+        <enum value="347"   name="VK_COMMAND_TYPE_vkGetPhysicalDeviceVideoFormatPropertiesKHR_EXT"/>
+        <enum value="348"   name="VK_COMMAND_TYPE_vkCreateVideoSessionKHR_EXT"/>
+        <enum value="349"   name="VK_COMMAND_TYPE_vkDestroyVideoSessionKHR_EXT"/>
+        <enum value="350"   name="VK_COMMAND_TYPE_vkGetVideoSessionMemoryRequirementsKHR_EXT"/>
+        <enum value="351"   name="VK_COMMAND_TYPE_vkBindVideoSessionMemoryKHR_EXT"/>
+        <enum value="352"   name="VK_COMMAND_TYPE_vkCreateVideoSessionParametersKHR_EXT"/>
+        <enum value="353"   name="VK_COMMAND_TYPE_vkUpdateVideoSessionParametersKHR_EXT"/>
+        <enum value="354"   name="VK_COMMAND_TYPE_vkDestroyVideoSessionParametersKHR_EXT"/>
+        <enum value="355"   name="VK_COMMAND_TYPE_vkCmdBeginVideoCodingKHR_EXT"/>
+        <enum value="356"   name="VK_COMMAND_TYPE_vkCmdEndVideoCodingKHR_EXT"/>
+        <enum value="357"   name="VK_COMMAND_TYPE_vkCmdControlVideoCodingKHR_EXT"/>
+
+        <comment>VK_KHR_video_decode_queue</comment>
+        <enum value="358"   name="VK_COMMAND_TYPE_vkCmdDecodeVideoKHR_EXT"/>
+
         <comment>VK_EXT_transform_feedback</comment>
         <enum value="181"   name="VK_COMMAND_TYPE_vkCmdBindTransformFeedbackBuffersEXT_EXT"/>
         <enum value="182"   name="VK_COMMAND_TYPE_vkCmdBeginTransformFeedbackEXT_EXT"/>

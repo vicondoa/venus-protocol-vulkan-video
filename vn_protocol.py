@@ -149,6 +149,17 @@ VK_XML_EXTENSION_LIST = [
     'VK_KHR_shader_relaxed_extended_instruction',
     'VK_KHR_shader_subgroup_uniform_control_flow',
     'VK_KHR_shader_untyped_pointers',
+    # Vulkan Video (decode). Ordered as required by their dependency chain:
+    # video_queue provides the common objects, video_decode_queue the decode
+    # commands, and video_decode_h264 the H.264 codec profile.
+    #
+    # Adding these to this list does NOT advertise them to guests. Exposure is
+    # gated separately in virglrenderer's extension table and Mesa's Venus
+    # passthrough list, both of which stay unchanged until the renderer can
+    # actually execute the commands.
+    'VK_KHR_video_queue',
+    'VK_KHR_video_decode_queue',
+    'VK_KHR_video_decode_h264',
     'VK_KHR_workgroup_memory_explicit_layout',
     # EXT extensions
     'VK_EXT_attachment_feedback_loop_dynamic_state',
