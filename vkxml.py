@@ -149,6 +149,40 @@ TYPE_BLOCK_LIST = [
     'VkPhysicalDeviceLayeredApiVulkanPropertiesKHR',
 ]
 
+# Types that vk.xml declares by NAME ONLY, and which a private XML redefines
+# with real members.
+#
+# vk.xml pulls the StdVideo codec types in by reference, e.g.
+#     <type requires="vk_video/vulkan_video_codec_h264std_decode.h"
+#           name="StdVideoDecodeH264PictureInfo"/>
+# which yields a type with no members. is_serializable() then rejects it and
+# every struct pointing at it is silently dropped from the pNext chains, so the
+# codec payload would never cross the wire even though generation succeeds.
+#
+# Listing a name here lets a later (private) XML supply the real definition. The
+# list is explicit rather than a blanket relaxation of the one-definition rule,
+# so an accidental duplicate definition of any other type still asserts.
+TYPE_OVERRIDE_LIST = [
+    'StdVideoH264AspectRatioIdc',
+    'StdVideoH264WeightedBipredIdc',
+    'StdVideoH264SpsFlags',
+    'StdVideoH264SpsVuiFlags',
+    'StdVideoH264PpsFlags',
+    'StdVideoH264ScalingLists',
+    'StdVideoH264HrdParameters',
+    'StdVideoH264SequenceParameterSetVui',
+    'StdVideoH264SequenceParameterSet',
+    'StdVideoH264PictureParameterSet',
+    'StdVideoH264ProfileIdc',
+    'StdVideoH264LevelIdc',
+    'StdVideoH264ChromaFormatIdc',
+    'StdVideoH264PocType',
+    'StdVideoDecodeH264PictureInfoFlags',
+    'StdVideoDecodeH264PictureInfo',
+    'StdVideoDecodeH264ReferenceInfoFlags',
+    'StdVideoDecodeH264ReferenceInfo',
+]
+
 class VkType:
     INCLUDE        = 0
     DEFINE         = 1
@@ -697,6 +731,13 @@ class VkType:
             return
 
         ty = VkType._get_type(name, type_table)
+        # A private XML may supply the real definition for a type vk.xml only
+        # declared by name. Clearing the prior init lets the fuller definition
+        # win; the list is explicit so any other redefinition still asserts.
+        if name in TYPE_OVERRIDE_LIST and ty.name is not None:
+            ty.name = None
+            ty.category = None
+            ty.variables = []
         ty.init(name, category)
         if parse_func:
             parse_func(ty, type_elem, type_table)

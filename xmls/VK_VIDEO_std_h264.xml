@@ -24,46 +24,170 @@ the pNext chains. The effect is silent: generation succeeds and the video
 commands look complete, but the codec payload never crosses the wire.
 
 Describing the members here lets the existing generator emit field-level
-encode/decode/size functions, so there is no hand-written serialization to
-review and no path by which a raw struct copy could creep in.
+encode/decode/size functions, so there is no hand-written serialization for the
+payload structs and no path by which a raw struct copy could creep in.
 
-BITFIELDS ARE NOT DESCRIBED HERE
+THE *Flags MEMBERS ARE DELIBERATELY DECLARED, NOT EXPANDED
 
-The StdVideo *Flags types are C bitfields. They are deliberately NOT expressed
-as members, because the generator's scalar helpers take pointers
-(vn_encode_uint32_t(enc, const uint32_t *val)) and taking the address of a
-bitfield is illegal C. Describing them as one opaque uint32_t and copying it
-would compile but would depend on implementation-defined bitfield allocation
-order, which guest and host are not guaranteed to agree on.
-
-Instead each *Flags struct is carried as a single uint32_t whose bit
-assignments are fixed by explicit shifts over named fields in
-vn_protocol_video_h264_flags.h. The shift assignments are part of the wire
-contract: reordering them silently corrupts decode parameters.
+StdVideoDecodeH264PictureInfoFlags and StdVideoDecodeH264ReferenceInfoFlags are
+C bitfields. They are declared here as empty structs and listed in
+Gen.BITFIELD_STRUCT_LIST, which routes them to hand-written pack/unpack helpers
+instead of member-wise serialization. See templates/types_custom.h and
+include/vn_protocol_video_h264_flags.h for why that is necessary: the generated
+scalar helpers take pointers, and taking the address of a bitfield is illegal C.
     </comment>
 
     <types>
         <comment>
-Array extents, mirroring the STD_VIDEO_* macros in
-vk_video/vulkan_video_codec_h264std{,_decode}.h. These bound every array below,
-so a guest cannot describe an oversized list.
+Codec enums. vk.xml declares these by name only; declaring them as enums here
+is enough for the generator, since is_serializable() accepts the ENUM category
+and enums are serialized as their underlying integer.
         </comment>
+        <type category="enum" name="StdVideoH264ProfileIdc"/>
+        <type category="enum" name="StdVideoH264LevelIdc"/>
+        <type category="enum" name="StdVideoH264ChromaFormatIdc"/>
+        <type category="enum" name="StdVideoH264PocType"/>
 
-        <comment>StdVideoDecodeH264PictureInfo, minus its bitfield flags.</comment>
-        <type category="struct" name="StdVideoDecodeH264PictureInfoMESA">
-            <member><type>uint32_t</type> <name>flags</name></member>
+        <comment>
+Bitfield flag structs. The `packed` member exists only to satisfy the registry
+parser, which requires at least one member; it is never serialized. These types
+are listed in Gen.BITFIELD_STRUCT_LIST, which both short-circuits
+is_serializable() and excludes them from member-wise emission, routing them to
+the explicit shift-based helpers instead so the wire layout does not depend on
+implementation-defined bitfield allocation.
+        </comment>
+        <type category="struct" name="StdVideoDecodeH264PictureInfoFlags">
+            <member><type>uint32_t</type> <name>packed</name></member>
+        </type>
+        <type category="struct" name="StdVideoDecodeH264ReferenceInfoFlags">
+            <member><type>uint32_t</type> <name>packed</name></member>
+        </type>
+
+        <comment>
+Per-picture decode parameters. PicOrderCnt is a fixed two-element array
+(STD_VIDEO_DECODE_H264_FIELD_ORDER_COUNT_LIST_SIZE), so its length is part of
+the type rather than guest-controlled.
+        </comment>
+        <type category="struct" name="StdVideoDecodeH264PictureInfo">
+            <member><type>StdVideoDecodeH264PictureInfoFlags</type> <name>flags</name></member>
             <member><type>uint8_t</type>  <name>seq_parameter_set_id</name></member>
             <member><type>uint8_t</type>  <name>pic_parameter_set_id</name></member>
+            <member><type>uint8_t</type>  <name>reserved1</name></member>
+            <member><type>uint8_t</type>  <name>reserved2</name></member>
             <member><type>uint16_t</type> <name>frame_num</name></member>
             <member><type>uint16_t</type> <name>idr_pic_id</name></member>
             <member><type>int32_t</type>  <name>PicOrderCnt</name>[2]</member>
         </type>
 
-        <comment>StdVideoDecodeH264ReferenceInfo, minus its bitfield flags.</comment>
-        <type category="struct" name="StdVideoDecodeH264ReferenceInfoMESA">
-            <member><type>uint32_t</type> <name>flags</name></member>
+        <comment>Per-DPB-slot reference metadata.</comment>
+        <type category="struct" name="StdVideoDecodeH264ReferenceInfo">
+            <member><type>StdVideoDecodeH264ReferenceInfoFlags</type> <name>flags</name></member>
             <member><type>uint16_t</type> <name>FrameNum</name></member>
+            <member><type>uint16_t</type> <name>reserved</name></member>
             <member><type>int32_t</type>  <name>PicOrderCnt</name>[2]</member>
+        </type>
+
+        <comment>
+Session-parameter types: SPS, PPS and their dependencies.
+
+Every array below has a FIXED extent taken from the STD_VIDEO_H264_* macros, so
+a guest cannot describe an oversized list. The only variable-length member is
+SPS::pOffsetForRefFrame, whose length is num_ref_frames_in_pic_order_cnt_cycle
+(a uint8_t, so bounded at 255 by its own type).
+        </comment>
+        <type category="enum" name="StdVideoH264AspectRatioIdc"/>
+        <type category="enum" name="StdVideoH264WeightedBipredIdc"/>
+
+        <type category="struct" name="StdVideoH264SpsFlags">
+            <member><type>uint32_t</type> <name>packed</name></member>
+        </type>
+        <type category="struct" name="StdVideoH264SpsVuiFlags">
+            <member><type>uint32_t</type> <name>packed</name></member>
+        </type>
+        <type category="struct" name="StdVideoH264PpsFlags">
+            <member><type>uint32_t</type> <name>packed</name></member>
+        </type>
+
+        <type category="struct" name="StdVideoH264ScalingLists">
+            <member><type>uint16_t</type> <name>scaling_list_present_mask</name></member>
+            <member><type>uint16_t</type> <name>use_default_scaling_matrix_mask</name></member>
+            <member><type>uint8_t</type>  <name>ScalingList4x4</name>[6][16]</member>
+            <member><type>uint8_t</type>  <name>ScalingList8x8</name>[6][64]</member>
+        </type>
+
+        <type category="struct" name="StdVideoH264HrdParameters">
+            <member><type>uint8_t</type>  <name>cpb_cnt_minus1</name></member>
+            <member><type>uint8_t</type>  <name>bit_rate_scale</name></member>
+            <member><type>uint8_t</type>  <name>cpb_size_scale</name></member>
+            <member><type>uint8_t</type>  <name>reserved1</name></member>
+            <member><type>uint32_t</type> <name>bit_rate_value_minus1</name>[32]</member>
+            <member><type>uint32_t</type> <name>cpb_size_value_minus1</name>[32]</member>
+            <member><type>uint8_t</type>  <name>cbr_flag</name>[32]</member>
+            <member><type>uint32_t</type> <name>initial_cpb_removal_delay_length_minus1</name></member>
+            <member><type>uint32_t</type> <name>cpb_removal_delay_length_minus1</name></member>
+            <member><type>uint32_t</type> <name>dpb_output_delay_length_minus1</name></member>
+            <member><type>uint32_t</type> <name>time_offset_length</name></member>
+        </type>
+
+        <type category="struct" name="StdVideoH264SequenceParameterSetVui">
+            <member><type>StdVideoH264SpsVuiFlags</type>    <name>flags</name></member>
+            <member><type>StdVideoH264AspectRatioIdc</type> <name>aspect_ratio_idc</name></member>
+            <member><type>uint16_t</type> <name>sar_width</name></member>
+            <member><type>uint16_t</type> <name>sar_height</name></member>
+            <member><type>uint8_t</type>  <name>video_format</name></member>
+            <member><type>uint8_t</type>  <name>colour_primaries</name></member>
+            <member><type>uint8_t</type>  <name>transfer_characteristics</name></member>
+            <member><type>uint8_t</type>  <name>matrix_coefficients</name></member>
+            <member><type>uint32_t</type> <name>num_units_in_tick</name></member>
+            <member><type>uint32_t</type> <name>time_scale</name></member>
+            <member><type>uint8_t</type>  <name>max_num_reorder_frames</name></member>
+            <member><type>uint8_t</type>  <name>max_dec_frame_buffering</name></member>
+            <member><type>uint8_t</type>  <name>chroma_sample_loc_type_top_field</name></member>
+            <member><type>uint8_t</type>  <name>chroma_sample_loc_type_bottom_field</name></member>
+            <member><type>uint32_t</type> <name>reserved1</name></member>
+            <member optional="true">const <type>StdVideoH264HrdParameters</type>* <name>pHrdParameters</name></member>
+        </type>
+
+        <type category="struct" name="StdVideoH264SequenceParameterSet">
+            <member><type>StdVideoH264SpsFlags</type>        <name>flags</name></member>
+            <member><type>StdVideoH264ProfileIdc</type>      <name>profile_idc</name></member>
+            <member><type>StdVideoH264LevelIdc</type>        <name>level_idc</name></member>
+            <member><type>StdVideoH264ChromaFormatIdc</type> <name>chroma_format_idc</name></member>
+            <member><type>uint8_t</type>  <name>seq_parameter_set_id</name></member>
+            <member><type>uint8_t</type>  <name>bit_depth_luma_minus8</name></member>
+            <member><type>uint8_t</type>  <name>bit_depth_chroma_minus8</name></member>
+            <member><type>uint8_t</type>  <name>log2_max_frame_num_minus4</name></member>
+            <member><type>StdVideoH264PocType</type> <name>pic_order_cnt_type</name></member>
+            <member><type>int32_t</type>  <name>offset_for_non_ref_pic</name></member>
+            <member><type>int32_t</type>  <name>offset_for_top_to_bottom_field</name></member>
+            <member><type>uint8_t</type>  <name>log2_max_pic_order_cnt_lsb_minus4</name></member>
+            <member><type>uint8_t</type>  <name>num_ref_frames_in_pic_order_cnt_cycle</name></member>
+            <member><type>uint8_t</type>  <name>max_num_ref_frames</name></member>
+            <member><type>uint8_t</type>  <name>reserved1</name></member>
+            <member><type>uint32_t</type> <name>pic_width_in_mbs_minus1</name></member>
+            <member><type>uint32_t</type> <name>pic_height_in_map_units_minus1</name></member>
+            <member><type>uint32_t</type> <name>frame_crop_left_offset</name></member>
+            <member><type>uint32_t</type> <name>frame_crop_right_offset</name></member>
+            <member><type>uint32_t</type> <name>frame_crop_top_offset</name></member>
+            <member><type>uint32_t</type> <name>frame_crop_bottom_offset</name></member>
+            <member><type>uint32_t</type> <name>reserved2</name></member>
+            <member optional="true" len="num_ref_frames_in_pic_order_cnt_cycle">const <type>int32_t</type>* <name>pOffsetForRefFrame</name></member>
+            <member optional="true">const <type>StdVideoH264ScalingLists</type>* <name>pScalingLists</name></member>
+            <member optional="true">const <type>StdVideoH264SequenceParameterSetVui</type>* <name>pSequenceParameterSetVui</name></member>
+        </type>
+
+        <type category="struct" name="StdVideoH264PictureParameterSet">
+            <member><type>StdVideoH264PpsFlags</type> <name>flags</name></member>
+            <member><type>uint8_t</type> <name>seq_parameter_set_id</name></member>
+            <member><type>uint8_t</type> <name>pic_parameter_set_id</name></member>
+            <member><type>uint8_t</type> <name>num_ref_idx_l0_default_active_minus1</name></member>
+            <member><type>uint8_t</type> <name>num_ref_idx_l1_default_active_minus1</name></member>
+            <member><type>StdVideoH264WeightedBipredIdc</type> <name>weighted_bipred_idc</name></member>
+            <member><type>int8_t</type>  <name>pic_init_qp_minus26</name></member>
+            <member><type>int8_t</type>  <name>pic_init_qs_minus26</name></member>
+            <member><type>int8_t</type>  <name>chroma_qp_index_offset</name></member>
+            <member><type>int8_t</type>  <name>second_chroma_qp_index_offset</name></member>
+            <member optional="true">const <type>StdVideoH264ScalingLists</type>* <name>pScalingLists</name></member>
         </type>
     </types>
 </registry>

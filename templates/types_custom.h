@@ -169,3 +169,36 @@ vn_decode_simple_pointer(struct vn_cs_decoder *dec)
     return vn_decode_array_size_unchecked(dec);
 }
 </%def>
+
+<%def name="vn_custom_video_h264_flags()">\
+/* StdVideo H.264 bitfield flags */
+
+/*
+ * These StdVideo types are C bitfields, so they cannot be described as ordinary
+ * XML members: the generated scalar helpers take pointers, and taking the
+ * address of a bitfield is illegal C. Serializing the struct as one opaque
+ * uint32_t would compile, but C leaves bitfield allocation order and padding
+ * implementation-defined, so guest and host are not guaranteed to agree -- and
+ * a disagreement corrupts decode parameters silently rather than failing.
+ *
+ * Each struct therefore crosses the wire as a single uint32_t packed by
+ * explicit shifts over named fields. The shift constants live in
+ * vn_protocol_video_h264_flags.h and are append-only wire contract.
+ */
+
+VN_H264_DEFINE_FLAG_SERIALIZERS(StdVideoDecodeH264PictureInfoFlags)
+VN_H264_DEFINE_FLAG_SERIALIZERS(StdVideoDecodeH264ReferenceInfoFlags)
+VN_H264_DEFINE_FLAG_SERIALIZERS(StdVideoH264SpsFlags)
+VN_H264_DEFINE_FLAG_SERIALIZERS(StdVideoH264SpsVuiFlags)
+VN_H264_DEFINE_FLAG_SERIALIZERS(StdVideoH264PpsFlags)
+
+VN_H264_DEFINE_ENUM_SERIALIZERS(StdVideoH264ProfileIdc)
+VN_H264_DEFINE_ENUM_SERIALIZERS(StdVideoH264LevelIdc)
+VN_H264_DEFINE_ENUM_SERIALIZERS(StdVideoH264ChromaFormatIdc)
+VN_H264_DEFINE_ENUM_SERIALIZERS(StdVideoH264PocType)
+VN_H264_DEFINE_ENUM_SERIALIZERS(StdVideoH264AspectRatioIdc)
+VN_H264_DEFINE_ENUM_SERIALIZERS(StdVideoH264WeightedBipredIdc)
+
+VN_H264_DEFINE_SCALING_LISTS_SERIALIZERS()
+
+</%def>

@@ -37,6 +37,22 @@ int main(void) {
     StdVideoDecodeH264ReferenceInfoFlags rf; memset(&rf, 0, sizeof rf);
     CHECK(!vn_unpack_StdVideoDecodeH264ReferenceInfoFlags(1u << 4, &rf), "reject ref bit 4");
     CHECK(!vn_unpack_StdVideoDecodeH264ReferenceInfoFlags(0xffffffffu, &rf), "reject ref all-ones");
+    /* SPS / VUI / PPS flags: exhaustive over their defined bit ranges */
+#define EXHAUSTIVE(Type, MASK, label)                                     \
+    do {                                                                  \
+        for (uint32_t v = 0; v <= (MASK); v++) {                          \
+            Type f; memset(&f, 0, sizeof f);                              \
+            CHECK(vn_unpack_##Type(v, &f), label " unpack valid");        \
+            CHECK(vn_pack_##Type(&f) == v, label " round-trip");          \
+        }                                                                 \
+        Type f; memset(&f, 0, sizeof f);                                  \
+        CHECK(!vn_unpack_##Type((MASK) + 1u, &f), label " reject next");  \
+        CHECK(!vn_unpack_##Type(0xffffffffu, &f), label " reject ones");  \
+    } while (0)
+
+    EXHAUSTIVE(StdVideoH264SpsFlags,    VN_H264_SPS_FLAG_VALID_MASK, "sps");
+    EXHAUSTIVE(StdVideoH264SpsVuiFlags, VN_H264_VUI_FLAG_VALID_MASK, "vui");
+    EXHAUSTIVE(StdVideoH264PpsFlags,    VN_H264_PPS_FLAG_VALID_MASK, "pps");
 
     printf(fails ? "  %d FAILURES\n" : "  all flag pack/unpack tests passed\n", fails);
     return fails ? 1 : 0;

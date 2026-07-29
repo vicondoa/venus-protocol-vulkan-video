@@ -12,6 +12,11 @@
 
 #include "vn_protocol_renderer_defines.h"
 
+/* Explicit bit packing for the StdVideo H.264 bitfield flag structs. The
+ * generated serializers below expand VN_H264_DEFINE_FLAG_SERIALIZERS, which is
+ * defined here along with the shift constants that form the wire contract. */
+#include "vn_protocol_video_h264_flags.h"
+
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 
@@ -43,6 +48,12 @@ ${scalar.vn_encode_scalar_array(ty)}
 ${scalar.vn_decode_scalar_array(ty)}
 %   endif
 % endfor
+\
+<%doc>
+  Emitted after SCALAR_TYPES: the StdVideo helpers call vn_{encode,decode}_uint16_t
+  and friends, which are defined in that loop.
+</%doc>
+${custom.vn_custom_video_h264_flags()}
 \
 #pragma GCC diagnostic pop
 

@@ -21,6 +21,12 @@ VN_PROTOCOL_VK_XML = VN_PROTOCOL_DIR.joinpath('xmls/vk.xml')
 VN_PROTOCOL_PRIVATE_XMLS = [
     VN_PROTOCOL_DIR.joinpath('xmls/VK_EXT_command_serialization.xml'),
     VN_PROTOCOL_DIR.joinpath('xmls/VK_MESA_venus_protocol.xml'),
+    # Field-level definitions for the StdVideo H.264 decode types. vk.xml
+    # declares them by name only (they live in the Khronos video headers), so
+    # without this the generator silently drops every struct that points at
+    # them out of the pNext chains -- generation succeeds, the video commands
+    # look complete, and the codec payload never crosses the wire.
+    VN_PROTOCOL_DIR.joinpath('xmls/VK_VIDEO_std_h264.xml'),
 ]
 
 # This is bumped whenever a backward-incompatible change is made, and please
@@ -250,9 +256,48 @@ class Gen:
         'uint16_t': 2,
         'uint32_t': 4,
         'uint64_t': 8,
+        # int8_t/int16_t are needed by the StdVideo H.264 types (for example
+        # StdVideoH264PictureParameterSet::pic_init_qp_minus26). Vulkan itself
+        # never uses them, which is why they were absent; they are ordinary
+        # fixed-width integers and need no special handling.
+        'int8_t': 1,
+        'int16_t': 2,
         'int32_t': 4,
         'int64_t': 8,
     }
+
+    # Structs whose C definition uses BITFIELDS, and which therefore cannot be
+    # described as ordinary XML members.
+    #
+    # The generated scalar helpers take pointers:
+    #     vn_encode_uint32_t(struct vn_cs_encoder *enc, const uint32_t *val)
+    # and taking the address of a bitfield is illegal C, so a member-wise
+    # description would emit code that does not compile. Describing the struct
+    # as one opaque uint32_t and copying it WOULD compile, but C leaves bitfield
+    # allocation order and padding implementation-defined, so guest and host are
+    # not guaranteed to agree -- and a disagreement corrupts decode parameters
+    # silently rather than failing.
+    #
+    # These types are therefore serialized as a single uint32_t packed by
+    # explicit shifts over named fields, in hand-written helpers
+    # (vn_pack_* / vn_unpack_* in vn_protocol_video_h264_flags.h). Each side
+    # lets its own compiler lay the bitfield out however it likes; only the
+    # shift constants are shared, and those are append-only wire contract.
+    #
+    # vn_unpack_* returns false on undefined bits, so a malformed or
+    # newer-revision peer is rejected rather than silently truncated.
+    CUSTOM_SERIALIZED_STRUCTS = [
+        'StdVideoH264SpsFlags',
+        'StdVideoH264SpsVuiFlags',
+        'StdVideoH264PpsFlags',
+        'StdVideoDecodeH264PictureInfoFlags',
+        'StdVideoDecodeH264ReferenceInfoFlags',
+        # Not a bitfield struct, but still hand-serialized: it holds fixed-size
+        # 2D arrays, and the generator's array handling understands only a
+        # single extent, so it would emit `..., val->ScalingList4x4, 6][16)`.
+        # Both extents are fixed, so the custom serializer is exactly bounded.
+        'StdVideoH264ScalingLists',
+    ]
 
     UNION_DEFAULT_TAGS = {
         'VkClearColorValue': 2,
@@ -488,6 +533,12 @@ class Gen:
         if ty.category == ty.STRUCT:
             if ty.name in ['VkBaseInStructure', 'VkBaseOutStructure']:
                 return False
+            # Bitfield structs are serializable, but through hand-written
+            # pack/unpack helpers rather than member-wise. Return early so the
+            # member loop below does not reject them for having members that
+            # cannot be addressed.
+            if ty.name in self.CUSTOM_SERIALIZED_STRUCTS:
+                return True
         elif ty.category == ty.COMMAND:
             if ty.name in self.COMMAND_BLOCK_LIST:
                 return False
@@ -1720,6 +1771,13 @@ class GenStructsAndCommands:
 
             if ty.category == ty.COMMAND:
                 group.commands.append(ty)
+            elif ty.name in self.gen.CUSTOM_SERIALIZED_STRUCTS:
+                # Serialized by hand-written pack/unpack helpers emitted from
+                # templates/types_custom.h. Emitting member-wise code here as
+                # well would both duplicate those definitions and generate
+                # illegal C, since the real members are bitfields whose address
+                # cannot be taken.
+                pass
             else:
                 group.structs.append(ty)
         elif ty.category == ty.UNION:
